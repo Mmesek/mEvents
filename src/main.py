@@ -1,6 +1,16 @@
 import yaml
 from components import FormLayout, icon_text
-from fasthtml.common import A, Mount, Redirect, Title, fast_app, serve
+from fasthtml.common import (
+    A,
+    Mount,
+    Redirect,
+    RedirectResponse,
+    Title,
+    fast_app,
+    serve,
+    Beforeware,
+)
+from fasthtml import common as fh
 from forms import Forms, Question
 from generators import QuestionType
 from login import app as login_app
@@ -12,6 +22,7 @@ from monsterui.all import (
     Card,
     DivCentered,
     DivLAligned,
+    DivRAligned,
     Grid,
     Theme,
     UkIconLink,
@@ -89,42 +100,64 @@ def load_questions_from_yaml(file_path: str) -> Forms:
     )
 
 
-def profile_form(event):
-    if event == "Domówka":
-        event = "questions"
-    else:
-        event = "campfire"
-    f = load_questions_from_yaml(f"web/events/{event}.yaml")
+import supabase, os
 
-    content = [q.generate() for q in f.questions]
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+s = supabase.create_client(SUPABASE_URL, SUPABASE_KEY).schema("forms")
+
+
+def profile_form(event):
+    f = (
+        s.table("Form")
+        .select('*, "Question" (*, "Question_Options" (*))')
+        .eq("id", event)
+        .single()
+        .execute()
+        .data
+    )
+    questions = [Question(**q) for q in f.get("Question")]
+
+    content = [q.generate() for q in questions]
     content.append(Button("Submit", cls=ButtonT.primary))
 
-    return info_card(f.title, **f.info) if f.info else None, FormLayout(
-        "", render_md(f.description) if f.description else None, *content
+    return info_card(f["title"], **f.get("info")) if f.get(
+        "info"
+    ) else None, FormLayout(
+        "", render_md(f["description"]) if f["description"] else None, *content
     )
 
 
 @rt("/form/{event}")
-def index(event: str):
+def index(session, event: str):
     return (
         Title("Rejestracja na wydarzenie"),
+        DivRAligned(
+            "Zalogowano jako:",
+            fh.Img(src=session.get("picture"), height="24", width="24"),
+            session.get("email"),
+        ),
         profile_form(event),
     )
 
 
+def require_login(func):
+    def wrapped(session, *args, **kwargs):
+        if not session.get("email"):
+            return Redirect("/login")
+        return func(session, *args, **kwargs)
+
+    return wrapped
+
+
 @rt("/events")
 def events():
-    forms = [
-        load_questions_from_yaml(f"web/events/{f}")
-        for f in ["campfire.yaml", "feedback.yaml", "questions.yaml"]
-    ]
-    for f in forms:
-        if f.info:
-            f.info["description"] = None
+    forms = s.table("Form").select('*, "Question" (*)').execute().data
+
     socials = (
-        ("github", "https://github.com/Mmesek/web-events"),
+        ("github", "https://github.com/Mmesek/mEvents"),
         ("messages-square", "https://discord.com"),
-        ("linkedin", "https://www.linkedin.com/in/isaacflath/"),
     )
 
     return (
@@ -132,11 +165,11 @@ def events():
         DivCentered(H1("Nadchodzące wydarzenia")),
         *[
             info_card(
-                A(f.title, cls=AT.classic, href=f"/form/{f.title.split(' ')[0]}"),
-                **f.info,
+                A(f["title"], cls=AT.classic, href=f"/form/{f['id']}"),
+                # **f.info,
             )
             for f in forms
-            if f.info
+            # if f.info
         ],
         Card(
             footer=DivCentered(
@@ -148,8 +181,6 @@ def events():
 
 @rt("/")
 def main(session):
-    if not session.get("email"):
-        return Redirect("/login")
     return events()
 
 
