@@ -58,4 +58,7 @@ def login_facebook():
 def redirect(code: str, session):
     res = s.auth.exchange_code_for_session({"auth_code": code})
     session["email"] = res.user.email
+    session["id"] = res.user.id
+    session["picture"] = res.user.user_metadata.get("avatar_url")
+
     return Redirect("/")
