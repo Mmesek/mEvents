@@ -32,8 +32,28 @@ from monsterui.all import (
 # Choose a theme color (blue, green, red, etc)
 hdrs = Theme.orange.headers()
 
+
+def user_auth_before(req, sess):
+    auth = req.scope["email"] = sess.get("email", None)
+    if not auth:
+        return RedirectResponse("/login", 303)
+
+
+beforeware = Beforeware(
+    user_auth_before,
+    skip=[
+        r"/favicon\.ico",
+        r"/static/.*",
+        r".*\.css",
+        r".*\.js",
+        "/login",
+        "/",
+        "/events",
+    ],
+)
+
 # Create your app with the theme
-app, rt = fast_app(hdrs=hdrs, routes=[Mount("/login", login_app)])
+app, rt = fast_app(hdrs=hdrs, routes=[Mount("/login", login_app)], before=beforeware)
 
 
 def info_card(
