@@ -6,6 +6,7 @@ from monsterui.all import Card, Titled
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
 app, rt = fast_app()
 
@@ -38,7 +39,7 @@ def oauth_login(provider: str):
     res = s.auth.sign_in_with_oauth(
         {
             "provider": provider,
-            "options": {"redirect_to": "http://localhost:5001/login/redirect"},
+            "options": {"redirect_to": f"{BASE_URL}/login/redirect"},
         }
     )
     return Redirect(res.url)
