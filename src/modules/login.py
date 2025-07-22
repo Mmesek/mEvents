@@ -3,7 +3,7 @@ import os
 from fasthtml.common import A, Redirect, fast_app
 from monsterui.all import Card, Titled, Theme
 
-from db import s
+from db import supa
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
@@ -32,7 +32,7 @@ def login():
 
 
 def oauth_login(provider: str):
-    res = s.auth.sign_in_with_oauth(
+    res = supa.auth.sign_in_with_oauth(
         {
             "provider": provider,
             "options": {"redirect_to": f"{BASE_URL}/login/redirect"},
@@ -53,7 +53,7 @@ def login_facebook():
 
 @rt("/redirect")
 def redirect(code: str, session):
-    res = s.auth.exchange_code_for_session({"auth_code": code})
+    res = supa.auth.exchange_code_for_session({"auth_code": code})
     session["email"] = res.user.email
     session["id"] = res.user.id
     session["picture"] = res.user.user_metadata.get("avatar_url")
