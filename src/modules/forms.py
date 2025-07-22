@@ -12,13 +12,13 @@ from beforeware import beforeware
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
 
-def form(user_id, event):
+def form(user_id, event_id, form_id):
     f = (
         s.table("Form")
         .select(
             '*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value)))'
         )
-        .eq("id", event)
+        .eq("id", form_id)
         .single()
         .execute()
         .data
@@ -37,7 +37,7 @@ def form(user_id, event):
         for i in (
             s.table("Response")
             .select("*")
-            .eq("form_id", event)
+            .eq("event_id", event_id)
             .eq("user_id", user_id)
             .execute()
             .data
@@ -52,12 +52,12 @@ def form(user_id, event):
         "",
         render_md(f["description"]) if f["description"] else None,
         *content,
-        destination=f"/form/submit/{event}",
+        destination=f"/forms/submit/{event_id}",
     )
 
 
-@rt("/{event}")
-def event_form(session, event: str):
+@rt("/{form_id}")
+def event_form(session, form_id: str, event: str):
     return (
         fh.Title("Rejestracja na wydarzenie"),
         DivRAligned(
@@ -65,7 +65,7 @@ def event_form(session, event: str):
             fh.Img(src=session.get("picture"), height="24", width="24"),
             session.get("email"),
         ),
-        form(session["id"], event),
+        form(session["id"], event, form_id),
     )
 
 
@@ -75,7 +75,7 @@ def submit(session, event: str, responses: dict):
         [
             {
                 "user_id": session["id"],
-                "form_id": event,
+                "event_id": event,
                 "question_id": k,
                 "value": f"{{{v}}}",
             }
