@@ -17,5 +17,8 @@ beforeware = fh.Beforeware(
         "/login",
         "/",
         "/events",
+        "/privacy-policy",
+        "/terms-of-service",
+        "/privacy-delete",
     ],
 )
