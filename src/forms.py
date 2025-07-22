@@ -10,11 +10,13 @@ class Question:
     title: str = None
     type: str = None
     kwargs: dict = None
+    order: int = None
+    required: bool = False
     max_length: int = None
     min_length: int = None
     description: str = None
     allow_multiple_answer: bool = None
-    Question_Options: dict = None
+    options: dict = None
 
     def __post_init__(self):
         self.type = QuestionType.get(self.type)
@@ -32,7 +34,7 @@ class Question:
                     "max": self.max_length,
                     "default": value,
                     "value": value,
-                    "options": [i["value"] for i in self.Question_Options],
+                    "options": [i["value"] for i in self.options],
                 },
             )
         )
