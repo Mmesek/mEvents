@@ -26,5 +26,22 @@ def index():
     return fh.Redirect("/events")
 
 
+@rt("/privacy-policy")
+def privacy():
+    return fh.P(
+        "Twój adres e-mail jest przetwarzany w celach wysłania e-maila z zaproszeniem do kalendarza."
+    )
+
+
+@rt("/terms-of-service")
+def tos():
+    return fh.P("Poważnie?")
+
+
+@rt("/privacy-delete")
+def deleteme():
+    return fh.P("Skontaktuj się z @Mmesek w celu usunięcia twoich danych.")
+
+
 if __name__ == "__main__":
     fh.serve()
