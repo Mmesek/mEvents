@@ -25,7 +25,7 @@ def generate_input(
     return (
         QuestionText(question),
         HelpText(description),
-        Input(id=question_id, placeholder=placeholder),
+        Input(id=question_id, placeholder=placeholder, **kwargs),
     )
 
 
@@ -35,7 +35,9 @@ def generate_long_input(
     return (
         QuestionText(question),
         HelpText(description),
-        TextArea(id=question_id, placeholder=placeholder),
+        TextArea(
+            kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs
+        ),
     )
 
 

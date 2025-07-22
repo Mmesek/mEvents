@@ -19,7 +19,7 @@ class Question:
     def __post_init__(self):
         self.type = QuestionType.get(self.type)
 
-    def generate(self):
+    def generate(self, value: str = None):
         return FormSectionDiv(
             self.type(
                 question=self.title,
@@ -30,6 +30,8 @@ class Question:
                     "min_length": self.min_length,
                     "min": self.min_length,
                     "max": self.max_length,
+                    "default": value,
+                    "value": value,
                     "options": [i["value"] for i in self.Question_Options],
                 },
             )
