@@ -1,4 +1,3 @@
-import yaml
 from components import FormLayout, icon_text
 from fasthtml.common import (
     A,
@@ -11,8 +10,8 @@ from fasthtml.common import (
     Beforeware,
 )
 from fasthtml import common as fh
-from forms import Forms, Question
-from generators import QuestionType
+from forms import Question
+
 from login import app as login_app
 from monsterui.all import (
     AT,
@@ -97,6 +96,9 @@ def info_card(
             body_cls="space-y-0",
         )
     )
+
+
+from db import s
 
 
 def event_form(user_id, event):

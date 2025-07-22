@@ -1,11 +1,12 @@
 import os
 
-import supabase
 from fasthtml.common import A, Redirect, fast_app
 from monsterui.all import Card, Titled
+import dotenv
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+dotenv.load_dotenv()
+from db import s
+
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
 app, rt = fast_app()
@@ -30,9 +31,6 @@ def login():
             ),
         ),
     )
-
-
-s = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def oauth_login(provider: str):
