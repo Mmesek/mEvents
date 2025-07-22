@@ -99,36 +99,7 @@ def info_card(
     )
 
 
-def load_questions_from_yaml(file_path: str) -> Forms:
-    """Loads questions from a YAML file into a list of Question dataclasses."""
-    with open(file_path, "r") as f:
-        questions_data = yaml.safe_load(f)
-    return Forms(
-        questions_data.get("title"),
-        questions_data.get("description"),
-        [
-            Question(
-                id=q.get("id"),
-                question=q.get("question", q.get("description")),
-                type=QuestionType.get(q.get("type")),
-                description=q.get("description"),
-                kwargs=q.get("kwargs"),
-            )
-            for q in questions_data.get("questions", [])
-        ],
-        questions_data.get("info"),
-    )
-
-
-import supabase, os
-
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-s = supabase.create_client(SUPABASE_URL, SUPABASE_KEY).schema("forms")
-
-
-def profile_form(event):
+def event_form(user_id, event):
     f = (
         s.table("Form")
         .select('*, "Question" (*, "Question_Options" (*))')
@@ -138,14 +109,47 @@ def profile_form(event):
         .data
     )
     questions = [Question(**q) for q in f.get("Question")]
+    answers = {
+        i["question_id"]: i["value"]
+        for i in (
+            s.table("Response")
+            .select("*")
+            .eq("form_id", event)
+            .eq("user_id", user_id)
+            .execute()
+            .data
+        )
+    }
 
-    content = [q.generate() for q in questions]
+    content = [q.generate(answers.get(q.id, "")) for q in questions]
     content.append(Button("Submit", cls=ButtonT.primary))
+    info = info_card(f["title"], **f.get("info")) if f.get("info") else None
 
-    return info_card(f["title"], **f.get("info")) if f.get(
-        "info"
-    ) else None, FormLayout(
-        "", render_md(f["description"]) if f["description"] else None, *content
+    return info, FormLayout(
+        "",
+        render_md(f["description"]) if f["description"] else None,
+        *content,
+        destination=f"/submit/{event}",
+    )
+
+
+@rt("/submit/{event}")
+def submit(session, event: str, responses: dict):
+    s.table("Response").insert(
+        [
+            {
+                "user_id": session["id"],
+                "form_id": event,
+                "question_id": k,
+                "value": v,
+            }
+            for k, v in responses.items()
+            if v
+        ]
+    ).execute()
+
+    return DivCentered(
+        f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
     )
 
 
@@ -158,7 +162,7 @@ def index(session, event: str):
             fh.Img(src=session.get("picture"), height="24", width="24"),
             session.get("email"),
         ),
-        profile_form(event),
+        event_form(session["id"], event),
     )
 
 

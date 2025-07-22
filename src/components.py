@@ -25,8 +25,15 @@ def HelpText(c):
     return P(c, cls=TextPresets.muted_sm)
 
 
-def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4"):
-    return Container(Div(H1(title), subtitle, DividerLine(), Form(*content, cls=cls)))
+def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/submit"):
+    return Container(
+        Div(
+            H1(title),
+            subtitle,
+            DividerLine(),
+            Form(*content, cls=cls, hx_post=destination),
+        )
+    )
 
 
 def icon_text(icon, text):
