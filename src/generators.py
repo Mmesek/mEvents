@@ -55,8 +55,10 @@ def info_card(
                     "messages-square",
                     text=f"**Discord**: [Link do wydarzenia]({discord_event})",
                 )
-            ),
-            render_md(description) if description else None,
+            )
+            if discord_event
+            else None,
+            DivCentered(render_md(description)) if description else None,
             body_cls="space-y-0",
         )
     )
