@@ -1,6 +1,6 @@
 from functools import partial
 
-from components import HelpText, QuestionText
+from components import HelpText, QuestionText, icon_text
 from fasthtml.common import P
 from monsterui.all import (
     DivLAligned,
@@ -12,7 +12,54 @@ from monsterui.all import (
     Switch,
     TextArea,
     render_md,
+    H1,
+    Card,
+    DivCentered,
+    Grid,
 )
+
+
+def info_card(
+    title=None,
+    start=None,
+    end=None,
+    date=None,
+    place=None,
+    theme=None,
+    dresscode=None,
+    dresscode_mandatory=None,
+    discord_event=None,
+    description=None,
+):
+    if dresscode and not dresscode_mandatory:
+        dresscode += " *(Opcjonalnie)*"
+    return DivCentered(
+        Card(
+            DivCentered(H1(title)),
+            Grid(
+                icon_text("clock", f"**Start**: {start}"),
+                icon_text("clock", f"**Koniec**: {end}"),
+                cols=2,
+                cls="gap-1",
+            ),
+            Grid(
+                icon_text("calendar", f"**Data**: {date}"),
+                icon_text("pin", f"**Miejsce**: {place}"),
+                cols=2,
+                cls="gap-1",
+            ),
+            (icon_text("palette", f"**Temat Przewodni**: {theme}")) if theme else None,
+            (icon_text("shirt", f"**Dresscode**: {dresscode}")) if dresscode else None,
+            DivCentered(
+                icon_text(
+                    "messages-square",
+                    text=f"**Discord**: [Link do wydarzenia]({discord_event})",
+                )
+            ),
+            render_md(description) if description else None,
+            body_cls="space-y-0",
+        )
+    )
 
 
 def generate_input(
