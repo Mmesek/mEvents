@@ -1,15 +1,13 @@
 import os
 
 from fasthtml.common import A, Redirect, fast_app
-from monsterui.all import Card, Titled
-import dotenv
+from monsterui.all import Card, Titled, Theme
 
-dotenv.load_dotenv()
 from db import s
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
-app, rt = fast_app()
+app, rt = fast_app(hdrs=Theme.orange.headers())
 
 
 @rt("/")
