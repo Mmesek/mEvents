@@ -6,9 +6,10 @@ from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, render_md, 
 from components import FormLayout
 from forms import Question
 from generators import info_card
+from beforeware import beforeware
 
 
-app, rt = fh.fast_app(hdrs=Theme.orange.headers())
+app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
 
 def form(user_id, event):
