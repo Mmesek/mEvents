@@ -78,7 +78,7 @@ def submit(session, event: str, responses: dict):
                     "user_id": session["id"],
                     "event_id": event,
                     "question_id": k,
-                    "value": '{"' + v.strip(",") + '"}',
+                    "value": [v],
                 }
                 for k, v in responses.items()
                 if v
