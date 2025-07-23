@@ -32,6 +32,7 @@ class Event:
     dresscode_mandatory: bool
     discord_event: str | None
     wrap: str
+    image: str
 
     def __post_init__(self):
         self.start_time = datetime.fromisoformat(self.start_time)
@@ -67,6 +68,7 @@ def events():
                 f.dresscode_mandatory,
                 f.discord_event,
                 f.description,
+                image=f.image,
             )
             for f in events
         ],

@@ -1,7 +1,7 @@
 from functools import partial
 
-from components import HelpText, QuestionText, icon_text
-from fasthtml.common import P
+from components import HelpText, QuestionText, icon_text, right_icon_text
+from fasthtml.common import P, Img
 from monsterui.all import (
     DivLAligned,
     FormLabel,
@@ -30,21 +30,23 @@ def info_card(
     dresscode_mandatory=None,
     discord_event=None,
     description=None,
+    image=None,
 ):
     if dresscode and not dresscode_mandatory:
         dresscode += " *(Opcjonalnie)*"
     return DivCentered(
         Card(
+            Img(src=image, loading="lazy", width=1000, height=800) if image else None,
             DivCentered(H1(title)),
             Grid(
-                icon_text("clock", f"**Start**: {start}"),
-                icon_text("clock", f"**Koniec**: {end}"),
+                icon_text("clock", f"{start}"),
+                right_icon_text("clock-10", f"{end}"),
                 cols=2,
-                cls="gap-1",
+                cls="gap-1 items-center justify-center",
             ),
             Grid(
-                icon_text("calendar", f"**Data**: {date}"),
-                icon_text("pin", f"**Miejsce**: {place}"),
+                icon_text("calendar", f"{date}"),
+                right_icon_text("pin", f"{place}"),
                 cols=2,
                 cls="gap-1",
             ),
@@ -53,7 +55,7 @@ def info_card(
             DivCentered(
                 icon_text(
                     "messages-square",
-                    text=f"**Discord**: [Link do wydarzenia]({discord_event})",
+                    text=f"**[Discord]({discord_event})**",
                 )
             )
             if discord_event
