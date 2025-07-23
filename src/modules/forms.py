@@ -71,18 +71,23 @@ def event_form(session, form_id: str, event: str):
 
 @rt("/submit/{event}")
 def submit(session, event: str, responses: dict):
-    s.table("Response").upsert(
-        [
-            {
-                "user_id": session["id"],
-                "event_id": event,
-                "question_id": k,
-                "value": f"{{{v.strip(',')}}}",
-            }
-            for k, v in responses.items()
-            if v
-        ]
-    ).execute()
+    try:
+        s.table("Response").upsert(
+            [
+                {
+                    "user_id": session["id"],
+                    "event_id": event,
+                    "question_id": k,
+                    "value": '{"' + v.strip(",") + '"}',
+                }
+                for k, v in responses.items()
+                if v
+            ]
+        ).execute()
+    except:
+        return DivCentered(
+            "Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie."
+        )
 
     return DivCentered(
         f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
