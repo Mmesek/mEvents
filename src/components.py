@@ -37,20 +37,16 @@ def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/su
 
 
 def icon_text(icon, text):
-    return (
-        DivLAligned(
-            UkIcon(icon),
-            render_md(text),
-            cls="space-y-0 space-x-1",
-        ),
+    return Div(
+        UkIcon(icon),
+        render_md(text),
+        cls="inline-flex space-y-0 space-x-1 justify-start items-center",
     )
 
 
 def right_icon_text(icon, text):
-    return (
-        DivLAligned(
-            render_md(text),
-            UkIcon(icon),
-            cls="space-y-0 space-x-1",
-        ),
+    return Div(
+        UkIcon(icon),
+        render_md(text),
+        cls="inline-flex space-y-0 space-x-1 justify-end items-center",
     )
