@@ -17,11 +17,13 @@ class Question:
     description: str = None
     allow_multiple_answer: bool = None
     options: dict = None
+    answer: list[dict] = None
 
     def __post_init__(self):
         self.type = QuestionType.get(self.type)
 
-    def generate(self, value: str = None):
+    def generate(self):
+        value = ", ".join([", ".join(i["value"]) for i in self.answer])
         return FormSectionDiv(
             self.type(
                 question=self.title,

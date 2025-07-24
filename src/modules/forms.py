@@ -12,17 +12,19 @@ from beforeware import beforeware
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
 
-def form(user_id, event_id, form_id):
+def form(user_id, event_id):
     f = (
-        s.table("Form")
+        s.table("Event")
         .select(
-            '*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value)))'
+            'form:form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))'
         )
-        .eq("id", form_id)
+        .eq("id", event_id)
+        .eq("form.questions.question.answer.event_id", event_id)
+        .eq("form.questions.question.answer.user_id", user_id)
         .single()
         .execute()
         .data
-    )
+    ).get("form", {})
     questions = sorted(
         [
             Question(
@@ -32,19 +34,7 @@ def form(user_id, event_id, form_id):
         ],
         key=lambda x: x.order,
     )
-    answers = {
-        i["question_id"]: ",".join(i["value"])
-        for i in (
-            s.table("Response")
-            .select("*")
-            .eq("event_id", event_id)
-            .eq("user_id", user_id)
-            .execute()
-            .data
-        )
-    }
-
-    content = [q.generate(answers.get(q.id, "")) for q in questions]
+    content = [q.generate() for q in questions]
     content.append(Button("Zapisz", cls=ButtonT.primary))
     info = info_card(f["title"], **f.get("info")) if f.get("info") else None
 
@@ -56,8 +46,8 @@ def form(user_id, event_id, form_id):
     )
 
 
-@rt("/{form_id}")
-def event_form(session, form_id: str, event: str):
+@rt("/{event_id}")
+def event_form(session, event_id: str):
     return (
         fh.Title("Rejestracja na wydarzenie"),
         DivRAligned(
@@ -65,7 +55,7 @@ def event_form(session, form_id: str, event: str):
             fh.Img(src=session.get("picture"), height="24", width="24"),
             session.get("email"),
         ),
-        form(session["id"], event, form_id),
+        form(session["id"], event_id),
     )
 
 
