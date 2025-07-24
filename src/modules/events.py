@@ -33,6 +33,7 @@ class Event:
     discord_event: str | None
     wrap: str
     image: str
+    responses: list[dict]
 
     def __post_init__(self):
         self.start_time = datetime.fromisoformat(self.start_time)
@@ -45,7 +46,7 @@ app, rt = fh.fast_app(hdrs=Theme.orange.headers())
 
 @rt("/")
 def events():
-    forms = s.table("Event").select("*").execute().data
+    forms = s.table("Event").select('*, responses:"Response" (user_id)').execute().data
 
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
@@ -58,7 +59,7 @@ def events():
         DivCentered(H1("Nadchodzące wydarzenia")),
         *[
             info_card(
-                fh.A(f.title, cls=AT.classic, href=f"/forms/{f.form_id}?event={f.id}"),
+                fh.A(f.title, cls=AT.classic, href=f"/forms/{f.id}"),
                 f"{f.start_time.hour}:{f.start_time.minute:0<2}",
                 f"{f.end_time.hour}:{f.end_time.minute:0<2}",
                 f.start_time.date(),
@@ -69,6 +70,8 @@ def events():
                 f.discord_event,
                 f.description,
                 image=f.image,
+                count=len(set([list(i.values())[0] for i in f.responses])),
+                href=f"/forms/{f.id}",
             )
             for f in events
         ],
