@@ -11,7 +11,7 @@ from monsterui.all import (
     ButtonT,
 )
 
-from db import supa
+from src.db import supa
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 

@@ -1,5 +1,7 @@
-import supabase, os
+import os
+
 import dotenv
+import supabase
 
 dotenv.load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")

@@ -1,10 +1,10 @@
 from fasthtml import common as fh
 from monsterui.all import Theme
 
-from modules.login import app as login_app
-from modules.events import app as events_app
-from modules.forms import app as forms_app
-from beforeware import beforeware
+from src.modules.login import app as login_app
+from src.modules.events import app as events_app
+from src.modules.forms import app as forms_app
+from src.beforeware import beforeware
 
 hdrs = Theme.orange.headers()
 

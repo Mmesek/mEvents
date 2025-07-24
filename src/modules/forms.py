@@ -1,13 +1,11 @@
-from db import s
-
 from fasthtml import common as fh
-from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, render_md, Theme
+from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, Theme, render_md
 
-from components import FormLayout
-from forms import Question
-from generators import info_card
-from beforeware import beforeware
-
+from src.beforeware import beforeware
+from src.components import FormLayout
+from src.db import s
+from src.forms import Question
+from src.generators import info_card
 
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 

@@ -1,6 +1,5 @@
 from functools import partial
 
-from components import HelpText, QuestionText, icon_text, right_icon_text
 from fasthtml.common import P, Img, A
 from monsterui.all import (
     DivLAligned,
@@ -20,6 +19,8 @@ from monsterui.all import (
     Button,
     ButtonT,
 )
+
+from src.components import HelpText, QuestionText, icon_text, right_icon_text
 
 
 def info_card(

@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from datetime import datetime
+
 from fasthtml import common as fh
 from monsterui.all import (
     AT,
@@ -5,15 +8,12 @@ from monsterui.all import (
     Card,
     DivCentered,
     DivLAligned,
-    UkIconLink,
     Theme,
+    UkIconLink,
 )
 
-
-from db import s
-from generators import info_card
-from dataclasses import dataclass
-from datetime import datetime
+from src.db import s
+from src.generators import info_card
 
 
 @dataclass

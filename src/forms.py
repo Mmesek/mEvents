@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from components import FormSectionDiv
-from generators import QuestionType
+from src.components import FormSectionDiv
+from src.generators import QuestionType
 
 
 @dataclass
