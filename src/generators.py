@@ -1,9 +1,10 @@
 from functools import partial
 
 from components import HelpText, QuestionText, icon_text, right_icon_text
-from fasthtml.common import P, Img
+from fasthtml.common import P, Img, A
 from monsterui.all import (
     DivLAligned,
+    DivRAligned,
     FormLabel,
     Input,
     LabelInput,
@@ -16,6 +17,8 @@ from monsterui.all import (
     Card,
     DivCentered,
     Grid,
+    Button,
+    ButtonT,
 )
 
 
@@ -31,6 +34,8 @@ def info_card(
     discord_event=None,
     description=None,
     image=None,
+    count=None,
+    href=None,
 ):
     if dresscode and not dresscode_mandatory:
         dresscode += " *(Opcjonalnie)*"
@@ -52,6 +57,7 @@ def info_card(
             ),
             (icon_text("palette", f"**Temat Przewodni**: {theme}")) if theme else None,
             (icon_text("shirt", f"**Dresscode**: {dresscode}")) if dresscode else None,
+            (icon_text("member", f"**Liczba zapisanych**: {count}")) if count else None,
             DivCentered(
                 icon_text(
                     "messages-square",
@@ -61,6 +67,12 @@ def info_card(
             if discord_event
             else None,
             DivCentered(render_md(description)) if description else None,
+            DivRAligned(
+                A(
+                    Button("Weź udział", cls=ButtonT.ghost, submit=False),
+                    href=href,
+                )
+            ),
             body_cls="space-y-0",
         )
     )
