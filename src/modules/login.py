@@ -112,7 +112,7 @@ def otp(otp: str, session):
     session["email"] = res.user.email
     session["id"] = res.user.id
     session["picture"] = f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
-    return Redirect("/")
+    return Redirect(session.get("referrer", "/"))
 
 
 @rt("/redirect")
@@ -122,7 +122,7 @@ def redirect(code: str, session):
     session["id"] = res.user.id
     session["picture"] = res.user.user_metadata.get("avatar_url")
 
-    return Redirect("/")
+    return Redirect(session.get("referrer", "/"))
 
 
 @rt("/verify")
@@ -132,4 +132,4 @@ def verify_otp(access_token: str, type: str, session):
     session["id"] = res.user.id
     session["picture"] = f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
 
-    return Redirect("/")
+    return Redirect(session.get("referrer", "/"))

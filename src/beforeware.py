@@ -4,6 +4,7 @@ from fasthtml import common as fh
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
     if not auth:
+        sess["referrer"] = req.url.path
         return fh.RedirectResponse("/login", 303)
 
 
