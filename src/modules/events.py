@@ -46,7 +46,13 @@ app, rt = fh.fast_app(hdrs=Theme.orange.headers())
 
 @rt("/")
 def events():
-    forms = s.table("Event").select('*, responses:"Response" (user_id)').execute().data
+    forms = (
+        s.table("Event")
+        .select('*, responses:"Response" (user_id)')
+        .gt("end_time", datetime.now())
+        .execute()
+        .data
+    )
 
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
