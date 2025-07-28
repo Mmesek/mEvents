@@ -22,7 +22,9 @@ app, rt = fh.fast_app(
 
 
 @rt("/")
-def index():
+def index(code: str = None):
+    if code:
+        return fh.Redirect(f"/login/redirect?code={code}")
     return fh.Redirect("/events")
 
 
