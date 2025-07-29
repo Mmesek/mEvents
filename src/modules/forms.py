@@ -10,6 +10,18 @@ from src.generators import info_card
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
 
+def list_guests(event_id):
+    r = s.table("Response").select("user_id").eq("event_id", event_id).execute().data
+    names = (
+        s.table("users")
+        .select("display_name")
+        .in_("id", [i["user_id"] for i in r])
+        .execute()
+        .data
+    )
+    return [i["display_name"] for i in names]
+
+
 def form(user_id, event_id):
     f = (
         s.table("Event")
