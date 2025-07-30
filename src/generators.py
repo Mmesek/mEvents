@@ -41,6 +41,7 @@ def info_card(
 ):
     if dresscode and not dresscode_mandatory:
         dresscode += " *(Opcjonalnie)*"
+    align = right_icon_text if count else icon_text
     return DivCentered(
         Card(
             Img(src=image, loading="lazy", width=1000, height=800) if image else None,
@@ -57,9 +58,7 @@ def info_card(
                 (icon_text("users", f"**Liczba zapisanych**: {count}"))
                 if count
                 else None,
-                (right_icon_text("user", f"**Organizator**: {organizer}"))
-                if organizer
-                else None,
+                (align("user", f"**Organizator**: {organizer}")) if organizer else None,
                 cols=2,
                 cls="gap-1",
             ),
