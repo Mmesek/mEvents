@@ -37,6 +37,7 @@ def info_card(
     image=None,
     count=None,
     href=None,
+    organizer=None,
 ):
     if dresscode and not dresscode_mandatory:
         dresscode += " *(Opcjonalnie)*"
@@ -53,12 +54,17 @@ def info_card(
             Grid(
                 icon_text("calendar", f"{date}"),
                 right_icon_text("pin", f"{place}"),
+                (icon_text("users", f"**Liczba zapisanych**: {count}"))
+                if count
+                else None,
+                (right_icon_text("user", f"**Organizator**: {organizer}"))
+                if organizer
+                else None,
                 cols=2,
                 cls="gap-1",
             ),
             (icon_text("palette", f"**Temat Przewodni**: {theme}")) if theme else None,
             (icon_text("shirt", f"**Dresscode**: {dresscode}")) if dresscode else None,
-            (icon_text("member", f"**Liczba zapisanych**: {count}")) if count else None,
             DivCentered(
                 icon_text(
                     "messages-square",
