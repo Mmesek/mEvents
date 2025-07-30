@@ -34,6 +34,7 @@ class Event:
     wrap: str
     image: str
     responses: list[dict]
+    org_name: str
 
     def __post_init__(self):
         self.start_time = datetime.fromisoformat(self.start_time)
@@ -77,6 +78,7 @@ def events():
                 f.description,
                 image=f.image,
                 count=len(set([list(i.values())[0] for i in f.responses])),
+                organizer=f.org_name,
                 href=f"/forms/{f.id}",
             )
             for f in events
