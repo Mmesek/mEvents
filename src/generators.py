@@ -44,7 +44,15 @@ def info_card(
     align = right_icon_text if count else icon_text
     return DivCentered(
         Card(
-            Img(src=image, loading="lazy", width=1000, height=800) if image else None,
+            Img(
+                src=image,
+                loading="lazy",
+                width=1000,
+                height=400,
+                style="max-height: 400px;",
+            )
+            if image
+            else None,
             DivCentered(H1(title)),
             Grid(
                 icon_text("clock", f"{start}"),
