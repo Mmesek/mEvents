@@ -47,13 +47,6 @@ def login():
                 hx_get="/login/google",
             )
         ),
-        Card(
-            A(
-                LOGIN_STRING.format("Facebooka"),
-                href="https://facebook.com",
-                hx_get="/login/facebook",
-            ),
-        ),
         Card(magic_link()),
     )
 
