@@ -31,10 +31,18 @@ def form(user_id, event_id):
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
         .eq("form.questions.question.answer.user_id", user_id)
-        .single()
+        .maybe_single()
         .execute()
-        .data
-    ).get("form", {})
+    )
+    if not f:
+        return DivCentered(
+            "Podany formularz nie istnieje",
+            fh.A(
+                Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False),
+                href="/",
+            ),
+        )
+    f = f.data.get("form", {})
     questions = sorted(
         [
             Question(
