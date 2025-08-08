@@ -69,7 +69,7 @@ def events():
                 fh.A(f.title, cls=AT.classic, href=f"/forms/{f.id}"),
                 f"{f.start_time.hour}:{f.start_time.minute:0<2}",
                 f"{f.end_time.hour}:{f.end_time.minute:0<2}",
-                f.start_time.date(),
+                f"{f.start_time.date()}, {f.start_time.strftime('%A')}",
                 f.place,
                 f.theme,
                 f.dresscode,
