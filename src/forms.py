@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from src.components import FormSectionDiv
 from src.generators import QuestionType
+from fasthtml import common as fh
 
 
 @dataclass
@@ -36,9 +37,11 @@ class Question:
                     "max": self.max_length,
                     "default": value,
                     "value": value,
+                    "checked": True if value == "on" else False,
                     "options": [i["value"] for i in self.options],
                 },
-            )
+            ),
+            fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
         )
 
 
