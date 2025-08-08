@@ -26,7 +26,7 @@ def list_guests(event_id: str):
         .execute()
         .data
     )
-    return [i["display_name"] for i in names]
+    return DivCentered(fh.Ul((fh.Li(i["display_name"]) for i in names)))
 
 
 def form(user_id, event_id):
@@ -53,7 +53,19 @@ def form(user_id, event_id):
         ],
         key=lambda x: x.order,
     )
-    content = [q.generate() for q in questions]
+    content = [
+        DivRAligned(
+            Button(
+                "Lista gości",
+                cls=ButtonT.ghost,
+                submit=False,
+                hx_target="#guestlist",
+                hx_get=f"/forms/guests?event_id={event_id}",
+            ),
+            id="guestlist",
+        )
+    ]
+    content.extend([q.generate() for q in questions])
     content.append(Button("Zapisz", cls=ButtonT.primary))
     info = info_card(f["title"], **f.get("info")) if f.get("info") else None
 
