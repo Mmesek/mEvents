@@ -10,7 +10,14 @@ from src.generators import info_card
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
 
-def list_guests(event_id):
+def back_to_main():
+    return fh.A(
+        Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False), href="/"
+    )
+
+
+@rt("/guests")
+def list_guests(event_id: str):
     r = s.table("Response").select("user_id").eq("event_id", event_id).execute().data
     names = (
         s.table("users")
@@ -35,13 +42,7 @@ def form(user_id, event_id):
         .execute()
     )
     if not f:
-        return DivCentered(
-            "Podany formularz nie istnieje",
-            fh.A(
-                Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False),
-                href="/",
-            ),
-        )
+        return DivCentered("Podany formularz nie istnieje", back_to_main())
     f = f.data.get("form", {})
     questions = sorted(
         [
@@ -99,4 +100,4 @@ def submit(session, event: str, responses: dict):
 
     return DivCentered(
         f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
-    )
+    ), DivRAligned(back_to_main())
