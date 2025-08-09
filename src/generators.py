@@ -94,7 +94,12 @@ def info_card(
             else None,
             DivCentered(render_md(description)) if description else None,
             DivRAligned(
-                DivLAligned(guests(event_id), id="guestlist") if logged_in else None,
+                DivLAligned(
+                    guests(event_id, target=f"guestlist_{event_id}"),
+                    id=f"guestlist_{event_id}",
+                )
+                if logged_in
+                else None,
                 A(
                     Button("Weź udział", cls=ButtonT.ghost, submit=False),
                     href=href,
