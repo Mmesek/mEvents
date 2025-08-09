@@ -23,6 +23,16 @@ from monsterui.all import (
 from src.components import HelpText, QuestionText, icon_text, right_icon_text
 
 
+def guests(event_id: str, target: str = "guestlist"):
+    return Button(
+        "Lista gości",
+        cls=ButtonT.ghost,
+        submit=False,
+        hx_target=f"#{target}",
+        hx_get=f"/forms/guests?event_id={event_id}",
+    )
+
+
 def info_card(
     title=None,
     start=None,
@@ -38,6 +48,8 @@ def info_card(
     count=None,
     href=None,
     organizer=None,
+    event_id=None,
+    logged_in=False,
 ):
     if dresscode and not dresscode_mandatory:
         dresscode += " *(Opcjonalnie)*"
@@ -82,10 +94,11 @@ def info_card(
             else None,
             DivCentered(render_md(description)) if description else None,
             DivRAligned(
+                DivLAligned(guests(event_id), id="guestlist") if logged_in else None,
                 A(
                     Button("Weź udział", cls=ButtonT.ghost, submit=False),
                     href=href,
-                )
+                ),
             ),
             body_cls="space-y-0",
         )

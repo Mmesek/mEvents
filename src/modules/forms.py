@@ -5,7 +5,7 @@ from src.beforeware import beforeware
 from src.components import FormLayout
 from src.db import s
 from src.forms import Question
-from src.generators import info_card
+from src.generators import info_card, guests
 
 app, rt = fh.fast_app(hdrs=Theme.orange.headers(), before=beforeware)
 
@@ -55,13 +55,7 @@ def form(user_id, event_id):
     )
     content = [
         DivRAligned(
-            Button(
-                "Lista gości",
-                cls=ButtonT.ghost,
-                submit=False,
-                hx_target="#guestlist",
-                hx_get=f"/forms/guests?event_id={event_id}",
-            ),
+            guests(event_id, target="guestlist"),
             id="guestlist",
         )
     ]

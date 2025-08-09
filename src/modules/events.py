@@ -46,7 +46,7 @@ app, rt = fh.fast_app(hdrs=Theme.orange.headers())
 
 
 @rt("/")
-def events():
+def events(session):
     forms = (
         s.table("Event")
         .select('*, responses:"Response" (user_id)')
@@ -80,6 +80,8 @@ def events():
                 count=len(set([list(i.values())[0] for i in f.responses])),
                 organizer=f.org_name,
                 href=f"/forms/{f.id}",
+                event_id=f.id,
+                logged_in=True if session.get("email") else False,
             )
             for f in events
         ],
