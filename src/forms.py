@@ -30,6 +30,7 @@ class Question:
                 question=self.title,
                 question_id=self.id,
                 description=self.description,
+                required=self.required,
                 **{
                     "max_length": self.max_length,
                     "min_length": self.min_length,

@@ -115,20 +115,26 @@ def generate_input(
     question_id: int,
     description: str = None,
     placeholder: str = None,
+    required: bool = False,
     **kwargs,
 ):
     return (
-        QuestionText(question),
+        QuestionText(question, required),
         HelpText(description),
         Input(id=question_id, placeholder=placeholder, **kwargs),
     )
 
 
 def generate_long_input(
-    question: str, question_id: int, description=None, placeholder=None, **kwargs
+    question: str,
+    question_id: int,
+    description=None,
+    placeholder=None,
+    required: bool = False,
+    **kwargs,
 ):
     return (
-        QuestionText(question),
+        QuestionText(question, required),
         HelpText(description),
         TextArea(
             kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs
@@ -156,10 +162,14 @@ def generate_radio(question: str, question_id: int, options: list[str], **kwargs
 
 
 def generate_hour_picker(
-    question: str, question_id: int, description: str = None, **kwargs
+    question: str,
+    question_id: int,
+    description: str = None,
+    required: bool = False,
+    **kwargs,
 ):
     return (
-        QuestionText(question),
+        QuestionText(question, required),
         HelpText(description),
         Input(type="time", id=question_id, **kwargs),
     )
@@ -178,10 +188,11 @@ def generate_scale(
     min: int,
     max: int,
     description: str = None,
+    required: bool = False,
     **kwargs,
 ):
     return (
-        QuestionText(question),
+        QuestionText(question, required),
         HelpText(description),
         Range(min=min, max=max, name=question_id, **kwargs),
     )

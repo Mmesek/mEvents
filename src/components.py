@@ -16,8 +16,8 @@ def FormSectionDiv(*c, cls="space-y-2", **kwargs):
     return Card(*c, cls=cls, **kwargs)
 
 
-def QuestionText(c):
-    return H3(c, cls=TextPresets.muted_sm)
+def QuestionText(c, required: bool = False):
+    return H3(c, cls=TextPresets.muted_sm + ("required" if required else ""))
 
 
 def HelpText(c):
