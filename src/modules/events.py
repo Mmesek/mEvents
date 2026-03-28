@@ -46,14 +46,20 @@ app, rt = fh.fast_app(hdrs=Theme.orange.headers())
 
 
 @rt("/")
-def events(session):
-    forms = (
-        s.table("Event")
-        .select('*, responses:"Response" (user_id)')
-        .gt("end_time", datetime.now())
-        .execute()
-        .data
-    )
+def events(
+    session,
+    name: str | None = None,
+    id: int | None = None,
+    include_previous: bool = False,
+):
+    forms_stmt = s.table("Event").select('*, responses:"Response" (user_id)')
+    if include_previous:
+        forms_stmt = forms_stmt.gt("end_time", datetime.now())
+    if name:
+        forms_stmt = forms_stmt.like("title", name)
+    if id:
+        forms_stmt = forms_stmt.eq("id", id)
+    forms = forms_stmt.execute().data
 
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
@@ -68,7 +74,7 @@ def events(session):
             info_card(
                 fh.A(f.title, cls=AT.classic, href=f"/forms/{f.id}"),
                 f"{f.start_time.hour}:{f.start_time.minute:0<2}",
-                f"{f.end_time.hour}:{f.end_time.minute:0<2}",
+                f"{f.end_time.hour}:{f.end_time.minute:0<2}" if f.end_time else "",
                 f"{f.start_time.date()}, {f.start_time.strftime('%A')}",
                 f.place,
                 f.theme,
