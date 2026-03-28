@@ -7,6 +7,12 @@ from src.modules.forms import app as forms_app
 from src.beforeware import beforeware
 
 hdrs = Theme.orange.headers()
+hdrs.append(
+    fh.Link(
+        rel="icon",
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>",
+    )
+)
 
 
 # Create your app with the theme
