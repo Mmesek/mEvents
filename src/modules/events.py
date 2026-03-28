@@ -53,7 +53,7 @@ def events(
     include_previous: bool = False,
 ):
     forms_stmt = s.table("Event").select('*, responses:"Response" (user_id)')
-    if include_previous:
+    if not include_previous:
         forms_stmt = forms_stmt.gt("end_time", datetime.now())
     if name:
         forms_stmt = forms_stmt.like("title", name)
