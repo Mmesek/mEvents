@@ -5,19 +5,12 @@ from src.modules.login import app as login_app
 from src.modules.events import app as events_app
 from src.modules.forms import app as forms_app
 from src.beforeware import beforeware
-
-hdrs = Theme.orange.headers()
-hdrs.append(
-    fh.Link(
-        rel="icon",
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>",
-    )
-)
+from src.modules.headers import HEADERS
 
 
 # Create your app with the theme
 app, rt = fh.fast_app(
-    hdrs=hdrs,
+    hdrs=HEADERS,
     routes=[
         fh.Mount("/login", login_app),
         fh.Mount("/events", events_app),

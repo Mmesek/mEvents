@@ -1,15 +1,15 @@
 from fasthtml import common as fh
-from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, Theme, render_md
+from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, render_md
 
 from src.beforeware import beforeware
 from src.components import FormLayout
 from src.db import s
 from src.forms import Question
 from src.generators import info_card, guests
+from src.modules.headers import HEADERS
 
 app, rt = fh.fast_app(
-    hdrs=Theme.orange.headers()
-    + [fh.Style('.required:before {content:" *";color: orange;}')],
+    hdrs=HEADERS,
     before=beforeware,
 )
 

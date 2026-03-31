@@ -8,12 +8,12 @@ from monsterui.all import (
     Card,
     DivCentered,
     DivLAligned,
-    Theme,
     UkIconLink,
 )
 
 from src.db import s
 from src.generators import info_card
+from src.modules.headers import HEADERS
 
 
 @dataclass
@@ -42,15 +42,7 @@ class Event:
             self.end_time = datetime.fromisoformat(self.end_time)
 
 
-app, rt = fh.fast_app(
-    hdrs=Theme.orange.headers()
-    + [
-        fh.Link(
-            rel="icon",
-            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>",
-        )
-    ]
-)
+app, rt = fh.fast_app(hdrs=HEADERS)
 
 
 @rt("/")

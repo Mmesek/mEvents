@@ -4,7 +4,6 @@ from fasthtml.common import A, Redirect, fast_app, P
 from monsterui.all import (
     Card,
     Titled,
-    Theme,
     Form,
     Input,
     Button,
@@ -12,10 +11,11 @@ from monsterui.all import (
 )
 
 from src.db import supa
+from src.modules.headers import HEADERS
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
-app, rt = fast_app(hdrs=Theme.orange.headers())
+app, rt = fast_app(hdrs=HEADERS)
 
 LOGIN_STRING = "Zaloguj korzystając z {}"
 
