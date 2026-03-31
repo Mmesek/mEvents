@@ -83,11 +83,11 @@ def events(
                 f.discord_event,
                 f.description,
                 image=f.image,
-                count=len(set([list(i.values())[0] for i in f.responses])),
+                count=len({list(i.values())[0] for i in f.responses}),
                 organizer=f.org_name,
                 href=f"/forms/{f.id}",
                 event_id=f.id,
-                logged_in=True if session.get("email") else False,
+                logged_in=session.get("email") is not None,
             )
             for f in events
         ],

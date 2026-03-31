@@ -109,7 +109,7 @@ def submit(session, event: str, responses: dict):
                 else " "
             )
             for k in diff
-            if previous.get(k, None)
+            if previous.get(k)
         }
     )
     try:
