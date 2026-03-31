@@ -22,6 +22,16 @@ from monsterui.all import (
 
 from src.components import HelpText, QuestionText, icon_text, right_icon_text
 
+QuestionType = {}
+
+
+def register(name: str = None):
+    def inner(func):
+        QuestionType[name or func.__name__] = func
+        return func
+
+    return inner
+
 
 def guests(event_id: str, target: str = "guestlist"):
     return Button(
@@ -110,6 +120,8 @@ def info_card(
     )
 
 
+@register("INPUT")
+@register("ANSWER")
 def generate_input(
     question: str,
     question_id: int,
@@ -125,6 +137,7 @@ def generate_input(
     )
 
 
+@register("LONG_INPUT")
 def generate_long_input(
     question: str,
     question_id: int,
@@ -142,6 +155,7 @@ def generate_long_input(
     )
 
 
+@register("TEXT")
 def generate_text(description: str, *args, **kwargs):
     return P(render_md(description))
 
@@ -150,6 +164,7 @@ def RadioLabel(label, name, default="Yes"):
     return DivLAligned(Radio(name=name, checked=(label == default)), FormLabel(label))
 
 
+@register("CHOICE")
 def generate_radio(question: str, question_id: int, options: list[str], **kwargs):
     radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
     return (
@@ -161,6 +176,7 @@ def generate_radio(question: str, question_id: int, options: list[str], **kwargs
     )
 
 
+@register("HOUR")
 def generate_hour_picker(
     question: str,
     question_id: int,
@@ -175,6 +191,7 @@ def generate_hour_picker(
     )
 
 
+@register("BOOL")
 def generate_switch(question: str, question_id: int, description: str = None, **kwargs):
     return (
         Switch(question, id=question_id, **kwargs),
@@ -182,6 +199,7 @@ def generate_switch(question: str, question_id: int, description: str = None, **
     )
 
 
+@register("SCALE")
 def generate_scale(
     question: str,
     question_id: int,
@@ -198,18 +216,6 @@ def generate_scale(
     )
 
 
+@register("DATE")
 def generate_date_picker(question: str, question_id: int, **kwargs):
     return LabelInput(question, type="date", id=question_id, **kwargs)
-
-
-QuestionType = {
-    "ANSWER": generate_input,
-    "INPUT": generate_input,
-    "LONG_INPUT": generate_long_input,
-    "CHOICE": generate_radio,
-    "HOUR": generate_hour_picker,
-    "DATE": generate_date_picker,
-    "SCALE": generate_scale,
-    "BOOL": generate_switch,
-    "TEXT": generate_text,
-}
