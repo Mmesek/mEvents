@@ -116,6 +116,7 @@ def info_card(
                 ),
             ),
             body_cls="space-y-0",
+            style="max-width: 1000px; min-width: 35%",
         )
     )
 
