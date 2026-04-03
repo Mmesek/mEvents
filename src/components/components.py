@@ -50,3 +50,29 @@ def right_icon_text(icon, text):
         render_md(text),
         cls="inline-flex space-y-0 space-x-1 justify-end items-center",
     )
+
+
+def handle_updating_responses(responses: dict) -> dict:
+    previous = {
+        k.replace("previous_", ""): v
+        for k, v in responses.items()
+        if k.startswith("previous_") and v
+    }
+    responses = {
+        k: v for k, v in responses.items() if not k.startswith("previous_") and v
+    }
+    diff = set(previous.keys()).difference(set(responses.keys()))
+    responses.update(
+        {
+            k: (
+                "off"
+                if previous[k] == "on"
+                else previous[k]
+                if previous[k] in {"off", ""}
+                else " "
+            )
+            for k in diff
+            if previous.get(k)
+        }
+    )
+    return responses

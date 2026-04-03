@@ -2,7 +2,7 @@ from fasthtml import common as fh
 from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, render_md
 
 from src.beforeware import beforeware
-from src.components import FormLayout
+from src.components import FormLayout, handle_updating_responses
 from src.db import s
 from src.forms import Question
 from src.generators import info_card, guests
@@ -90,28 +90,8 @@ def event_form(session, event_id: str):
 
 @rt("/submit/{event}")
 def submit(session, event: str, responses: dict):
-    previous = {
-        k.replace("previous_", ""): v
-        for k, v in responses.items()
-        if k.startswith("previous_") and v
-    }
-    responses = {
-        k: v for k, v in responses.items() if not k.startswith("previous_") and v
-    }
-    diff = set(previous.keys()).difference(set(responses.keys()))
-    responses.update(
-        {
-            k: (
-                "off"
-                if previous[k] == "on"
-                else previous[k]
-                if previous[k] in {"off", ""}
-                else " "
-            )
-            for k in diff
-            if previous.get(k)
-        }
-    )
+    responses = handle_updating_responses(responses)
+
     try:
         s.table("Response").upsert(
             [
