@@ -2,3 +2,6 @@ python-fasthtml
 MonsterUI
 pyyaml
 supabase
+
+git+https://github.com/Mmesek/mdiscord
+git+https://github.com/Mmesek/mlib
