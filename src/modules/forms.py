@@ -6,7 +6,7 @@ from src.components import FormLayout
 from src.db import s
 from src.forms import Question
 from src.generators import info_card, guests
-from src.modules.headers import HEADERS
+from src.components.headers import HEADERS
 
 app, rt = fh.fast_app(
     hdrs=HEADERS,

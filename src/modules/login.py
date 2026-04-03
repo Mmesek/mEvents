@@ -11,7 +11,7 @@ from monsterui.all import (
 )
 
 from src.db import supa
-from src.modules.headers import HEADERS
+from src.components.headers import HEADERS
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 

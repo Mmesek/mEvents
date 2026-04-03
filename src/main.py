@@ -1,11 +1,10 @@
 from fasthtml import common as fh
-from monsterui.all import Theme
 
 from src.modules.login import app as login_app
 from src.modules.events import app as events_app
 from src.modules.forms import app as forms_app
 from src.beforeware import beforeware
-from src.modules.headers import HEADERS
+from party.events.src.components.headers import HEADERS
 
 
 # Create your app with the theme

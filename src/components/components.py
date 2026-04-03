@@ -9,6 +9,7 @@ from monsterui.all import (
     TextPresets,
     UkIcon,
     render_md,
+    DivCentered,
 )
 
 
@@ -26,7 +27,7 @@ def HelpText(c):
 
 def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/submit"):
     return Container(
-        Div(
+        DivCentered(
             H1(title),
             subtitle,
             DividerLine(),
