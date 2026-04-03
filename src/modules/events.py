@@ -1,19 +1,24 @@
 from dataclasses import dataclass
 from datetime import datetime
+from inspect import get_annotations
 
 from fasthtml import common as fh
 from monsterui.all import (
     AT,
     H1,
+    Button,
+    ButtonT,
     Card,
     DivCentered,
+    DividerLine,
     DivLAligned,
+    DivRAligned,
     UkIconLink,
 )
-
+from src.components import handle_updating_responses
+from src.components.headers import HEADERS
 from src.db import s
-from src.generators import info_card
-from src.modules.headers import HEADERS
+from src.generators import QuestionTypes, info_card
 
 
 @dataclass
@@ -97,3 +102,81 @@ def events(
             ),
         ),
     )
+
+
+@dataclass
+class EventForm:
+    title: str = ("Title", "Title of the event")
+    description: str | None = ("Description", None)
+    place: str = ("Place", "Where is the event happening?")
+    start_time: datetime = ("Start", "When is the start?")
+    end_time: datetime | None = ("End", "When is it ending?")
+    theme: str | None = ("Theme", "Temat Przewodni")
+    dresscode: str | None = ("Dresscode", "Jaki dress-code jest wymagany?")
+    dresscode_mandatory: bool | None = ("Czy Dresscode jest wymagany?", None)
+    image: str | None = ("Grafika", None)
+    org_name: str | None = ("Wyświetlana nazwa organizatora", None)
+
+
+@rt("/create")
+def create(session):
+    display_name = (
+        s.table("users")
+        .select("display_name")
+        .eq("id", session.get("id"))
+        .execute()
+        .data[0]["display_name"]
+    )
+    defaults = {
+        "title": "Nazwa Wydarzenia",
+        "description": "Wydarzenie poświęcone wydarzeniu wydarzeniowemu",
+        "place": "Miejsce",
+        "theme": "Średniowieczny",
+        "dresscode": "Szlachetny",
+        "org_name": display_name.title(),
+    }
+    content = []
+    for k, v in get_annotations(EventForm).items():
+        if hasattr(v, "__args__"):
+            v = v.__args__[0]
+            optional = True
+        else:
+            optional = False
+        _type = QuestionTypes.get(str(v)) or QuestionTypes.get(str(str))
+        content.append(
+            _type(
+                getattr(EventForm, k)[0],
+                question_id=k,
+                description=getattr(EventForm, k)[1] or None,
+                placeholder=defaults.get(k),
+                required=not optional,
+            )
+        )
+    content.append(Button("Dodaj", cls=ButtonT.primary))
+    return fh.Container(
+        fh.Form(
+            DivCentered(
+                fh.H1("Nowe Wydarzenie"),
+                "Opis",
+                DividerLine(),
+            ),
+            *content,
+            cls="space-y-3 mt-4",
+            hx_post="/events/add",
+        )
+    )
+
+
+@rt("/add")
+def add(session, responses: dict):
+    responses = handle_updating_responses(responses)
+
+    try:
+        pass  # s.table("Event").upsert([{"user_id": session["id"], **responses}]).execute()
+    except:
+        return DivCentered(
+            "Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie."
+        )
+
+    return DivCentered("Dodano Wydarzenie!"), DivRAligned("Test")
+

@@ -1,4 +1,5 @@
 from functools import partial
+from datetime import datetime
 
 from fasthtml.common import P, Img, A
 from monsterui.all import (
@@ -23,11 +24,15 @@ from monsterui.all import (
 from src.components import HelpText, QuestionText, icon_text, right_icon_text
 
 QuestionType = {}
+QuestionTypes = {}
 
 
-def register(name: str = None):
+def register(name: str = None, type_: type = None):
     def inner(func):
         QuestionType[name or func.__name__] = func
+        if type_:
+            QuestionTypes[str(type_)] = func
+
         return func
 
     return inner
@@ -121,8 +126,8 @@ def info_card(
     )
 
 
-@register("INPUT")
-@register("ANSWER")
+@register("INPUT", str)
+@register("ANSWER", str)
 def generate_input(
     question: str,
     question_id: int,
@@ -165,7 +170,7 @@ def RadioLabel(label, name, default="Yes"):
     return DivLAligned(Radio(name=name, checked=(label == default)), FormLabel(label))
 
 
-@register("CHOICE")
+@register("CHOICE", list)
 def generate_radio(question: str, question_id: int, options: list[str], **kwargs):
     radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
     return (
@@ -192,7 +197,7 @@ def generate_hour_picker(
     )
 
 
-@register("BOOL")
+@register("BOOL", bool)
 def generate_switch(question: str, question_id: int, description: str = None, **kwargs):
     return (
         Switch(question, id=question_id, **kwargs),
@@ -220,3 +225,8 @@ def generate_scale(
 @register("DATE")
 def generate_date_picker(question: str, question_id: int, **kwargs):
     return LabelInput(question, type="date", id=question_id, **kwargs)
+
+
+@register("DATETIME", datetime)
+def generate_datetime_picker(question: str, question_id: int, **kwargs):
+    return LabelInput(question, type="datetime-local", id=question_id, **kwargs)
