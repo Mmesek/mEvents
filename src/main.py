@@ -5,7 +5,7 @@ from src.modules.events import app as events_app
 import src.modules.discord
 from src.modules.forms import app as forms_app
 from src.beforeware import beforeware
-from party.events.src.components.headers import HEADERS
+from src.components.headers import HEADERS
 
 
 # Create your app with the theme
