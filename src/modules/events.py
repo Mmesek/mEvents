@@ -56,6 +56,7 @@ def events(
     name: str | None = None,
     id: int | None = None,
     include_previous: bool = False,
+    user_id: str = None,
 ):
     forms_stmt = s.table("Event").select('*, responses:"Response" (user_id)')
     if not include_previous:
@@ -64,6 +65,8 @@ def events(
         forms_stmt = forms_stmt.like("title", name)
     if id:
         forms_stmt = forms_stmt.eq("id", id)
+    if user_id:
+        forms_stmt = forms_stmt.eq("user_id", user_id)
     forms = forms_stmt.execute().data
 
     socials = (
@@ -180,3 +183,7 @@ def add(session, responses: dict):
 
     return DivCentered("Dodano Wydarzenie!"), DivRAligned("Test")
 
+
+@rt("/mine")
+def my_events(session):
+    return events(session, include_previous=True, user_id=session["id"])
