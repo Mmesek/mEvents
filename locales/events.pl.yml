@@ -16,14 +16,14 @@ pl:
       default: Średniowieczny
       name: Motyw
       description: Temat Przewodni
-    start_time:
+    start:
       default: ""
       name: Start
       description: Kiedy się rozpoczyna?
-    end_time:
+    end:
       default: ""
-      name: End
-      description: Kiedy się kończy?
+      name: Koniec Wydarzenia
+      description: Kiedy jest planowane zakończenie?
     dresscode:
       default: Szlachetny
       name: Dresscode

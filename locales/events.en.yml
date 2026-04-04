@@ -7,7 +7,7 @@ en:
     description:
       default: Something about the event
       name: Description
-      description: ""
+      description: Description is displayed on an event card
     place:
       default: Place
       name: Place
@@ -16,11 +16,11 @@ en:
       default: Medieval
       name: Theme
       description: Main Theme
-    start_time:
+    start:
       default: ""
       name: Start
       description: When is the start?
-    end_time:
+    end:
       default: ""
       name: End
       description: When is it ending?
