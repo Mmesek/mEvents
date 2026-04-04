@@ -14,40 +14,108 @@ from monsterui.all import (
     DivLAligned,
     DivRAligned,
     UkIconLink,
+    render_md,
+    Grid,
 )
 import i18n
 
-from src.components import handle_updating_responses
+from src.components import handle_updating_responses, icon_text, right_icon_text
 from src.components.headers import HEADERS
 from src.db import s
-from src.generators import QuestionTypes, info_card
+from src.generators import QuestionTypes, guests
 from src.beforeware import beforeware, translations
 
 
 @dataclass
 class Event:
-    id: int
-    title: str
-    description: str
-    form_id: int
-    feedback_form_id: int
-    user_id: str
-    place: str
-    start_time: datetime
-    end_time: datetime | None
-    theme: str | None
-    dresscode: str | None
-    dresscode_mandatory: bool
-    discord_event: str | None
-    wrap: str
-    image: str
-    responses: list[dict]
-    org_name: str
+    id: int = None
+    title: str = None
+    description: str = None
+    form_id: int = None
+    feedback_form_id: int = None
+    user_id: str = None
+    place: str = None
+    start_time: datetime = None
+    end_time: datetime | None = None
+    theme: str | None = None
+    dresscode: str | None = None
+    dresscode_mandatory: bool = None
+    discord_event: str | None = None
+    wrap: str = None
+    image: str = None
+    responses: list[dict] = None
+    org_name: str = None
 
     def __post_init__(self):
         self.start_time = datetime.fromisoformat(self.start_time)
         if self.end_time:
             self.end_time = datetime.fromisoformat(self.end_time)
+
+    def info_card(
+        self,
+        count: int = None,
+        logged_in: bool = False,
+    ):
+        if self.dresscode and not self.dresscode_mandatory:
+            self.dresscode += " *(Opcjonalnie)*"
+        align = right_icon_text if count else icon_text
+        return DivCentered(
+            Card(
+                fh.Img(
+                    src=self.image,
+                    loading="lazy",
+                    width=1000,
+                    height=400,
+                    style="max-height: 400px;",
+                )
+                if self.image
+                else None,
+                DivCentered(H1(fh.A(self.title, cls=AT.classic, href=f"/forms/{self.id}" if self.id else None))),
+                Grid(
+                    icon_text("clock", self.start_time.strftime("%H:%M")),
+                    right_icon_text("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
+                    cols=2,
+                    cls="gap-1 items-center justify-center",
+                ),
+                Grid(
+                    icon_text("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
+                    right_icon_text("pin", f"{self.place}"),
+                    (icon_text("users", f"**Liczba zapisanych**: {count}")) if count else None,
+                    (align("user", f"**Organizator**: {self.org_name}")) if self.org_name else None,  # s.table("users")
+                    # .select("display_name")
+                    # .eq("id", self.user_id)
+                    # .execute()
+                    # .data[0]["display_name"],
+                    cols=2,
+                    cls="gap-1",
+                ),
+                (icon_text("palette", f"**Temat Przewodni**: {self.theme}")) if self.theme else None,
+                (icon_text("shirt", f"**Dresscode**: {self.dresscode}")) if self.dresscode else None,
+                DivCentered(
+                    icon_text(
+                        "messages-square",
+                        text=f"**[Discord]({self.discord_event})**",
+                    )
+                )
+                if self.discord_event
+                else None,
+                DivCentered(render_md(self.description)) if self.description else None,
+                DivRAligned(
+                    DivLAligned(
+                        guests(self.id, target=f"guestlist_{self.id}"),
+                        id=f"guestlist_{self.id}",
+                    )
+                    if logged_in
+                    else None,
+                    fh.A(
+                        Button("Weź udział", cls=ButtonT.ghost, submit=False),
+                        href=f"/forms/{self.id}" if self.id else None,
+                    ),
+                ),
+                body_cls="space-y-0",
+                style="max-width: 1000px; min-width: 35%",
+            )
+        )
 
 
 app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware, translations])
@@ -82,22 +150,8 @@ def events(
         fh.Title("Nadchodzące wydarzenia"),
         DivCentered(H1("Nadchodzące wydarzenia")),
         *[
-            info_card(
-                fh.A(f.title, cls=AT.classic, href=f"/forms/{f.id}"),
-                f"{f.start_time.hour}:{f.start_time.minute:0<2}",
-                f"{f.end_time.hour}:{f.end_time.minute:0<2}" if f.end_time else "",
-                f"{f.start_time.date()}, {f.start_time.strftime('%A')}",
-                f.place,
-                f.theme,
-                f.dresscode,
-                f.dresscode_mandatory,
-                f.discord_event,
-                f.description,
-                image=f.image,
+            f.info_card(
                 count=len({list(i.values())[0] for i in f.responses}),
-                organizer=f.org_name,
-                href=f"/forms/{f.id}",
-                event_id=f.id,
                 logged_in=session.get("email") is not None,
             )
             for f in events
@@ -170,8 +224,10 @@ def add(session, responses: dict):
 
     try:
         pass  # s.table("Event").upsert([{"user_id": session["id"], **responses}]).execute()
-    except:
-        return DivCentered(i18n.t("events.create.add.failed", locale=session.get("locale")))
+        return Event(**responses).info_card()
+
+    except Exception as ex:
+        return DivCentered(i18n.t("events.create.add.failed", locale=session.get("locale"))), DivRAligned(ex)
 
     return DivCentered(i18n.t("events.create.add.success", locale=session.get("locale"))), DivRAligned("Test")
 

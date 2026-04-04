@@ -5,7 +5,8 @@ from src.beforeware import beforeware
 from src.components import FormLayout, handle_updating_responses
 from src.db import s
 from src.forms import Question
-from src.generators import info_card, guests
+from src.generators import guests
+from src.modules.events import Event
 from src.components.headers import HEADERS
 
 app, rt = fh.fast_app(
@@ -65,7 +66,7 @@ def form(user_id, event_id):
     ]
     content.extend([q.generate() for q in questions])
     content.append(Button("Zapisz", cls=ButtonT.primary))
-    info = info_card(f["title"], **f.get("info")) if f.get("info") else None
+    info = Event(title=f["title"], **f.get("info")).info_card() if f.get("info") else None
 
     return info, FormLayout(
         "",
