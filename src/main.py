@@ -3,8 +3,9 @@ from fasthtml import common as fh
 from src.modules.login import app as login_app
 from src.modules.events import app as events_app
 import src.modules.discord
+import src.components.translations
 from src.modules.forms import app as forms_app
-from src.beforeware import beforeware
+from src.beforeware import beforeware, translations
 from src.components.headers import HEADERS
 
 
@@ -16,7 +17,7 @@ app, rt = fh.fast_app(
         fh.Mount("/events", events_app),
         fh.Mount("/forms", forms_app),
     ],
-    before=beforeware,
+    before=[beforeware, translations],
 )
 
 
@@ -29,9 +30,7 @@ def index(code: str = None):
 
 @rt("/privacy-policy")
 def privacy():
-    return fh.P(
-        "Twój adres e-mail jest przetwarzany w celach wysłania e-maila z zaproszeniem do kalendarza."
-    )
+    return fh.P("Twój adres e-mail jest przetwarzany w celach wysłania e-maila z zaproszeniem do kalendarza.")
 
 
 @rt("/terms-of-service")

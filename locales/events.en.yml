@@ -1,0 +1,48 @@
+en:
+  create:
+    title:
+      default: Event Name
+      name: Title
+      description: Title of the event
+    description:
+      default: Something about the event
+      name: Description
+      description: ""
+    place:
+      default: Place
+      name: Place
+      description: Where is the event happening?
+    theme:
+      default: Medieval
+      name: Theme
+      description: Main Theme
+    start_time:
+      default: ""
+      name: Start
+      description: When is the start?
+    end_time:
+      default: ""
+      name: End
+      description: When is it ending?
+    dresscode:
+      default: Sneaky
+      name: Dresscode
+      description: What dresscode is recommended?
+    dresscode_mandatory:
+      default: ""
+      name: Dresscode
+      description: Is the dresscode mandatory?
+    image:
+      default: ""
+      name: Image
+      description: ""
+    org_name:
+      default: ""
+      name: Organizer
+      description: Display name of an organizator
+    add:
+      add: Add
+      title: New Event
+      description: Description
+      failed: Something went wrong... Refresh websites and try again!
+      success: Event added!

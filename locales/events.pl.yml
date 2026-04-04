@@ -1,0 +1,48 @@
+pl:
+  create:
+    title:
+      default: Nazwa Wydarzenia
+      name: Tytuł
+      description: ""
+    description:
+      default: Wydarzenie poświęcone wydarzeniu wydarzeniowemu
+      name: Opis Wydarzenia
+      description: ""
+    place:
+      default: Przy studni
+      name: Miejsce Wydarzenia
+      description: ""
+    theme:
+      default: Średniowieczny
+      name: Motyw
+      description: Temat Przewodni
+    start_time:
+      default: ""
+      name: Start
+      description: Kiedy się rozpoczyna?
+    end_time:
+      default: ""
+      name: End
+      description: Kiedy się kończy?
+    dresscode:
+      default: Szlachetny
+      name: Dresscode
+      description: Jaki styl ubioru jest wymagany?
+    dresscode_mandatory:
+      default: ""
+      name: Czy styl ubioru jest wymagany?
+      description: ""
+    image:
+      default: ""
+      name: Grafika
+      description: ""
+    org_name:
+      default: ""
+      name: Organizator
+      description: Wyświetlana nazwa organizatora
+    add:
+      add: Dodaj
+      title: Nowe Wydarzenie
+      description: Opis
+      failed: Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.
+      success: Dodano Wydarzenie!

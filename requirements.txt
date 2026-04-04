@@ -3,5 +3,6 @@ MonsterUI
 pyyaml
 supabase
 pytz
+python-i18n[YAML]
 git+https://github.com/Mmesek/mdiscord
 git+https://github.com/Mmesek/mlib
