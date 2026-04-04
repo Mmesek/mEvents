@@ -77,9 +77,7 @@ def generate_long_input(
     return (
         QuestionText(question, required),
         HelpText(description),
-        TextArea(
-            kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs
-        ),
+        TextArea(kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs),
     )
 
 
@@ -145,10 +143,18 @@ def generate_scale(
 
 
 @register("DATE")
-def generate_date_picker(question: str, question_id: int, **kwargs):
-    return LabelInput(question, type="date", id=question_id, **kwargs)
+def generate_date_picker(question: str, question_id: int, description: str, required: bool = False, **kwargs):
+    return (
+        QuestionText(question, required),
+        HelpText(description),
+        Input(type="date", id=question_id, **kwargs),
+    )
 
 
 @register("DATETIME", datetime)
-def generate_datetime_picker(question: str, question_id: int, **kwargs):
-    return LabelInput(question, type="datetime-local", id=question_id, **kwargs)
+def generate_datetime_picker(question: str, question_id: int, description: str, required: bool = False, **kwargs):
+    return (
+        QuestionText(question, required),
+        HelpText(description),
+        Input(type="datetime-local", id=question_id, **kwargs),
+    )
