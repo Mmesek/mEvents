@@ -179,12 +179,17 @@ class EventForm:
 @rt("/create")
 def create(session):
     session["locale"] = "pl"
-    defaults = {
+    placeholders = {
         k: i18n.t(f"events.create.{k}.default", locale=session.get("locale")) for k in EventForm.__annotations__
     }
-    defaults["org_name"] = (
-        s.table("users").select("display_name").eq("id", session.get("id")).execute().data[0]["display_name"]
-    ).title()
+    defaults = {
+        "org_name": s.table("users")
+        .select("display_name")
+        .eq("id", session.get("id"))
+        .execute()
+        .data[0]["display_name"]
+        .title()
+    }
     content = []
 
     for k, v in get_annotations(EventForm).items():
@@ -199,7 +204,8 @@ def create(session):
                 i18n.t(f"events.create.{k}.name", locale=session.get("locale")),
                 question_id=k,
                 description=i18n.t(f"events.create.{k}.description", locale=session.get("locale")),
-                placeholder=defaults.get(k),
+                placeholder=placeholders.get(k),
+                value=defaults.get(k),
                 required=not optional,
             )
         )

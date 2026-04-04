@@ -79,7 +79,7 @@ def login_google():
 @rt("/email")
 def login_email(email: str, session):
     try:
-        res = supa.auth.sign_in_with_otp(
+        supa.auth.sign_in_with_otp(
             {
                 "email": email,
                 "options": {"email_redirect_to": f"{BASE_URL}/login/verify"},
@@ -88,9 +88,7 @@ def login_email(email: str, session):
     except:
         return "Wprowadzony adres e-mail jest nie poprawny", magic_link()
     session["otp_email"] = email
-    return P(
-        "Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"
-    ), Form(
+    return P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), Form(
         Input(id="otp", placeholder="123456"),
         Button("Użyj kodu", cls=ButtonT.primary),
         hx_post="/login/otp",
@@ -99,9 +97,7 @@ def login_email(email: str, session):
 
 @rt("/otp")
 def otp(otp: str, session):
-    res = supa.auth.verify_otp(
-        {"email": session["otp_email"], "token": otp, "type": "email"}
-    )
+    res = supa.auth.verify_otp({"email": session["otp_email"], "token": otp, "type": "email"})
     session["email"] = res.user.email
     session["id"] = res.user.id
     session["picture"] = f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"

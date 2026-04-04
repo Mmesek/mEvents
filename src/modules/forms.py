@@ -16,21 +16,13 @@ app, rt = fh.fast_app(
 
 
 def back_to_main():
-    return fh.A(
-        Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False), href="/"
-    )
+    return fh.A(Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False), href="/")
 
 
 @rt("/guests")
 def list_guests(event_id: str):
     r = s.table("Response").select("user_id").eq("event_id", event_id).execute().data
-    names = (
-        s.table("users")
-        .select("display_name")
-        .in_("id", [i["user_id"] for i in r])
-        .execute()
-        .data
-    )
+    names = s.table("users").select("display_name").in_("id", [i["user_id"] for i in r]).execute().data
     return DivCentered(fh.Ul((fh.Li(i["display_name"]) for i in names)))
 
 
@@ -50,12 +42,7 @@ def form(user_id, event_id):
         return DivCentered("Podany formularz nie istnieje", back_to_main())
     f = f.data.get("form", {})
     questions = sorted(
-        [
-            Question(
-                order=q.get("order"), required=q.get("required"), **q.get("question")
-            )
-            for q in f.get("questions")
-        ],
+        [Question(order=q.get("order"), required=q.get("required"), **q.get("question")) for q in f.get("questions")],
         key=lambda x: x.order,
     )
     content = [
@@ -107,9 +94,7 @@ def submit(session, event: str, responses: dict):
             ]
         ).execute()
     except:
-        return DivCentered(
-            "Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie."
-        )
+        return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
 
     return DivCentered(
         f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
