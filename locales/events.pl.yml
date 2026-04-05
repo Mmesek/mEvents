@@ -2,28 +2,28 @@ pl:
   create:
     title:
       default: Nazwa Wydarzenia
-      name: Tytuł
-      description: ""
+      name: Nazwa Wydarzenia
+      description: Jak się nazywa wydarzenie?
     description:
       default: Wydarzenie poświęcone wydarzeniu wydarzeniowemu
       name: Opis Wydarzenia
-      description: ""
+      description: Opis na karcie wydarzenia
     place:
       default: Przy studni
       name: Miejsce Wydarzenia
-      description: ""
+      description: Gdzie się odbywa wydarzenie?
     theme:
       default: Średniowieczny
-      name: Motyw
-      description: Temat Przewodni
+      name: Motyw Przewodni
+      description: Tematyka wydarzenia, jeśli dotyczy
     start:
       default: ""
       name: Start
-      description: Kiedy się rozpoczyna?
+      description: O której wydarzenie się rozpoczyna?
     end:
       default: ""
       name: Koniec Wydarzenia
-      description: Kiedy jest planowane zakończenie?
+      description: Kiedy jest planowane zakończenie wydarzenia?
     dresscode:
       default: Szlachetny
       name: Dresscode
@@ -31,11 +31,11 @@ pl:
     dresscode_mandatory:
       default: ""
       name: Czy styl ubioru jest wymagany?
-      description: ""
+      description: Czy styl ubioru jest wymagany?
     image:
       default: ""
       name: Grafika
-      description: ""
+      description: Wyświetlana grafika wydarzenia
     org_name:
       default: ""
       name: Organizator

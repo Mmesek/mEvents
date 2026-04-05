@@ -36,41 +36,29 @@ def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/su
     )
 
 
-def icon_text(icon, text):
+def icon_text(icon, text, style="", icon_style=None):
     return Div(
-        UkIcon(icon),
-        render_md(text),
-        cls="inline-flex space-y-0 space-x-1 justify-start items-center",
+        UkIcon(icon, cls=icon_style),
+        render_md(text) if type(text) is str else text,
+        cls="inline-flex space-y-0 space-x-1 justify-start items-center" + " " + style,
     )
 
 
-def right_icon_text(icon, text):
+def right_icon_text(icon, text, style="", icon_style=None):
     return Div(
-        UkIcon(icon),
-        render_md(text),
-        cls="inline-flex space-y-0 space-x-1 justify-end items-center",
+        UkIcon(icon, cls=icon_style),
+        render_md(text) if type(text) is str else text,
+        cls="inline-flex space-y-0 space-x-1 justify-end items-center" + " " + style,
     )
 
 
 def handle_updating_responses(responses: dict) -> dict:
-    previous = {
-        k.replace("previous_", ""): v
-        for k, v in responses.items()
-        if k.startswith("previous_") and v
-    }
-    responses = {
-        k: v for k, v in responses.items() if not k.startswith("previous_") and v
-    }
+    previous = {k.replace("previous_", ""): v for k, v in responses.items() if k.startswith("previous_") and v}
+    responses = {k: v for k, v in responses.items() if not k.startswith("previous_") and v}
     diff = set(previous.keys()).difference(set(responses.keys()))
     responses.update(
         {
-            k: (
-                "off"
-                if previous[k] == "on"
-                else previous[k]
-                if previous[k] in {"off", ""}
-                else " "
-            )
+            k: ("off" if previous[k] == "on" else previous[k] if previous[k] in {"off", ""} else " ")
             for k in diff
             if previous.get(k)
         }

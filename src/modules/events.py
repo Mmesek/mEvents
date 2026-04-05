@@ -16,6 +16,10 @@ from monsterui.all import (
     UkIconLink,
     render_md,
     Grid,
+    Input,
+    Switch,
+    TextArea,
+    TextPresets,
 )
 import i18n
 
@@ -47,9 +51,10 @@ class Event:
     org_name: str = None
 
     def __post_init__(self):
-        self.start_time = datetime.fromisoformat(self.start_time)
-        if self.end_time:
-            self.end_time = datetime.fromisoformat(self.end_time)
+        if type(self.start_time) is str:
+            self.start_time = datetime.fromisoformat(self.start_time)
+            if self.end_time:
+                self.end_time = datetime.fromisoformat(self.end_time)
 
     def info_card(
         self,
@@ -135,7 +140,7 @@ def events(
     if name:
         forms_stmt = forms_stmt.like("title", name)
     if id:
-        forms_stmt = forms_stmt.eq("id", id)
+        forms_stmt = forms_stmt.eq("id", id)  # if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     forms = forms_stmt.execute().data
@@ -162,54 +167,116 @@ def events(
     )
 
 
-@dataclass
-class EventForm:
-    title: str
-    description: str | None
-    place: str
-    start_time: datetime
-    end_time: datetime | None
-    theme: str | None
-    dresscode: str | None
-    dresscode_mandatory: bool | None
-    image: str | None
-    org_name: str | None
-
-
 @rt("/create")
 def create(session):
-    session["locale"] = "pl"
-    placeholders = {
-        k: i18n.t(f"events.create.{k}.default", locale=session.get("locale")) for k in EventForm.__annotations__
-    }
-    defaults = {
-        "org_name": s.table("users")
-        .select("display_name")
-        .eq("id", session.get("id"))
-        .execute()
-        .data[0]["display_name"]
-        .title()
-    }
-    content = []
-
-    for k, v in get_annotations(EventForm).items():
-        if hasattr(v, "__args__"):
-            v = v.__args__[0]
-            optional = True
-        else:
-            optional = False
-        _type = QuestionTypes.get(str(v)) or QuestionTypes.get(str(str))
-        content.append(
-            _type(
-                i18n.t(f"events.create.{k}.name", locale=session.get("locale")),
-                question_id=k,
-                description=i18n.t(f"events.create.{k}.description", locale=session.get("locale")),
-                placeholder=placeholders.get(k),
-                value=defaults.get(k),
-                required=not optional,
-            )
+    content = DivCentered(
+        Card(
+            DivCentered(
+                H1(
+                    Input(
+                        id="title",
+                        placeholder=i18n.t("events.create.title.name", locale=session.get("locale")),
+                        required=True,
+                        title=i18n.t("events.create.title.description", locale=session.get("locale")),
+                    ),
+                ),
+                cls="required",
+            ),
+            Grid(
+                icon_text(
+                    "clock",
+                    Input(
+                        type="time",
+                        id="start_time",
+                        required=True,
+                        title=i18n.t("events.create.start.description", locale=session.get("locale")),
+                    ),
+                    icon_style="required",
+                ),
+                right_icon_text(
+                    "clock-10",
+                    Input(
+                        type="time",
+                        id="end_time",
+                        title=i18n.t("events.create.end.description", locale=session.get("locale")),
+                    ),
+                ),
+                icon_text(
+                    "calendar",
+                    Input(
+                        type="date",
+                        id="date",
+                        required=True,
+                        title=i18n.t("events.create.date.description", locale=session.get("locale")),
+                    ),
+                    icon_style="required",
+                ),
+                right_icon_text(
+                    "pin",
+                    Input(
+                        id="place",
+                        placeholder=i18n.t("events.create.place.name", locale=session.get("locale")),
+                        required=True,
+                        title=i18n.t("events.create.place.description", locale=session.get("locale")),
+                    ),
+                    icon_style="required",
+                ),
+                icon_text(
+                    "user",
+                    Input(
+                        id="org_name",
+                        value=s.table("users")
+                        .select("display_name")
+                        .eq("id", session.get("id"))
+                        .execute()
+                        .data[0]["display_name"]
+                        .title(),
+                        title=i18n.t("events.create.org_name.description", locale=session.get("locale")),
+                    ),
+                ),
+                fh.Div(),
+                icon_text(
+                    "palette",
+                    Input(
+                        id="theme",
+                        placeholder=i18n.t("events.create.theme.name", locale=session.get("locale")),
+                        title=i18n.t("events.create.theme.description", locale=session.get("locale")),
+                    ),
+                ),
+                icon_text(
+                    "shirt",
+                    (
+                        Input(
+                            id="dresscode",
+                            placeholder=i18n.t(
+                                "events.create.dresscode.name",
+                                locale=session.get("locale"),
+                            ),
+                            title=i18n.t("events.create.dresscode.description", locale=session.get("locale")),
+                        ),
+                        Switch(
+                            id="dresscode_mandatory",
+                            title=i18n.t("events.create.dresscode_mandatory.description", locale=session.get("locale")),
+                        ),
+                        fh.P(
+                            i18n.t("events.create.dresscode_mandatory.name", locale=session.get("locale")),
+                            cls=TextPresets.muted_sm,
+                        ),
+                    ),
+                ),
+                cols=2,
+                cls="gap-1 items-center justify-center",
+            ),
+            DivCentered(
+                TextArea(
+                    id="description",
+                    placeholder=i18n.t("events.create.description.default", locale=session.get("locale")),
+                    title=i18n.t("events.create.description.description", locale=session.get("locale")),
+                )
+            ),
+            Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=ButtonT.primary),
         )
-    content.append(Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=ButtonT.primary))
+    )
     return fh.Container(
         fh.Form(
             DivCentered(
@@ -217,7 +284,7 @@ def create(session):
                 i18n.t("events.create.add.description", locale=session.get("locale")),
                 DividerLine(),
             ),
-            *content,
+            content,
             cls="space-y-3 mt-4",
             hx_post="/events/add",
         )
@@ -230,6 +297,7 @@ def add(session, responses: dict):
 
     try:
         pass  # s.table("Event").upsert([{"user_id": session["id"], **responses}]).execute()
+        responses["start_time"] = responses.pop("date") + " " + responses["start_time"]
         return Event(**responses).info_card()
 
     except Exception as ex:
