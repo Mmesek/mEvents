@@ -49,6 +49,7 @@ class Event:
     image: str = None
     responses: list[dict] = None
     org_name: str = None
+    private: bool = None
 
     def __post_init__(self):
         if type(self.start_time) is str:
@@ -140,7 +141,7 @@ def events(
     if name:
         forms_stmt = forms_stmt.like("title", name)
     if id:
-        forms_stmt = forms_stmt.eq("id", id)  # if id else forms_stmt.eq("private", False)
+        forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     forms = forms_stmt.execute().data
