@@ -1,13 +1,26 @@
 from fasthtml import common as fh
-from monsterui.all import Button, ButtonT, DivCentered, DivRAligned, render_md
+from monsterui.all import (
+    Button,
+    ButtonT,
+    DivCentered,
+    DivRAligned,
+    render_md,
+    Container,
+    Form,
+    LabelInput,
+    Options,
+    LabelTextArea,
+    DividerLine,
+)
 
 from src.beforeware import beforeware
 from src.components import FormLayout, handle_updating_responses
 from src.db import s
 from src.forms import Question
-from src.generators import guests
+from src.generators import guests, QuestionType
 from src.modules.events import Event
 from src.components.headers import HEADERS
+
 
 app, rt = fh.fast_app(
     hdrs=HEADERS,
@@ -61,6 +74,47 @@ def form(user_id, event_id):
         *content,
         destination=f"/forms/submit/{event_id}",
     )
+
+
+@rt("/new")
+def new():
+    return fh.Title("Dynamic Form Builder"), Container(
+        fh.Div(
+            Form(
+                LabelInput("Tytuł Formularza", id="form-title"),
+                LabelTextArea("Opis Formularza (wspiera Markdown)", id="form-description"),
+                fh.Div(
+                    add_question(),
+                    id="questions-list",
+                ),
+                Button("Submit All Questions", cls=ButtonT.primary, submit=True, hx_post="/forms/add"),
+            ),
+            cls="space-y-4",
+        ),
+    )
+
+
+@rt("/add-question")
+def add_question():
+    return (
+        LabelInput("Pytanie", placeholder="Pytanie", id="question"),
+        LabelTextArea("Opis", placeholder="Description", id="description"),
+        "Typ odpowiedzi",
+        fh.Select(
+            Options(*QuestionType.keys()),
+            id="type",
+            hx_target="#questions-list",
+            hx_post="/forms/add-question",
+            hx_swap="beforeend",
+        ),
+        DividerLine(),
+    )
+
+
+@rt("/add")
+def add_form(responses: dict):
+    print(responses)
+    return "Added"
 
 
 @rt("/{event_id}")
