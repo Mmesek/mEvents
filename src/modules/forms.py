@@ -152,10 +152,33 @@ def add_option(idx: int, order: int):
     )
 
 
+def get_next(responses: dict, key: str):
+    if type(responses[key]) is list:
+        return next(responses[key])
+    return responses[key]
+
+
 @rt("/add")
-def add_form(responses: dict):
-    print(responses)
-    return "Added"
+def add_form(session, responses: dict):
+    questions = []
+    for idx, q, desc in zip(responses["order"], responses["question"], responses["description"], strict=True):
+        question = {
+            "type": responses[f"type-{idx}"],
+            "title": q,
+            "description": desc,
+        }
+        if responses[f"type-{idx}"] == "SCALE":
+            question["min_length"] = get_next(responses, "min")
+            question["max_length"] = get_next(responses, "max")
+        if responses[f"type-{idx}"] == "CHOICE":
+            options = []
+            for k, v in responses.items():
+                if k.startswith(f"option-{idx}") and v:
+                    options.append(v)
+            question["options"] = options
+        questions.append(question)
+    print(questions)
+    return i18n.t("forms.create.success", locale=session.get("locale"))
 
 
 @rt("/{event_id}")
