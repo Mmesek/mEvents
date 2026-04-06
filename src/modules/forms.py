@@ -130,11 +130,26 @@ def question_type(responses: dict, idx: int = 0):
         )
     ]
     if selected == "SCALE":
-        items.append(LabelInput("Minimum", type="number", inputmode="numeric", value=0, id="min"))
-        items.append(LabelInput("Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"))
+        items.append(
+            fh.Grid(
+                LabelInput("Minimum", type="number", inputmode="numeric", value=0, id="min"),
+                LabelInput("Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
+            )
+        )
     if selected == "CHOICE":
-        items.append(LabelInput("Option Name", id=f"option-{idx}"))
+        items.append(add_option(idx, 0))
     return fh.Div(*items, id=f"type-{idx}")
+
+
+@rt("/add-option")
+def add_option(idx: int, order: int):
+    return fh.Input(
+        id=f"option-{idx}-{order}",
+        hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
+        placeholder=f"Option {idx}",
+        hx_target=f"#option-{idx}-{order}",
+        hx_swap="afterend",
+    )
 
 
 @rt("/add")
