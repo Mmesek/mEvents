@@ -1,0 +1,13 @@
+en:
+  create:
+    title: Forms Builder
+    name: Name of the form
+    description: Optional form description
+    add_question: Add new question
+    submit: Submit form with questions
+    question: Question
+    question_description: Optional description of the question
+    type: Type of answer
+    option: Option %{x}
+    success: Created successfully!
+    help: (Leave empty to omit)

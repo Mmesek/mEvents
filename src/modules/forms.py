@@ -9,10 +9,11 @@ from monsterui.all import (
     DividerLine,
     DivRAligned,
     Form,
-    LabelInput,
-    LabelTextArea,
+    Input,
+    TextArea,
     render_md,
 )
+import i18n
 
 from src.beforeware import beforeware
 from src.components import FormLayout, handle_updating_responses
@@ -77,48 +78,60 @@ def form(user_id, event_id):
 
 
 @rt("/new")
-def new():
-    return fh.Title("Dynamic Form Builder"), Container(
-        fh.Div(
-            Form(
-                LabelInput("Tytuł Formularza", id="form-title"),
-                LabelTextArea("Opis Formularza (wspiera Markdown)", id="form-description"),
-                fh.Div(
-                    add_question(),
-                    id="questions-list",
-                ),
-                Button(
-                    "Dodaj nowe pytanie",
-                    hx_target="#questions-list",
-                    hx_post="/forms/add-question",
-                    hx_swap="beforeend",
-                ),
-                Button("Submit All Questions", cls=ButtonT.primary, submit=True, hx_post="/forms/add"),
-            ),
-            cls="space-y-4",
+def new(session):
+    return fh.Title(i18n.t("forms.create.title", locale=session.get("locale"))), FormLayout(
+        Input(
+            placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
+            id="form-title",
+            required=True,
+            cls="required",
         ),
+        i18n.t("forms.create.help", locale=session.get("locale")),
+        TextArea(placeholder=i18n.t("forms.create.description", locale=session.get("locale")), id="form-description"),
+        fh.Div(
+            add_question(session),
+            id="questions-list",
+        ),
+        fh.Grid(
+            Button(
+                i18n.t("forms.create.add_question", locale=session.get("locale")),
+                hx_target="#questions-list",
+                hx_post="/forms/add-question",
+                hx_swap="beforeend",
+            ),
+            Button(
+                i18n.t("forms.create.submit", locale=session.get("locale")),
+                cls=ButtonT.primary,
+            ),
+        ),
+        cls="space-y-4",
+        destination="/forms/add",
     )
 
 
 @rt("/add-question")
-def add_question():
+def add_question(session):
     idx = int(time.time() % 10000)
     return fh.Div(
         fh.Input(id="order", type="hidden", value=idx),
-        LabelInput("Pytanie", placeholder="Pytanie", id="question"),
-        LabelTextArea("Opis", placeholder="Description", id="description"),
-        "Typ odpowiedzi",
-        question_type({}, idx),
+        Input(
+            placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
+            id="question",
+            required=True,
+            cls="required",
+        ),
+        TextArea(
+            placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")), id="description"
+        ),
+        question_type(session, {}, idx),
         DividerLine(),
         id=idx,
     )
 
 
 @rt("/question-type")
-def question_type(responses: dict, idx: int = 0):
+def question_type(session, responses: dict, idx: int = 0):
     selected = responses.get(f"type-{idx}", "ANSWER")
-    print(responses)
-    print(selected)
     items = [
         fh.Select(
             *[fh.Option(k, id=k, title=k, selected=selected == k) for k in QuestionType],
@@ -126,27 +139,27 @@ def question_type(responses: dict, idx: int = 0):
             hx_post=f"/forms/question-type?idx={idx}",
             hx_swap="innerHTML",
             id=f"type-{idx}",
-            title="Wybierz rodzaj pytania",
+            title=i18n.t("forms.create.type", locale=session.get("locale")),
         )
     ]
     if selected == "SCALE":
         items.append(
             fh.Grid(
-                LabelInput("Minimum", type="number", inputmode="numeric", value=0, id="min"),
-                LabelInput("Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
+                Input(title="Minimum", type="number", inputmode="numeric", value=0, id="min"),
+                Input(title="Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
             )
         )
     if selected == "CHOICE":
-        items.append(add_option(idx, 0))
+        items.append(add_option(session, idx, 0))
     return fh.Div(*items, id=f"type-{idx}")
 
 
 @rt("/add-option")
-def add_option(idx: int, order: int):
-    return fh.Input(
+def add_option(session, idx: int, order: int):
+    return Input(
         id=f"option-{idx}-{order}",
         hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
-        placeholder=f"Option {idx}",
+        placeholder=i18n.t("forms.create.option", locale=session.get("locale"), x=idx),
         hx_target=f"#option-{idx}-{order}",
         hx_swap="afterend",
     )
