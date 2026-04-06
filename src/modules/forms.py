@@ -1,26 +1,26 @@
+import time
+
 from fasthtml import common as fh
 from monsterui.all import (
     Button,
     ButtonT,
-    DivCentered,
-    DivRAligned,
-    render_md,
     Container,
+    DivCentered,
+    DividerLine,
+    DivRAligned,
     Form,
     LabelInput,
-    Options,
     LabelTextArea,
-    DividerLine,
+    render_md,
 )
 
 from src.beforeware import beforeware
 from src.components import FormLayout, handle_updating_responses
+from src.components.headers import HEADERS
 from src.db import s
 from src.forms import Question
-from src.generators import guests, QuestionType
+from src.generators import QuestionType, guests
 from src.modules.events import Event
-from src.components.headers import HEADERS
-
 
 app, rt = fh.fast_app(
     hdrs=HEADERS,
@@ -87,6 +87,12 @@ def new():
                     add_question(),
                     id="questions-list",
                 ),
+                Button(
+                    "Dodaj nowe pytanie",
+                    hx_target="#questions-list",
+                    hx_post="/forms/add-question",
+                    hx_swap="beforeend",
+                ),
                 Button("Submit All Questions", cls=ButtonT.primary, submit=True, hx_post="/forms/add"),
             ),
             cls="space-y-4",
@@ -96,19 +102,39 @@ def new():
 
 @rt("/add-question")
 def add_question():
-    return (
+    idx = int(time.time() % 10000)
+    return fh.Div(
+        fh.Input(id="order", type="hidden", value=idx),
         LabelInput("Pytanie", placeholder="Pytanie", id="question"),
         LabelTextArea("Opis", placeholder="Description", id="description"),
         "Typ odpowiedzi",
-        fh.Select(
-            Options(*QuestionType.keys()),
-            id="type",
-            hx_target="#questions-list",
-            hx_post="/forms/add-question",
-            hx_swap="beforeend",
-        ),
+        question_type({}, idx),
         DividerLine(),
+        id=idx,
     )
+
+
+@rt("/question-type")
+def question_type(responses: dict, idx: int = 0):
+    selected = responses.get(f"type-{idx}", "ANSWER")
+    print(responses)
+    print(selected)
+    items = [
+        fh.Select(
+            *[fh.Option(k, id=k, title=k, selected=selected == k) for k in QuestionType],
+            hx_target=f"#type-{idx}",
+            hx_post=f"/forms/question-type?idx={idx}",
+            hx_swap="innerHTML",
+            id=f"type-{idx}",
+            title="Wybierz rodzaj pytania",
+        )
+    ]
+    if selected == "SCALE":
+        items.append(LabelInput("Minimum", type="number", inputmode="numeric", value=0, id="min"))
+        items.append(LabelInput("Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"))
+    if selected == "CHOICE":
+        items.append(LabelInput("Option Name", id=f"option-{idx}"))
+    return fh.Div(*items, id=f"type-{idx}")
 
 
 @rt("/add")
