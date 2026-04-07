@@ -28,7 +28,10 @@ def generate(q: dict, date: datetime.datetime):
         fh.P(q["description"]),
         fh.P(f"Avg: {avg}") if avg else None,
         fh.Ul(
-            *[fh.Li(fh.P(a["user"]["display_name"]), [Label(v) for v in a["value"]]) for a in q["answer"]],
+            *[
+                fh.Li(fh.P(a["user"]["display_name"]), [Label(v) for v in a["value"]])
+                for a in sorted(q["answer"], key=lambda x: x["value"])
+            ],
             style=ListT.bullet,
         ),
     )
