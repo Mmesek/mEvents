@@ -35,7 +35,7 @@ def generate(q: dict, date: datetime.datetime):
 
 
 @rt("/{event_id}")
-def responses(event_id: int):
+def responses(event_id: int, user_id: str = None):
     f = (
         s.table("Event")
         .select(
@@ -43,9 +43,11 @@ def responses(event_id: int):
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
-        .maybe_single()
-        .execute()
-    ).data
+    )
+    if user_id:
+        f = f.eq("form.questions.question.answer.user_id", user_id)
+
+    f = (f.maybe_single().execute()).data
     questions = sorted(
         [
             dict(order=q.get("order"), **q.get("question"))
