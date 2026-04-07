@@ -140,8 +140,7 @@ def events(
         forms_stmt = forms_stmt.gt("end_time", datetime.now())
     if name:
         forms_stmt = forms_stmt.like("title", name)
-    if id:
-        forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
+    forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     forms = forms_stmt.execute().data
