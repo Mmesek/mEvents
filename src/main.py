@@ -2,6 +2,8 @@ from fasthtml import common as fh
 
 from src.modules.login import app as login_app
 from src.modules.events import app as events_app
+from src.modules.responses import app as responses_app
+
 import src.modules.discord
 import src.components.translations
 from src.modules.forms import app as forms_app
@@ -16,6 +18,7 @@ app, rt = fh.fast_app(
         fh.Mount("/login", login_app),
         fh.Mount("/events", events_app),
         fh.Mount("/forms", forms_app),
+        fh.Mount("/responses", responses_app),
     ],
     before=[beforeware, translations],
 )

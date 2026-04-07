@@ -1,0 +1,58 @@
+import datetime
+from fasthtml import common as fh
+from monsterui.all import H1, H3, Label, ListT, DivCentered, Card
+
+from src.components.headers import HEADERS
+from src.db import s
+from src.beforeware import beforeware, translations
+from itertools import chain
+
+app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware, translations])
+
+
+def generate(q: dict, date: datetime.datetime):
+    avg = 0
+    match q.get("type"):
+        case "HOUR":
+            r = [[int(i) for i in a["value"][0].split(":")] for a in q["answer"]]
+            r = [date.replace(hour=h, minute=m) for h, m in r]
+            avg = datetime.datetime.strftime(
+                datetime.datetime.fromtimestamp(sum(map(datetime.datetime.timestamp, r)) / len(r)), "%H:%M"
+            )
+        case "SCALE":
+            avg = list(chain.from_iterable([[int(i) for i in a["value"][0]] for a in q["answer"]]))
+            avg = sum(avg) / len(avg)
+
+    return Card(
+        H3(q["title"]),
+        fh.P(q["description"]),
+        fh.P(f"Avg: {avg}") if avg else None,
+        fh.Ul(
+            *[fh.Li(fh.P(a["user"]["display_name"]), [Label(v) for v in a["value"]]) for a in q["answer"]],
+            style=ListT.bullet,
+        ),
+    )
+
+
+@rt("/{event_id}")
+def responses(event_id: int):
+    f = (
+        s.table("Event")
+        .select(
+            'title, start_time, form:form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, user:"users" (display_name)))))'
+        )
+        .eq("id", event_id)
+        .eq("form.questions.question.answer.event_id", event_id)
+        .maybe_single()
+        .execute()
+    ).data
+    questions = sorted(
+        [
+            dict(order=q.get("order"), **q.get("question"))
+            for q in f.get("form", {}).get("questions", {})
+            if q.get("question", {}).get("answer")
+        ],
+        key=lambda x: x["order"],
+    )
+    date = datetime.datetime.fromisoformat(f["start_time"])
+    return DivCentered(H1(f["title"]), *[generate(q, date) for q in questions])
