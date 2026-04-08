@@ -1,0 +1,23 @@
+{
+  "name": "m-events",
+  "version": "1.0.0",
+  "description": "FastHTML Events Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mmesek/mEvents.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mmesek/mEvents/issues"
+  },
+  "homepage": "https://github.com/Mmesek/mEvents#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
