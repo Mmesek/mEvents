@@ -61,6 +61,7 @@ class Event:
         self,
         count: int = None,
         logged_in: bool = False,
+        user_id: str = None,
     ):
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
@@ -107,6 +108,12 @@ class Event:
                 else None,
                 DivCentered(render_md(self.description)) if self.description else None,
                 DivRAligned(
+                    fh.A(
+                        Button("Sprawdź odpowiedzi", cls=ButtonT.ghost, submit=False),
+                        href=f"/responses/{self.id}",
+                    )
+                    if self.user_id == user_id
+                    else None,
                     DivLAligned(
                         guests(self.id, target=f"guestlist_{self.id}"),
                         id=f"guestlist_{self.id}",
@@ -147,7 +154,7 @@ def events(
 
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
-        ("messages-square", "https://discord.com"),
+        # ("messages-square", "https://discord.com"),
     )
     events = sorted([Event(**f) for f in forms], key=lambda x: x.start_time)
 
@@ -158,6 +165,7 @@ def events(
             f.info_card(
                 count=len({list(i.values())[0] for i in f.responses}),
                 logged_in=session.get("email") is not None,
+                user_id=session.get("id"),
             )
             for f in events
         ],
