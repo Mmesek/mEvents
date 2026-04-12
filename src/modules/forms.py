@@ -79,19 +79,42 @@ def form(user_id, event_id):
 
 
 @rt("/new")
-def new(session):
+def new(session, form_id: int = None):
+    res = {}
+    if form_id:
+        res = (
+            s.table("Form")
+            .select(
+                '*, questions:"Form_Questions" (order, required, ..."Question" (*, options:"Question_Options" (id, value)))'
+            )
+            .eq("id", form_id)
+            .maybe_single()
+            .execute()
+            .data
+            or {}
+        )
     return fh.Title(i18n.t("forms.create.title", locale=session.get("locale"))), FormLayout(
         Input(
             placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
             id="form-title",
             required=True,
             cls="required",
+            value=res.get("title"),
         ),
         i18n.t("forms.create.help", locale=session.get("locale")),
-        TextArea(placeholder=i18n.t("forms.create.description", locale=session.get("locale")), id="form-description"),
+        TextArea(
+            res.get("description"),
+            placeholder=i18n.t("forms.create.description", locale=session.get("locale")),
+            id="form-description",
+        ),
         DividerLine(),
         fh.Div(
-            add_question(session),
+            *[
+                add_question(
+                    session, q.get("title"), q.get("description"), q.get("order"), q.get("required"), q.get("type")
+                )
+                for q in res.get("questions", [{}])
+            ],
             id="questions-list",
         ),
         fh.Grid(
@@ -112,8 +135,15 @@ def new(session):
 
 
 @rt("/add-question")
-def add_question(session):
-    idx = int(time.time() % 10000)
+def add_question(
+    session,
+    __value: str = None,
+    __description_value: str = None,
+    __order: int = None,
+    __required: bool = None,
+    __type: str = None,
+):
+    idx = __order or int(time.time() % 10000)
     return fh.Div(
         fh.Input(id="order", type="hidden", value=idx),
         Input(
@@ -121,20 +151,23 @@ def add_question(session):
             id="question",
             required=True,
             cls="required",
+            value=__value,
         ),
         TextArea(
-            placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")), id="description"
+            __description_value,
+            placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
+            id="description",
         ),
-        Switch(i18n.t("forms.create.is_required", locale=session.get("locale")), id="is_required"),
-        question_type(session, {}, idx),
+        Switch(i18n.t("forms.create.is_required", locale=session.get("locale")), id="is_required", checked=__required),
+        question_type(session, {}, idx, __type),
         DividerLine(),
         id=idx,
     )
 
 
 @rt("/question-type")
-def question_type(session, responses: dict, idx: int = 0):
-    selected = responses.get(f"type-{idx}", "ANSWER")
+def question_type(session, responses: dict, idx: int = 0, __selected: str = None):
+    selected = __selected or responses.get(f"type-{idx}", "ANSWER")
     items = [
         fh.Select(
             *[fh.Option(k, id=k, title=k, selected=selected == k) for k in QuestionType],
