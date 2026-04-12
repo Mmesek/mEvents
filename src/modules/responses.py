@@ -1,8 +1,9 @@
 import datetime
 from fasthtml import common as fh
-from monsterui.all import H1, H3, Label, ListT, DivCentered, Card
+from monsterui.all import H3, Label, ListT, Card
 
 from src.components.headers import HEADERS
+from src.components.components import with_layout
 from src.db import s
 from src.beforeware import beforeware, translations
 from itertools import chain
@@ -38,6 +39,7 @@ def generate(q: dict, date: datetime.datetime):
 
 
 @rt("/{event_id}")
+@with_layout()
 def responses(event_id: int, user_id: str = None):
     f = (
         s.table("Event")
@@ -60,4 +62,4 @@ def responses(event_id: int, user_id: str = None):
         key=lambda x: x["order"],
     )
     date = datetime.datetime.fromisoformat(f["start_time"])
-    return DivCentered(H1(f["title"]), *[generate(q, date) for q in questions])
+    return [generate(q, date) for q in questions]

@@ -16,7 +16,7 @@ from monsterui.all import (
 import i18n
 
 from src.beforeware import beforeware
-from src.components import FormLayout, handle_updating_responses
+from src.components import FormLayout, handle_updating_responses, with_layout, Layout
 from src.components.headers import HEADERS
 from src.db import s
 from src.forms import Question
@@ -195,16 +195,9 @@ def add_form(session, responses: dict):
 
 
 @rt("/{event_id}")
+@with_layout(Layout, "Rejestracja na wydarzenie")
 def event_form(session, event_id: str):
-    return (
-        fh.Title("Rejestracja na wydarzenie"),
-        DivRAligned(
-            "Zalogowano jako:",
-            fh.Img(src=session.get("picture"), height="24", width="24"),
-            session.get("email"),
-        ),
-        form(session["id"], event_id),
-    )
+    return form(session["id"], event_id)
 
 
 @rt("/submit/{event}")

@@ -1,15 +1,23 @@
+import time
+from collections.abc import Iterable
+from functools import wraps
+
+import fasthtml.common as fh
 from fasthtml.common import Div, P
 from monsterui.all import (
     H1,
     H3,
     Card,
     Container,
+    DivCentered,
     DividerLine,
+    DivLAligned,
+    DivRAligned,
     Form,
     TextPresets,
     UkIcon,
+    UkIconLink,
     render_md,
-    DivCentered,
 )
 
 
@@ -64,3 +72,50 @@ def handle_updating_responses(responses: dict) -> dict:
         }
     )
     return responses
+
+
+def Layout(body, title: str = None, *, session: dict = None, t: float):
+    socials = (
+        ("github", "https://github.com/Mmesek/mEvents"),
+        # ("messages-square", "https://discord.com"),
+    )
+
+    return (
+        fh.Title(title),
+        fh.Main(
+            fh.Header(
+                DivRAligned(
+                    "Zalogowano jako:",
+                    fh.Img(src=session.get("picture"), height="24", width="24"),
+                    session.get("email"),
+                )
+                if session.get("email")
+                else None,
+            ),
+            DivCentered(H1(title)),
+            DivCentered(*body),
+            fh.Footer(
+                Card(
+                    footer=DivCentered(
+                        DivLAligned(
+                            *[UkIconLink(icon, href=url) for icon, url in socials],
+                            DivRAligned(f"Page generated in {t:>.3}s"),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def with_layout(layout=Layout, *args, **kwargs):
+    def inner(f):
+        @wraps(f)
+        def wrapper(*inner_args, **inner_kwargs):
+            s = time.time()
+            r = f(*inner_args, **inner_kwargs)
+            return layout(r, *args, session=inner_kwargs.get("session", {}), t=time.time() - s, **kwargs)
+
+        return wrapper
+
+    return inner

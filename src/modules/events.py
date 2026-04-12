@@ -13,7 +13,6 @@ from monsterui.all import (
     DividerLine,
     DivLAligned,
     DivRAligned,
-    UkIconLink,
     render_md,
     Grid,
     Input,
@@ -23,7 +22,7 @@ from monsterui.all import (
 )
 import i18n
 
-from src.components import handle_updating_responses, icon_text, right_icon_text
+from src.components import handle_updating_responses, icon_text, right_icon_text, with_layout, Layout
 from src.components.headers import HEADERS
 from src.db import s
 from src.generators import QuestionTypes, guests
@@ -135,6 +134,7 @@ app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware, translations])
 
 
 @rt("/")
+@with_layout(Layout, "Nadchodzące wydarzenia")
 def events(
     session,
     name: str | None = None,
@@ -152,27 +152,16 @@ def events(
         forms_stmt = forms_stmt.eq("user_id", user_id)
     forms = forms_stmt.execute().data
 
-    socials = (
-        ("github", "https://github.com/Mmesek/mEvents"),
-        # ("messages-square", "https://discord.com"),
-    )
     events = sorted([Event(**f) for f in forms], key=lambda x: x.start_time)
 
-    return (
-        fh.Title("Nadchodzące wydarzenia"),
-        DivCentered(H1("Nadchodzące wydarzenia")),
-        *[
-            f.info_card(
-                count=len({list(i.values())[0] for i in f.responses}),
-                logged_in=session.get("email") is not None,
-                user_id=session.get("id"),
-            )
-            for f in events
-        ],
-        Card(
-            footer=DivCentered(DivLAligned(*[UkIconLink(icon, href=url) for icon, url in socials])),
-        ),
-    )
+    return [
+        f.info_card(
+            count=len({list(i.values())[0] for i in f.responses}),
+            logged_in=session.get("email") is not None,
+            user_id=session.get("id"),
+        )
+        for f in events
+    ]
 
 
 @rt("/create")
