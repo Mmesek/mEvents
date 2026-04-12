@@ -24,14 +24,26 @@ def generate(q: dict, date: datetime.datetime):
             avg = list(chain.from_iterable([[int(i) for i in a["value"][0]] for a in q["answer"]]))
             avg = sum(avg) / len(avg)
 
+    for a in q["answer"]:
+        if len(a["value"]) == 1:
+            a["value"] = a["value"][0]
+
     return Card(
         H3(q["title"]),
         fh.P(q["description"]),
         fh.P(f"Avg: {avg}") if avg else None,
         fh.Ul(
             *[
-                fh.Li(fh.P(a["user"]["display_name"]), [Label(v) for v in a["value"]])
-                for a in sorted(q["answer"], key=lambda x: x["value"])
+                fh.Li(
+                    fh.P(a["user"]["display_name"]),
+                    fh.Ul(Label(v) for v in a["value"]) if type(a["value"]) is list else Label(a["value"]),
+                )
+                for a in sorted(
+                    q["answer"],
+                    key=lambda x: int(x["value"])
+                    if type(x["value"]) is not list and x["value"].isdigit()
+                    else x["value"],
+                )
             ],
             style=ListT.bullet,
         ),
