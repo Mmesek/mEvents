@@ -46,3 +46,4 @@ pl:
       description: Opis
       failed: Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.
       success: Dodano Wydarzenie!
+    is_private: Prywatna Widoczność

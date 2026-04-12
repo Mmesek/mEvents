@@ -46,3 +46,4 @@ en:
       description: Description
       failed: Something went wrong... Refresh websites and try again!
       success: Event added!
+    is_private: Private visibility

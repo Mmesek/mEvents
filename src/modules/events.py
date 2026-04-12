@@ -271,6 +271,7 @@ def create(session):
                     title=i18n.t("events.create.description.description", locale=session.get("locale")),
                 )
             ),
+            Switch(i18n.t("events.create.is_private", locale=session.get("locale")), id="private"),
             Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=ButtonT.primary),
         )
     )
