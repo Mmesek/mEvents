@@ -47,3 +47,7 @@ pl:
       failed: Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.
       success: Dodano Wydarzenie!
     is_private: Prywatna Widoczność
+    new_form: Stwórz nowy formularz
+    select_form: Wybierz formularz zapisu
+    select_feedback_form: Wybierz formularz dla informacji zwrotnej
+    no_form: Brak

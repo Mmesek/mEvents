@@ -19,6 +19,7 @@ from monsterui.all import (
     Switch,
     TextArea,
     TextPresets,
+    Select,
 )
 import i18n
 
@@ -272,6 +273,26 @@ def create(session):
                 )
             ),
             Switch(i18n.t("events.create.is_private", locale=session.get("locale")), id="private"),
+            fh.Div(
+                fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
+                fh.Select(
+                    *[form_option(f["title"], f["id"]) for f in s.table("Form").select("id, title").execute().data],
+                    form_option(i18n.t("events.create.new_form", locale=session.get("locale")), form_id=0),
+                    searchable=True,
+                    hx_target="#form",
+                    hx_swap="innerHTML",
+                ),
+                fh.Div(id="form"),
+            ),
+            Select(
+                *[
+                    form_option(f["title"], f["id"])
+                    for f in s.table("Form").select("id, title").ilike("title", "Feedback").execute().data
+                ],
+                form_option(i18n.t("events.create.no_form", locale=session.get("locale")), None),
+                searchable=True,
+                placeholder=i18n.t("events.create.select_feedback_form", locale=session.get("locale")),
+            ),
             Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=ButtonT.primary),
         )
     )
@@ -286,6 +307,13 @@ def create(session):
             cls="space-y-3 mt-4",
             hx_post="/events/add",
         )
+    )
+
+
+def form_option(name: str, form_id: int):
+    return fh.Option(
+        name,
+        hx_post=f"/forms/new?form_id={form_id}",
     )
 
 

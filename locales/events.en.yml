@@ -47,3 +47,7 @@ en:
       failed: Something went wrong... Refresh websites and try again!
       success: Event added!
     is_private: Private visibility
+    new_form: Create new form
+    select_form: Select registration form
+    select_feedback_form: Select feedback form
+    no_form: None
