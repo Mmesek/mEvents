@@ -11,3 +11,4 @@ pl:
     option: Opcja %{x}
     success: Formularz został utworzony pomyślnie!
     help: (Puste pola i opcje są pomijane)
+    is_required: Wymagane

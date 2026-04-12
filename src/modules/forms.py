@@ -12,6 +12,7 @@ from monsterui.all import (
     Input,
     TextArea,
     render_md,
+    Switch,
 )
 import i18n
 
@@ -88,6 +89,7 @@ def new(session):
         ),
         i18n.t("forms.create.help", locale=session.get("locale")),
         TextArea(placeholder=i18n.t("forms.create.description", locale=session.get("locale")), id="form-description"),
+        DividerLine(),
         fh.Div(
             add_question(session),
             id="questions-list",
@@ -123,6 +125,7 @@ def add_question(session):
         TextArea(
             placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")), id="description"
         ),
+        Switch(i18n.t("forms.create.is_required", locale=session.get("locale")), id="is_required"),
         question_type(session, {}, idx),
         DividerLine(),
         id=idx,

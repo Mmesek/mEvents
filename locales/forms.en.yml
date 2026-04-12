@@ -11,3 +11,4 @@ en:
     option: Option %{x}
     success: Created successfully!
     help: (Leave empty to omit)
+    is_required: Required
