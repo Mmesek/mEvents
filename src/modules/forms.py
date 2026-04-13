@@ -55,9 +55,12 @@ def form(user_id, event_id):
     )
     if not f:
         return DivCentered("Podany formularz nie istnieje", back_to_main())
-    f = f.data.get("form", {})
+    f = f.data.get("form") or {}
     questions = sorted(
-        [Question(order=q.get("order"), required=q.get("required"), **q.get("question")) for q in f.get("questions")],
+        [
+            Question(order=q.get("order"), required=q.get("required"), **q.get("question", {}))
+            for q in f.get("questions", [])
+        ],
         key=lambda x: x.order,
     )
     content = [
@@ -67,12 +70,15 @@ def form(user_id, event_id):
         )
     ]
     content.extend([q.generate() for q in questions])
-    content.append(Button("Zapisz", cls=ButtonT.primary))
+    if not questions:
+        content.append(back_to_main())
+    else:
+        content.append(Button("Zapisz", cls=ButtonT.primary))
     info = Event(title=f["title"], **f.get("info")).info_card() if f.get("info") else None
 
     return info, FormLayout(
         "",
-        render_md(f["description"]) if f["description"] else None,
+        render_md(f.get("description")) if "description" in f else None,
         *content,
         destination=f"/forms/submit/{event_id}",
     )
