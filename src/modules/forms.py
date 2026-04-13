@@ -167,14 +167,14 @@ def add_question(
 
 @rt("/question-type")
 def question_type(session, responses: dict, idx: int = 0, __selected: str = None):
-    selected = __selected or responses.get(f"type-{idx}", "ANSWER")
+    selected = __selected or responses.get(f"select-type-{idx}", "ANSWER")
     items = [
         fh.Select(
             *[fh.Option(k, id=k, title=k, selected=selected == k) for k in QuestionType],
             hx_target=f"#type-{idx}",
             hx_post=f"/forms/question-type?idx={idx}",
-            hx_swap="innerHTML",
-            id=f"type-{idx}",
+            hx_swap="outerHTML",
+            id=f"select-type-{idx}",
             title=i18n.t("forms.create.type", locale=session.get("locale")),
         )
     ]
@@ -187,7 +187,7 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
         )
     if selected == "CHOICE":
         items.append(add_option(session, idx, 0))
-    return fh.Div(*items, id=f"type-{idx}")
+    return DivCentered(*items, id=f"type-{idx}")
 
 
 @rt("/add-option")
