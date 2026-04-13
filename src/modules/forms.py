@@ -13,6 +13,7 @@ from monsterui.all import (
     TextArea,
     render_md,
     Switch,
+    ListT,
 )
 import i18n
 
@@ -36,9 +37,8 @@ def back_to_main():
 
 @rt("/guests")
 def list_guests(event_id: str):
-    r = s.table("Response").select("user_id").eq("event_id", event_id).execute().data
-    names = s.table("users").select("display_name").in_("id", [i["user_id"] for i in r]).execute().data
-    return DivCentered(fh.Ul((fh.Li(i["display_name"]) for i in names)))
+    names = s.table("users").select("display_name").eq("event_id", event_id).order("timestamp").execute().data
+    return DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=ListT.decimal))
 
 
 def form(user_id, event_id):
