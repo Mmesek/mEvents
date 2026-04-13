@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 
+import i18n
+import monsterui.all as ui
+from fasthtml import common as fh
+
 from src.components import FormSectionDiv
 from src.generators import QuestionType
-from fasthtml import common as fh
 
 
 @dataclass
@@ -19,8 +22,10 @@ class Question:
     allow_multiple_answer: bool = None
     options: dict = None
     answer: list[dict] = None
+    type_name: str = None
 
     def __post_init__(self):
+        self.type_name = self.type
         self.type = QuestionType.get(self.type)
 
     def generate(self):
@@ -41,6 +46,33 @@ class Question:
                 options=[i["value"] for i in self.options],
             ),
             fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
+        )
+
+    def edit_form(self, session):
+        from src.modules.forms import question_type
+
+        return fh.Div(
+            fh.Input(id="order", type="hidden", value=self.order),
+            ui.Input(
+                placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
+                id="question",
+                required=True,
+                cls="required",
+                value=self.title,
+            ),
+            ui.TextArea(
+                self.description,
+                placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
+                id="description",
+            ),
+            ui.Switch(
+                i18n.t("forms.create.is_required", locale=session.get("locale")),
+                id="is_required",
+                checked=self.required,
+            ),
+            question_type(session, {}, self.id, self.type_name),
+            ui.DividerLine(),
+            id=self.id,
         )
 
 

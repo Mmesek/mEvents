@@ -93,6 +93,7 @@ def new(session, form_id: int = None):
             .data
             or {}
         )
+
     return fh.Title(i18n.t("forms.create.title", locale=session.get("locale"))), FormLayout(
         Input(
             placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
@@ -110,10 +111,11 @@ def new(session, form_id: int = None):
         DividerLine(),
         fh.Div(
             *[
-                add_question(
-                    session, q.get("title"), q.get("description"), q.get("order"), q.get("required"), q.get("type")
+                q.edit_form(session)
+                for q in sorted(
+                    [Question(**q) for q in res.get("questions", [{}])],
+                    key=lambda x: x.order,
                 )
-                for q in res.get("questions", [{}])
             ],
             id="questions-list",
         ),
@@ -135,34 +137,8 @@ def new(session, form_id: int = None):
 
 
 @rt("/add-question")
-def add_question(
-    session,
-    __value: str = None,
-    __description_value: str = None,
-    __order: int = None,
-    __required: bool = None,
-    __type: str = None,
-):
-    idx = __order or int(time.time() % 10000)
-    return fh.Div(
-        fh.Input(id="order", type="hidden", value=idx),
-        Input(
-            placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
-            id="question",
-            required=True,
-            cls="required",
-            value=__value,
-        ),
-        TextArea(
-            __description_value,
-            placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
-            id="description",
-        ),
-        Switch(i18n.t("forms.create.is_required", locale=session.get("locale")), id="is_required", checked=__required),
-        question_type(session, {}, idx, __type),
-        DividerLine(),
-        id=idx,
-    )
+def add_question(session):
+    return Question(int(time.time() % 10000)).edit_form(session)
 
 
 @rt("/question-type")
