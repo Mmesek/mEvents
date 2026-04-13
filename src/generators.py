@@ -120,7 +120,7 @@ def generate_hour_picker(
 @register("BOOL", bool)
 def generate_switch(question: str, question_id: int, description: str = None, **kwargs):
     return (
-        Switch(question, id=question_id, **kwargs),
+        Switch(question, id=question_id, value=kwargs.pop("value", None) or "on", **kwargs),
         HelpText(description),
     )
 
