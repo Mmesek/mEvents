@@ -35,7 +35,7 @@ def generate(q: dict, date: datetime.datetime):
         fh.Ul(
             *[
                 fh.Li(
-                    fh.P(a["user"]["display_name"]),
+                    fh.P(a["display_name"]),
                     fh.Ul(Label(v) for v in a["value"]) if type(a["value"]) is list else Label(a["value"]),
                 )
                 for a in sorted(
@@ -56,10 +56,11 @@ def responses(event_id: int, user_id: str = None):
     f = (
         s.table("Event")
         .select(
-            'title, start_time, form:form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, user:"users" (display_name)))))'
+            'title, start_time, form:form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))'
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
+        .eq("form.questions.question.answer.users.event_id", event_id)
     )
     if user_id:
         f = f.eq("form.questions.question.answer.user_id", user_id)

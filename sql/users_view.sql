@@ -1,30 +1,17 @@
 CREATE
-OR REPLACE VIEW users AS
+OR REPLACE VIEW forms.users AS
 SELECT
-  DISTINCT r.user_id AS id,
-  CASE
-    WHEN (u.raw_user_meta_data ? 'full_name' :: text) THEN (u.raw_user_meta_data ->> 'full_name' :: text)
-    ELSE split_part(
-      (u.raw_user_meta_data ->> 'email' :: text),
-      '@' :: text,
-      1
-    )
-  END AS display_name,
+  DISTINCT u.id AS id,
+  COALESCE(
+    u.raw_user_meta_data ->> 'full_name',
+    split_part(u.raw_user_meta_data ->> 'email', '@', 1)
+  ) AS display_name,
   r.event_id,
-  max(r."timestamp") AS "timestamp"
+  MAX(r."timestamp") AS "timestamp"
 FROM
-  (
-    "Response" r
-    LEFT JOIN auth.users u ON ((u.id = r.user_id))
-  )
+  auth.users u
+  INNER JOIN forms."Response" r ON u.id = r.user_id
 GROUP BY
-  r.user_id,
+  u.id,
   r.event_id,
-  CASE
-    WHEN (u.raw_user_meta_data ? 'full_name' :: text) THEN (u.raw_user_meta_data ->> 'full_name' :: text)
-    ELSE split_part(
-      (u.raw_user_meta_data ->> 'email' :: text),
-      '@' :: text,
-      1
-    )
-  END;
+  u.raw_user_meta_data;
