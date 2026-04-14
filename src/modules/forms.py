@@ -78,7 +78,7 @@ def form(user_id, event_id):
 
     return info, FormLayout(
         "",
-        render_md(f.get("description")) if "description" in f else None,
+        render_md(f.get("description")) if f.get("description") else None,
         *content,
         destination=f"/forms/submit/{event_id}",
     )
