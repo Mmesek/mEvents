@@ -28,7 +28,7 @@ class Question:
         self.type_name = self.type
         self.type = QuestionType.get(self.type)
 
-    def generate(self):
+    def generate(self, event_id: int = None):
         value = ", ".join([", ".join(i["value"]) for i in self.answer])
         return FormSectionDiv(
             self.type(
@@ -44,6 +44,7 @@ class Question:
                 value=value,
                 checked=value == "on",
                 options=[i["value"] for i in self.options],
+                hx_post=f"/forms/save/{event_id}" if self.type_name != "BOOL" else None,
             ),
             fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
         )

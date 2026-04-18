@@ -84,6 +84,23 @@ def form(user_id, event_id):
     )
 
 
+@rt("/save/{event_id}")
+def save(session, responses: dict, event_id: int):
+    responses = handle_updating_responses(responses)
+    s.table("Response").upsert(
+        [
+            {
+                "user_id": session["id"],
+                "event_id": event_id,
+                "question_id": k,
+                "value": [v],
+            }
+            for k, v in responses.items()
+            if v
+        ]
+    ).execute()
+
+
 @rt("/new")
 def new(session, form_id: int = None):
     res = {}
