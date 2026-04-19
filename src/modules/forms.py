@@ -17,6 +17,8 @@ from monsterui.all import (
 )
 import i18n
 
+from datetime import datetime
+
 from src.beforeware import beforeware
 from src.components import FormLayout, handle_updating_responses, with_layout, Layout
 from src.components.headers import HEADERS
@@ -41,18 +43,7 @@ def list_guests(event_id: str):
     return DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=ListT.decimal))
 
 
-def form(user_id, event_id):
-    f = (
-        s.table("Event")
-        .select(
-            'form:form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))'
-        )
-        .eq("id", event_id)
-        .eq("form.questions.question.answer.event_id", event_id)
-        .eq("form.questions.question.answer.user_id", user_id)
-        .maybe_single()
-        .execute()
-    )
+def form(f, event_id, path="submit"):
     if not f:
         return DivCentered("Podany formularz nie istnieje", back_to_main())
     f = f.data.get("form") or {}
@@ -80,7 +71,7 @@ def form(user_id, event_id):
         "",
         render_md(f.get("description")) if f.get("description") else None,
         *content,
-        destination=f"/forms/submit/{event_id}",
+        destination=f"/forms/{path}/{event_id}",
     )
 
 
@@ -232,29 +223,71 @@ def add_form(session, responses: dict):
 @rt("/{event_id}")
 @with_layout(Layout, "Rejestracja na wydarzenie")
 def event_form(session, event_id: str):
-    return form(session["id"], event_id)
+    stmt = (
+        s.table("Event")
+        .select(
+            'form:form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))'
+        )
+        .eq("id", event_id)
+        .eq("form.questions.question.answer.event_id", event_id)
+        .eq("form.questions.question.answer.user_id", session["id"])
+    )
+    f = stmt.maybe_single().execute()
+
+    return form(f, event_id)
+
+
+@rt("/feedback/{event_id}")
+@with_layout(Layout, "Feedback z wydarzenia")
+def feedback_form(session, event_id: str):
+    stmt = (
+        s.table("Event")
+        .select(
+            'end_time, form:feedback_form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))'
+        )
+        .eq("id", event_id)
+        .eq("form.questions.question.answer.event_id", event_id)
+        .eq("form.questions.question.answer.user_id", session["id"])
+    )
+    f = stmt.maybe_single().execute()
+    if f and datetime.fromisoformat(f.data.get("end_time")) > datetime.now():
+        return "Wróć po skończeniu wydarzenia!"
+
+    return form(f, event_id, path="submit-feedback")
+
+
+def save_to_db(session, event, responses):
+    responses = handle_updating_responses(responses)
+
+    s.table("Response").upsert(
+        [
+            {
+                "user_id": session["id"],
+                "event_id": event,
+                "question_id": k,
+                "value": [v],
+            }
+            for k, v in responses.items()
+            if v
+        ]
+    ).execute()
 
 
 @rt("/submit/{event}")
 def submit(session, event: str, responses: dict):
-    responses = handle_updating_responses(responses)
-
     try:
-        s.table("Response").upsert(
-            [
-                {
-                    "user_id": session["id"],
-                    "event_id": event,
-                    "question_id": k,
-                    "value": [v],
-                }
-                for k, v in responses.items()
-                if v
-            ]
-        ).execute()
+        save_to_db(session, event, responses)
     except:
         return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
-
     return DivCentered(
         f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
     ), DivRAligned(back_to_main())
+
+
+@rt("/submit-feedback/{event}")
+def submit_feedback(session, event: str, responses: dict):
+    try:
+        save_to_db(session, event, responses)
+    except:
+        return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
+    return DivCentered("Dzięki za feedback! Zapraszam na następne wydarzenia!"), DivRAligned(back_to_main())
