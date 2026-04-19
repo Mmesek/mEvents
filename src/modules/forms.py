@@ -69,7 +69,7 @@ def form(user_id, event_id):
             id="guestlist",
         )
     ]
-    content.extend([q.generate() for q in questions])
+    content.extend([q.generate(event_id) for q in questions])
     if not questions:
         content.append(back_to_main())
     else:
