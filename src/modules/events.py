@@ -114,6 +114,9 @@ class Event:
                     )
                     if self.user_id == user_id
                     else None,
+                    fh.A(Button("Przygotowania", cls=ButtonT.ghost, submit=False), href=f"/contributions/{self.id}")
+                    if any(user_id == x["user_id"] for x in self.responses)
+                    else None,
                     DivLAligned(
                         guests(self.id, target=f"guestlist_{self.id}"),
                         id=f"guestlist_{self.id}",
