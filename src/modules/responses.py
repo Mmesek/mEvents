@@ -52,11 +52,11 @@ def generate(q: dict, date: datetime.datetime):
 
 @rt("/{event_id}")
 @with_layout()
-def responses(event_id: int, user_id: str = None):
+def responses(event_id: int, user_id: str = None, feedback: bool = False):
     f = (
         s.table("Event")
         .select(
-            'title, start_time, form:form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))'
+            f'title, start_time, form:{"feedback_" if feedback else ""}form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))'
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
