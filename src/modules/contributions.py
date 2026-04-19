@@ -50,7 +50,9 @@ class Item:
             f"{self.name} x {filled}/{self.quantity}",
             mui.Card(self.description) if self.description else None,
             fh.Div(
-                *(c.display() for c in self.contributions) if self.contributions else "Jeszcze nikt się nie zgłosił!",
+                *(c.display() for c in sorted(self.contributions, key=lambda x: x.quantity, reverse=True))
+                if self.contributions
+                else "Jeszcze nikt się nie zgłosił!",
                 id=f"contributions-{self.id}",
             ),
             Contribution.form(self.id, contribution=user_contributed),
@@ -155,4 +157,10 @@ def contribute(session, item_id: int, responses: dict):
 @rt("/{event_id}")
 def contributions(event_id: int):
     items = Item.fetch(event_id)
-    return mui.DivCentered(mui.Accordion(*(item.display() for item in items), Item.form(event_id), id="items"))
+    return mui.DivCentered(
+        mui.Accordion(
+            *(item.display() for item in sorted(items, key=lambda x: x.quantity, reverse=True)),
+            Item.form(event_id),
+            id="items",
+        )
+    )
