@@ -109,6 +109,12 @@ class Event:
                 DivCentered(render_md(self.description)) if self.description else None,
                 DivRAligned(
                     fh.A(
+                        Button("Sprawdź Feedback", cls=ButtonT.ghost, submit=False),
+                        href=f"/responses/{self.id}?feedback=true",
+                    )
+                    if self.user_id == user_id
+                    else None,
+                    fh.A(
                         Button("Sprawdź odpowiedzi", cls=ButtonT.ghost, submit=False),
                         href=f"/responses/{self.id}",
                     )
@@ -126,6 +132,11 @@ class Event:
                     fh.A(
                         Button("Weź udział", cls=ButtonT.ghost, submit=False),
                         href=f"/forms/{self.id}" if self.id else None,
+                    )
+                    if self.start_time > datetime.now()
+                    else fh.A(
+                        Button("Udziel feedbacku", cls=ButtonT.ghost, submit=False),
+                        href=f"/forms/feedback/{self.id}" if self.id else None,
                     ),
                 ),
                 body_cls="space-y-0",
