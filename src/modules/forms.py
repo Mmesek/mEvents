@@ -280,7 +280,13 @@ def submit(session, event: str, responses: dict):
     except:
         return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
     return DivCentered(
-        f"Dzięki za zapis! Sprawdź swojego e-maila {session['email']} i potwierdź obecność gdy otrzymasz zaproszenie!"
+        "Dzięki za zapis!",
+        Button(
+            fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"), submit=False, cls=ButtonT.primary
+        ),
+        "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem - Sprawdź wtedy swoją skrzynkę odbiorczą:",
+        Button(session["email"], cls=ButtonT.secondary, submit=False),
+        "i potwierdź obecność gdy otrzymasz zaproszenie!",
     ), DivRAligned(back_to_main())
 
 
