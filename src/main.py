@@ -4,6 +4,7 @@ from src.modules.login import app as login_app
 from src.modules.events import app as events_app
 from src.modules.responses import app as responses_app
 from src.modules.contributions import app as contrib_app
+from src.modules.tickets import app as tickets_app
 
 import src.modules.discord
 import src.components.translations
@@ -21,6 +22,7 @@ app, rt = fh.fast_app(
         fh.Mount("/forms", forms_app),
         fh.Mount("/responses", responses_app),
         fh.Mount("/contributions", contrib_app),
+        fh.Mount("/tickets", tickets_app),
     ],
     before=[beforeware, translations],
 )

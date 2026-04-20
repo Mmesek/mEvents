@@ -4,5 +4,6 @@ pyyaml
 supabase
 pytz
 python-i18n[YAML]
+qrcode[pil]
 git+https://github.com/Mmesek/mdiscord
 git+https://github.com/Mmesek/mlib
