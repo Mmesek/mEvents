@@ -78,7 +78,7 @@ def tickets(session, event_id: int):
 
 def _verify(session, event_id: int, user_id: int):
     org = s.table("Event").select("user_id").eq("id", event_id).maybe_single().execute().data
-    if session["id"] != org["user_id"] or True:
+    if session["id"] != org["user_id"]:
         return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)
     if s.table("Ticket").select("*").eq("event_id", event_id).eq("user_id", user_id).maybe_single().execute().data:
         return mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive)
