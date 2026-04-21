@@ -31,11 +31,13 @@ class Item:
         return mui.Card(
             mui.Form(
                 mui.Grid(
-                    mui.LabelInput("Nazwa"),
-                    mui.LabelInput("Ilość", value=1, type="number", inputmode="numeric"),
+                    mui.LabelInput("Nazwa", id="name"),
+                    mui.LabelInput("Ilość", id="quantity", value=1, type="number", inputmode="numeric"),
                 ),
                 mui.LabelInput(
-                    "Opis", placeholder="Dlaczego ten przedmiot jest potrzebny bądź jak interpretować ilość?"
+                    "Opis",
+                    id="description",
+                    placeholder="Dlaczego ten przedmiot jest potrzebny bądź jak interpretować ilość?",
                 ),
                 mui.Button(
                     "Submit",
@@ -115,7 +117,7 @@ class Contribution:
                         type="number",
                         inputmode="numeric",
                     ),
-                    mui.LabelInput("Notatka", value=contribution.note),
+                    mui.LabelInput("Notatka", id="note", value=contribution.note),
                 ),
                 mui.Button(
                     "Submit",
