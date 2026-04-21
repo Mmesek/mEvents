@@ -4,6 +4,7 @@ from fasthtml import common as fh
 from src.components.headers import HEADERS
 from src.beforeware import beforeware
 from src.db import s
+from src.components import with_layout
 
 app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
 
@@ -40,10 +41,11 @@ class Item:
                     placeholder="Dlaczego ten przedmiot jest potrzebny bądź jak interpretować ilość?",
                 ),
                 mui.Button(
-                    "Submit",
+                    "Dodaj",
                     hx_post=f"/contributions/items/{event_id}",
                     hx_target="#items",
                     hx_swap="beforeend",
+                    cls=mui.ButtonT.ghost,
                 ),
             ),
             header="Dodaj własną sugestię. W celu deklaracji przyniesienia sugerowanego przedmiotu, odśwież stronę i zadeklaruj odpowiedni przedmiot.",
@@ -120,11 +122,12 @@ class Contribution:
                     mui.LabelInput("Notatka", id="note", value=contribution.note),
                 ),
                 mui.Button(
-                    "Submit",
+                    "Zadeklaruj",
                     hx_post=f"/contributions/contribute/{item_id}",
                     hx_target=f"#contributions-{item_id}"
                     + (f"-{contribution.user_id}" if contribution.user_id else ""),
                     hx_swap="afterend" if not contribution.user_id else "innerHTML",
+                    cls=mui.ButtonT.ghost,
                 ),
             )
         )
@@ -165,6 +168,7 @@ def contribute(session, item_id: int, responses: dict):
 
 
 @rt("/{event_id}")
+@with_layout(title="Lista przedmiotów potrzebnych do wydarzenia")
 def contributions(event_id: int):
     items = Item.fetch(event_id)
     return mui.Card(
@@ -173,5 +177,4 @@ def contributions(event_id: int):
             Item.form(event_id),
             id="items",
         ),
-        header="Lista przedmiotów potrzebnych podczas ogniska",
     )
