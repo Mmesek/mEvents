@@ -16,6 +16,7 @@ class Item:
     name: str = None
     description: str = None
     quantity: int = None
+    created_at: str = None
     contributions: list["Contribution"] = field(default_factory=list)
 
     def __post_init__(self):
