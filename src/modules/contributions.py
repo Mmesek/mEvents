@@ -31,17 +31,20 @@ class Item:
         return mui.Card(
             mui.Form(
                 mui.Grid(
-                    mui.LabelInput("Name"),
-                    mui.LabelInput("Quantity", value=1, type="number", inputmode="numeric"),
+                    mui.LabelInput("Nazwa"),
+                    mui.LabelInput("Ilość", value=1, type="number", inputmode="numeric"),
                 ),
-                mui.LabelInput("Description"),
+                mui.LabelInput(
+                    "Opis", placeholder="Dlaczego ten przedmiot jest potrzebny bądź jak interpretować ilość?"
+                ),
                 mui.Button(
                     "Submit",
                     hx_post=f"/contributions/items/{event_id}",
                     hx_target="#items",
                     hx_swap="beforeend",
                 ),
-            )
+            ),
+            header="Dodaj własną sugestię. W celu deklaracji przyniesienia sugerowanego przedmiotu, odśwież stronę i zadeklaruj odpowiedni przedmiot.",
         )
 
     def display(self):
@@ -106,9 +109,13 @@ class Contribution:
             mui.Form(
                 mui.Grid(
                     mui.LabelInput(
-                        "Your Quantity", id="quantity", value=contribution.quantity, type="number", inputmode="numeric"
+                        "Twoja deklarowana ilość",
+                        id="quantity",
+                        value=contribution.quantity,
+                        type="number",
+                        inputmode="numeric",
                     ),
-                    mui.LabelInput("Note", value=contribution.note),
+                    mui.LabelInput("Notatka", value=contribution.note),
                 ),
                 mui.Button(
                     "Submit",
@@ -158,10 +165,11 @@ def contribute(session, item_id: int, responses: dict):
 @rt("/{event_id}")
 def contributions(event_id: int):
     items = Item.fetch(event_id)
-    return mui.DivCentered(
+    return mui.Card(
         mui.Accordion(
             *(item.display() for item in sorted(items, key=lambda x: x.quantity, reverse=True)),
             Item.form(event_id),
             id="items",
-        )
+        ),
+        header="Lista przedmiotów potrzebnych podczas ogniska",
     )
