@@ -33,7 +33,7 @@ class Item:
             mui.Form(
                 mui.Grid(
                     mui.LabelInput("Nazwa", id="name"),
-                    mui.LabelInput("Ilość", id="quantity", value=1, type="number", inputmode="numeric"),
+                    mui.LabelInput("Ilość", id="quantity", value=1, type="number", inputmode="numeric", min=0),
                 ),
                 mui.LabelInput(
                     "Opis",
@@ -84,7 +84,7 @@ class Item:
             "user_id": self.user_id,
             "name": self.name,
             "description": self.description,
-            "quantity": self.quantity,
+            "quantity": max(self.quantity, 0),
         }
         if self.id:
             item["id"] = self.id
@@ -115,9 +115,10 @@ class Contribution:
                     mui.LabelInput(
                         "Twoja deklarowana ilość",
                         id="quantity",
-                        value=contribution.quantity,
+                        value=contribution.quantity or 1,
                         type="number",
                         inputmode="numeric",
+                        min=0,
                     ),
                     mui.LabelInput("Notatka", id="note", value=contribution.note),
                 ),
@@ -143,7 +144,7 @@ class Contribution:
                 {
                     "item_id": self.item_id,
                     "user_id": self.user_id,
-                    "quantity": self.quantity,
+                    "quantity": max(self.quantity, 0),
                     "note": self.note,
                 }
             )
