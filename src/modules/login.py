@@ -1,79 +1,59 @@
 import os
 
-from fasthtml.common import A, Redirect, fast_app, P
-from monsterui.all import (
-    Card,
-    Titled,
-    Form,
-    Input,
-    Button,
-    ButtonT,
-)
+from fasthtml.common import A, P, Redirect, fast_app
+from monsterui import all as mui
 
-from src.db import supa
+from src.beforeware import store_session
+from src.components.components import with_layout
 from src.components.headers import HEADERS
+from src.db import supa
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
+LOGIN_STRING = "Zaloguj korzystając z {}"
+PROVIDERS = {
+    "https://discord.com": ("discord", "Discorda"),
+    "https://google.com": ("google", "Google'a"),
+    # "https://facebook.com": ("facebook", "Facebook'a"),
+}
 
 app, rt = fast_app(hdrs=HEADERS)
 
-LOGIN_STRING = "Zaloguj korzystając z {}"
-
 
 def magic_link():
-    return Form(
+    return mui.Form(
         LOGIN_STRING.format("magicznego linku"),
-        Input(id="email", placeholder="email@hostname.tld"),
-        Button("Wyślij link do logowania", cls=ButtonT.primary),
+        mui.Input(id="email", placeholder="email@hostname.tld"),
+        mui.Button("Wyślij link do logowania", cls=mui.ButtonT.primary),
         hx_post="/login/email",
     )
 
 
 @rt("/")
-def login():
-    return Titled(
-        "Login",
-        Card(
-            A(
-                LOGIN_STRING.format("Discorda"),
-                href="https://discord.com",
-                hx_get="/login/discord",
-            ),
-        ),
-        Card(
-            A(
-                LOGIN_STRING.format("Google'a"),
-                href="https://google.com",
-                hx_get="/login/google",
+@with_layout(title="Login")
+def login(provider: str = None):
+    if provider:
+        return oauth_login(provider)
+    return (
+        *[
+            mui.Card(
+                A(
+                    LOGIN_STRING.format(v[1]),
+                    href=k,
+                    hx_get="/login?provider=" + v[0],
+                ),
             )
-        ),
-        Card(magic_link()),
+            for k, v in PROVIDERS.items()
+        ],
+        mui.Card(magic_link()),
     )
 
 
-def oauth_login(provider: str):
-    res = supa.auth.sign_in_with_oauth(
-        {
-            "provider": provider,
-            "options": {"redirect_to": f"{BASE_URL}/login/redirect"},
-        }
-    )
+def oauth_login(provider: str, scopes: list[str] = None):
+    options = {"redirect_to": f"{BASE_URL}/login/redirect"}
+    if scopes:
+        options["scopes"] = scopes
+    res = supa.auth.sign_in_with_oauth({"provider": provider, "options": options})
     return Redirect(res.url)
-
-
-@rt("/discord")
-def login_discord():
-    return oauth_login("discord")
-
-
-@rt("/facebook")
-def login_facebook():
-    return oauth_login("facebook")
-
-
-@rt("/google")
-def login_google():
-    return oauth_login("google")
 
 
 @rt("/email")
@@ -88,37 +68,37 @@ def login_email(email: str, session):
     except:
         return "Wprowadzony adres e-mail jest nie poprawny", magic_link()
     session["otp_email"] = email
-    return P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), Form(
-        Input(id="otp", placeholder="123456"),
-        Button("Użyj kodu", cls=ButtonT.primary),
+    return P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), mui.Form(
+        mui.Input(id="otp", placeholder="123456"),
+        mui.Button("Użyj kodu", cls=mui.ButtonT.primary),
         hx_post="/login/otp",
     )
+
+
+def finish_login(res, session):
+    store_session(res, session)
+
+    return Redirect(session.get("referrer", "/"))
 
 
 @rt("/otp")
 def otp(otp: str, session):
     res = supa.auth.verify_otp({"email": session["otp_email"], "token": otp, "type": "email"})
-    session["email"] = res.user.email
-    session["id"] = res.user.id
-    session["picture"] = f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
-    return Redirect(session.get("referrer", "/"))
+    return finish_login(res, session)
 
 
 @rt("/redirect")
 def redirect(code: str, session):
     res = supa.auth.exchange_code_for_session({"auth_code": code})
-    session["email"] = res.user.email
-    session["id"] = res.user.id
-    session["picture"] = res.user.user_metadata.get("avatar_url")
-
-    return Redirect(session.get("referrer", "/"))
+    return finish_login(res, session)
 
 
 @rt("/verify")
 def verify_otp(access_token: str, type: str, session):
     res = supa.auth.verify_otp({"token_hash": access_token, "type": type})
-    session["email"] = res.user.email
-    session["id"] = res.user.id
-    session["picture"] = f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
+    return finish_login(res, session)
 
-    return Redirect(session.get("referrer", "/"))
+
+@rt("/calendar")
+def calendar():
+    return oauth_login("google", ["https://www.googleapis.com/auth/calendar.events"])

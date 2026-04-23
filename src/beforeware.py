@@ -1,5 +1,17 @@
 from fasthtml import common as fh
 from src.components.translations import Translation
+from src.db import supa
+from supabase_auth import AuthResponse
+
+
+def store_session(res: AuthResponse, session: dict):
+    session["email"] = res.user.email
+    session["id"] = res.user.id
+    session["picture"] = res.user.user_metadata.get(
+        "avatar_url", f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
+    )
+    session["auth"] = res.session.access_token
+    session["refresh_token"] = res.session.refresh_token
 
 
 def user_auth_before(req, sess):
