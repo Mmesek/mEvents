@@ -1,34 +1,33 @@
-from monsterui import all as mui
-from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Annotated
+from uuid import UUID
+
 from fasthtml import common as fh
-from src.components.headers import HEADERS
+from monsterui import all as mui
+from msgspec import Meta
+
 from src.beforeware import beforeware
-from src.db import s
 from src.components import with_layout
+from src.components.headers import HEADERS
+from src.db import Base, s
 
 app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
 
+uint = Annotated[int, Meta(ge=0)]
 
-@dataclass
-class Item:
+
+class Items(Base):
     id: int = None
     event_id: int = None
-    user_id: int = None
+    user_id: UUID = None
     name: str = None
     description: str = None
-    quantity: int = None
-    created_at: str = None
-    contributions: list["Contribution"] = field(default_factory=list)
-
-    def __post_init__(self):
-        if self.contributions:
-            self.contributions = [
-                Contribution(display_name=(c.pop("user") or {}).get("display_name", c.get("user_id")), **c)
-                for c in self.contributions
-            ]
+    quantity: uint = None
+    created_at: datetime = None
+    contributions: list["Contribution"] = list
 
     @classmethod
-    def form(cls, event_id: int):
+    def form(cls, event_id: int) -> fh.FT:
         return mui.Card(
             mui.Form(
                 mui.Grid(
@@ -67,16 +66,13 @@ class Item:
         )
 
     @classmethod
-    def fetch(cls, event_id: int) -> list["Item"]:
-        return [
-            Item(**i)
-            for i in s.table("Items")
+    def fetch(cls, event_id: int) -> list["Items"]:
+        return Items.get(
+            Items.table()
             .select('*, contributions:"Contributions" (*, user:"users" (display_name))')
             .eq("event_id", event_id)
             .eq("contributions.user.event_id", event_id)
-            .execute()
-            .data
-        ]
+        )
 
     def add(self):
         item = {
@@ -88,17 +84,20 @@ class Item:
         }
         if self.id:
             item["id"] = self.id
-        return Item(**s.table("Items").upsert(item).execute().data[0])
+        return Items.get_one(Items.table().upsert(item))
 
 
-@dataclass
-class Contribution:
+class Contribution(Base):
     item_id: int = None
-    user_id: int = None
-    quantity: int = 0
+    user_id: UUID = None
+    quantity: uint = 0
     note: str = None
-    created_at: str = None
+    created_at: datetime = None
     display_name: str = None
+    user: dict = None
+
+    def __post_init__(self):
+        self.display_name = (self.user or {}).get("display_name", self.user_id)
 
     def display(self):
         return mui.Card(
@@ -108,7 +107,7 @@ class Contribution:
         )
 
     @classmethod
-    def form(cls, item_id: int, contribution: "Contribution"):
+    def form(cls, item_id: int, contribution: "Contribution") -> fh.FT:
         return mui.Card(
             mui.Form(
                 mui.Grid(
@@ -135,12 +134,11 @@ class Contribution:
 
     @classmethod
     def fetch(cls, item_id: int) -> list["Contribution"]:
-        return [Contribution(**i) for i in s.table("Contributions").select("*").eq("item_id", item_id).execute().data]
+        return Contribution.get(Contribution.select().eq("item_id", item_id))
 
     def add(self):
-        return Contribution(
-            **s.table("Contributions")
-            .upsert(
+        return Contribution.get_one(
+            Contribution.table().upsert(
                 {
                     "item_id": self.item_id,
                     "user_id": self.user_id,
@@ -148,14 +146,12 @@ class Contribution:
                     "note": self.note,
                 }
             )
-            .execute()
-            .data[0]
         )
 
 
 @rt("/items/{event_id}")
 def add(session, event_id: int, responses: dict):
-    item = Item(event_id=event_id, user_id=session["id"], **responses)
+    item = Items(event_id=event_id, user_id=session["id"], **responses)
     item = item.add()
     return item.display()
 
@@ -171,11 +167,11 @@ def contribute(session, item_id: int, responses: dict):
 @rt("/{event_id}")
 @with_layout(title="Lista przedmiotów potrzebnych do wydarzenia")
 def contributions(event_id: int):
-    items = Item.fetch(event_id)
+    items = Items.fetch(event_id)
     return mui.Card(
         mui.Accordion(
             *(item.display() for item in sorted(items, key=lambda x: x.quantity, reverse=True)),
-            Item.form(event_id),
+            Items.form(event_id),
             id="items",
         ),
     )

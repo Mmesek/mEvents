@@ -1,5 +1,4 @@
 import base64
-from dataclasses import dataclass
 from io import BytesIO
 
 import qrcode
@@ -11,16 +10,19 @@ from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 from src.beforeware import beforeware
 from src.components import with_layout
 from src.components.headers import HEADERS
-from src.db import s
+from src.db import s, Base
 
 app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
 
 
-@dataclass
-class Tickets:
+class Attendance(Base):
     event_id: int
     user_id: int
+    filled_form: str
+    downloaded_ticket: str
     arrived: str
+    withdrew: str
+    authorized_by: str
 
 
 def make_qr(data: str):
@@ -80,9 +82,18 @@ def _verify(session, event_id: int, user_id: int):
     org = s.table("Event").select("user_id").eq("id", event_id).maybe_single().execute().data
     if session["id"] != org["user_id"]:
         return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)
-    if s.table("Ticket").select("*").eq("event_id", event_id).eq("user_id", user_id).maybe_single().execute():
+    if (
+        Attendance.table(session["auth"])
+        .select("*")
+        .eq("event_id", event_id)
+        .eq("user_id", user_id)
+        .maybe_single()
+        .execute()
+    ):
         return mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive)
-    s.table("Ticket").upsert({"event_id": event_id, "user_id": user_id, "authorized_by": session["id"]}).execute()
+    Attendance.table(session["auth"]).upsert(
+        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"]}
+    ).execute()
     return mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary)
 
 

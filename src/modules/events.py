@@ -1,6 +1,4 @@
-from dataclasses import dataclass
 from datetime import datetime
-from inspect import get_annotations
 
 from fasthtml import common as fh
 from monsterui.all import (
@@ -25,19 +23,19 @@ import i18n
 
 from src.components import handle_updating_responses, icon_text, right_icon_text, with_layout, Layout
 from src.components.headers import HEADERS
-from src.db import s
+from src.db import s, Base
 from src.generators import QuestionTypes, guests
-from src.beforeware import beforeware, translations
+from src.beforeware import beforeware
+from uuid import UUID
 
 
-@dataclass
-class Event:
+class Event(Base):
     id: int = None
     title: str = None
     description: str = None
     form_id: int = None
     feedback_form_id: int = None
-    user_id: str = None
+    user_id: UUID = None
     place: str = None
     start_time: datetime = None
     end_time: datetime | None = None
@@ -157,7 +155,7 @@ def events(
     include_previous: bool = False,
     user_id: str = None,
 ):
-    forms_stmt = s.table("Event").select('*, responses:"Response" (user_id)')
+    forms_stmt = Event.table().select('*, responses:"Response" (user_id)')
     if not include_previous:
         forms_stmt = forms_stmt.gt("end_time", datetime.now())
     if name:
@@ -165,9 +163,8 @@ def events(
     forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
-    forms = forms_stmt.execute().data
 
-    events = sorted([Event(**f) for f in forms], key=lambda x: x.start_time)
+    events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
 
     return [
         f.info_card(
