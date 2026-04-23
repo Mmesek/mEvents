@@ -10,12 +10,16 @@ def store_session(res: AuthResponse, session: dict):
     session["picture"] = res.user.user_metadata.get(
         "avatar_url", f"https://api.dicebear.com/8.x/lorelei/svg?seed={res.user.id}"
     )
+    session["display_name"] = res.user.user_metadata.get("name", res.user.email)
     session["auth"] = res.session.access_token
     session["refresh_token"] = res.session.refresh_token
 
 
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
+    if not supa.auth.get_user():
+        auth = supa.auth.refresh_session(sess.get("refresh_token"))
+        store_session(auth, sess)
     if not auth:
         sess["referrer"] = req.url.path
         return fh.RedirectResponse("/login", 303)
