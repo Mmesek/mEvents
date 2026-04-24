@@ -1,7 +1,6 @@
 import time
 from fasthtml import common as fh
 from src.components.translations import Translation
-from starlette.middleware.base import BaseHTTPMiddleware
 from src.db import supa
 from supabase_auth import AuthResponse
 
@@ -21,7 +20,6 @@ def store_session(res: AuthResponse, session: dict):
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
     if auth and sess.get("auth") and sess.get("expires_at", 0) < time.time():
-        print("Token expired, refreshing")
         auth = supa.auth.refresh_session(sess.get("refresh_token"))
         store_session(auth, sess)
     if not auth:
@@ -32,15 +30,6 @@ def user_auth_before(req, sess):
 def set_locale(sess):
     sess["locale"] = "pl"
     # sess.t = Translation(sess.get("locale"))
-
-
-class TranslationMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        session = request.session
-        session["locale"] = session.get("locale", "en")
-        request.scope["t"] = Translation(session["locale"])
-
-        return await call_next(request)
 
 
 beforeware = fh.Beforeware(
@@ -58,3 +47,5 @@ beforeware = fh.Beforeware(
         "/privacy-delete",
     ],
 )
+
+translations = fh.Beforeware(set_locale)
