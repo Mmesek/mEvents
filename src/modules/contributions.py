@@ -9,7 +9,7 @@ from msgspec import Meta
 from src.beforeware import beforeware
 from src.components import with_layout
 from src.components.headers import HEADERS
-from src.db import Base, s
+from src.db import Base
 
 app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
 
@@ -24,7 +24,11 @@ class Items(Base):
     description: str = None
     quantity: uint = None
     created_at: datetime = None
-    contributions: list["Contribution"] = list
+    contributions: list["Contributions"] = list
+
+    def __post_init__(self):
+        self.display_name = (self.user or {}).get("display_name", self.user_id)
+        self.quantity = int(self.quantity)
 
     @classmethod
     def form(cls, event_id: int) -> fh.FT:
@@ -52,7 +56,7 @@ class Items(Base):
 
     def display(self):
         filled = sum(c.quantity for c in self.contributions) if self.contributions else 0
-        user_contributed = next(filter(lambda x: x.user_id == self.user_id, self.contributions), Contribution())
+        user_contributed = next(filter(lambda x: x.user_id == self.user_id, self.contributions), Contributions())
         return mui.AccordionItem(
             f"{self.name} x {filled}/{self.quantity}",
             mui.Card(self.description) if self.description else None,
@@ -62,7 +66,7 @@ class Items(Base):
                 else "Jeszcze nikt się nie zgłosił!",
                 id=f"contributions-{self.id}",
             ),
-            Contribution.form(self.id, contribution=user_contributed),
+            Contributions.form(self.id, contribution=user_contributed),
         )
 
     @classmethod
@@ -87,7 +91,7 @@ class Items(Base):
         return Items.get_one(Items.table().upsert(item))
 
 
-class Contribution(Base):
+class Contributions(Base):
     item_id: int = None
     user_id: UUID = None
     quantity: uint = 0
@@ -98,6 +102,7 @@ class Contribution(Base):
 
     def __post_init__(self):
         self.display_name = (self.user or {}).get("display_name", self.user_id)
+        self.quantity = int(self.quantity)
 
     def display(self):
         return mui.Card(
@@ -107,7 +112,7 @@ class Contribution(Base):
         )
 
     @classmethod
-    def form(cls, item_id: int, contribution: "Contribution") -> fh.FT:
+    def form(cls, item_id: int, contribution: "Contributions") -> fh.FT:
         return mui.Card(
             mui.Form(
                 mui.Grid(
@@ -133,12 +138,12 @@ class Contribution(Base):
         )
 
     @classmethod
-    def fetch(cls, item_id: int) -> list["Contribution"]:
-        return Contribution.get(Contribution.select().eq("item_id", item_id))
+    def fetch(cls, item_id: int) -> list["Contributions"]:
+        return Contributions.get(Contributions.select().eq("item_id", item_id))
 
     def add(self):
-        return Contribution.get_one(
-            Contribution.table().upsert(
+        return Contributions.get_one(
+            Contributions.table().upsert(
                 {
                     "item_id": self.item_id,
                     "user_id": self.user_id,
@@ -158,7 +163,7 @@ def add(session, event_id: int, responses: dict):
 
 @rt("/contribute/{item_id}")
 def contribute(session, item_id: int, responses: dict):
-    c = Contribution(user_id=session["id"], item_id=item_id, **responses)
+    c = Contributions(user_id=session["id"], item_id=item_id, **responses)
     c = c.add()
     c.display_name = session.get("display_name", "Ty")
     return c.display()
