@@ -53,9 +53,9 @@ class Items(Base):
             header="Dodaj własną sugestię. W celu deklaracji przyniesienia sugerowanego przedmiotu, odśwież stronę i zadeklaruj odpowiedni przedmiot.",
         )
 
-    def display(self):
+    def display(self, user_id: UUID = None):
         filled = sum(c.quantity for c in self.contributions) if self.contributions else 0
-        user_contributed = next(filter(lambda x: x.user_id == self.user_id, self.contributions), Contributions())
+        user_contributed = next(filter(lambda x: x.user_id == user_id, self.contributions), Contributions())
         return mui.AccordionItem(
             f"{self.name} x {filled}/{self.quantity}",
             mui.Card(self.description) if self.description else None,
@@ -157,7 +157,7 @@ class Contributions(Base):
 def add(session, event_id: int, responses: dict):
     item = Items(event_id=event_id, user_id=session["id"], **responses)
     item = item.add()
-    return item.display()
+    return item.display(session["id"])
 
 
 @rt("/contribute/{item_id}")
@@ -170,11 +170,11 @@ def contribute(session, item_id: int, responses: dict):
 
 @rt("/{event_id}")
 @with_layout(title="Lista przedmiotów potrzebnych do wydarzenia")
-def contributions(event_id: int):
+def contributions(session, event_id: int):
     items = Items.fetch(event_id)
     return mui.Card(
         mui.Accordion(
-            *(item.display() for item in sorted(items, key=lambda x: x.quantity, reverse=True)),
+            *(item.display(session["id"]) for item in sorted(items, key=lambda x: x.quantity, reverse=True)),
             Items.form(event_id),
             id="items",
         ),
