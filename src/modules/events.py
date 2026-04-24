@@ -1,32 +1,14 @@
 from datetime import datetime
-
-from fasthtml import common as fh
-from monsterui.all import (
-    AT,
-    H1,
-    Button,
-    ButtonT,
-    Card,
-    DivCentered,
-    DividerLine,
-    DivLAligned,
-    DivRAligned,
-    render_md,
-    Grid,
-    Input,
-    Switch,
-    TextArea,
-    TextPresets,
-    Select,
-)
-import i18n
-
-from src.components import handle_updating_responses, icon_text, right_icon_text, with_layout, Layout
-from src.components.headers import HEADERS
-from src.db import s, Base
-from src.generators import QuestionTypes, guests
-from src.beforeware import beforeware
 from uuid import UUID
+
+import i18n
+from fasthtml import common as fh
+from monsterui import all as mui
+
+from src.beforeware import beforeware
+from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout
+from src.components.headers import HEADERS
+from src.db import Base, s
 
 
 class Response(Base):
@@ -53,24 +35,15 @@ class Event(Base):
     org_name: str | None = None
     private: bool | None = None
 
-    def __post_init__(self):
-        if type(self.start_time) is str:
-            self.start_time = datetime.fromisoformat(self.start_time)
-            if self.end_time:
-                self.end_time = datetime.fromisoformat(self.end_time)
-
-    def info_card(
-        self,
-        count: int = None,
-        logged_in: bool = False,
-        user_id: str = None,
-    ):
-        user_id = UUID(user_id)
+    def info_card(self, user_id: str = None):
+        if user_id:
+            user_id = UUID(user_id)
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
+        count = len({i.user_id for i in self.responses})
         align = right_icon_text if count else icon_text
-        return DivCentered(
-            Card(
+        return mui.DivCentered(
+            mui.Card(
                 fh.Img(
                     src=self.image,
                     loading="lazy",
@@ -80,14 +53,16 @@ class Event(Base):
                 )
                 if self.image
                 else None,
-                DivCentered(H1(fh.A(self.title, cls=AT.classic, href=f"/forms/{self.id}" if self.id else None))),
-                Grid(
+                mui.DivCentered(
+                    mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
+                ),
+                mui.Grid(
                     icon_text("clock", self.start_time.strftime("%H:%M")),
                     right_icon_text("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
                     cols=2,
                     cls="gap-1 items-center justify-center",
                 ),
-                Grid(
+                mui.Grid(
                     icon_text("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
                     right_icon_text("pin", f"{self.place}"),
                     (icon_text("users", f"**Liczba zapisanych**: {count}")) if count else None,
@@ -97,7 +72,7 @@ class Event(Base):
                 ),
                 (icon_text("palette", f"**Temat Przewodni**: {self.theme}")) if self.theme else None,
                 (icon_text("shirt", f"**Dresscode**: {self.dresscode}")) if self.dresscode else None,
-                DivCentered(
+                mui.DivCentered(
                     icon_text(
                         "messages-square",
                         text=f"**[Discord]({self.discord_event})**",
@@ -105,46 +80,77 @@ class Event(Base):
                 )
                 if self.discord_event
                 else None,
-                DivCentered(render_md(self.description)) if self.description else None,
-                DivRAligned(
-                    fh.A(
-                        Button("Sprawdź Feedback", cls=ButtonT.ghost, submit=False),
-                        href=f"/responses/{self.id}?feedback=true",
-                    )
-                    if self.user_id == user_id
-                    else None,
-                    fh.A(
-                        Button("Sprawdź odpowiedzi", cls=ButtonT.ghost, submit=False),
-                        href=f"/responses/{self.id}",
-                    )
-                    if self.user_id == user_id
-                    else None,
-                    fh.A(Button("Przygotowania", cls=ButtonT.ghost, submit=False), href=f"/contributions/{self.id}")
-                    if any(user_id == x.user_id for x in self.responses)
-                    else None,
-                    DivLAligned(
-                        guests(self.id, target=f"guestlist_{self.id}"),
-                        id=f"guestlist_{self.id}",
-                    )
-                    if logged_in
-                    else None,
-                    fh.A(
-                        Button("Weź udział", cls=ButtonT.ghost, submit=False),
-                        href=f"/forms/{self.id}" if self.id else None,
-                    )
-                    if self.start_time > datetime.now()
-                    else fh.A(
-                        Button("Udziel feedbacku", cls=ButtonT.ghost, submit=False),
-                        href=f"/forms/feedback/{self.id}" if self.id else None,
-                    ),
-                ),
+                mui.DivCentered(mui.render_md(self.description)) if self.description else None,
+                mui.DivRAligned(*self.event_buttons(user_id)),
                 body_cls="space-y-0",
                 style="max-width: 1000px; min-width: 35%",
             )
         )
 
+    @property
+    def event_started(self):
+        return self.start_time < datetime.now()
 
-app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware, translations])
+    def render_button_guests(self):
+        return mui.Button(
+            "Lista gości",
+            cls=mui.ButtonT.ghost,
+            submit=False,
+            hx_target=f"#guestlist_{self.id}",
+            hx_get=f"/events/guests?event_id={self.id}",
+        )
+
+    def render_button_form_responses(self):
+        return (
+            fh.A(
+                mui.Button("Sprawdź Feedback", cls=mui.ButtonT.ghost, submit=False),
+                href=f"/responses/{self.id}?feedback=true",
+            )
+            if self.event_started
+            else fh.A(
+                mui.Button("Sprawdź odpowiedzi", cls=mui.ButtonT.ghost, submit=False),
+                href=f"/responses/{self.id}",
+            )
+        )
+
+    def event_buttons(self, user_id: UUID):
+        buttons = []
+        if self.user_id == user_id:
+            buttons.append(self.render_button_form_responses())
+        if is_guest := any(user_id == x.user_id for x in self.responses):
+            buttons.append(fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.ghost), href=f"/contributions/{self.id}"))
+        if user_id:
+            buttons.append(mui.DivLAligned(self.render_button_guests(), id=f"guestlist_{self.id}"))
+        if self.id:
+            if not self.event_started:
+                buttons.append(
+                    fh.A(mui.Button("Weź udział", cls=mui.ButtonT.ghost, submit=False), href=f"/forms/{self.id}")
+                )
+            elif is_guest:
+                buttons.append(
+                    fh.A(
+                        mui.Button("Udziel feedbacku", cls=mui.ButtonT.ghost, submit=False),
+                        href=f"/forms/feedback/{self.id}",
+                    )
+                )
+        return buttons
+
+
+app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
+
+
+@rt("/guests")
+def list_guests(session, event_id: str):
+    names = (
+        s.auth(session["auth"])
+        .table("users")
+        .select("display_name")
+        .eq("event_id", event_id)
+        .order("timestamp")
+        .execute()
+        .data
+    )
+    return mui.DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=mui.ListT.decimal))
 
 
 @rt("/")
@@ -165,25 +171,16 @@ def events(
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
 
-    events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
-
-    return [
-        f.info_card(
-            count=len({i.user_id for i in f.responses}),
-            logged_in=session.get("email") is not None,
-            user_id=session.get("id"),
-        )
-        for f in events
-    ]
+    return [f.info_card(user_id=session.get("id")) for f in sorted(Event.get(forms_stmt), key=lambda x: x.start_time)]
 
 
 @rt("/create")
 def create(session):
-    content = DivCentered(
-        Card(
-            DivCentered(
-                H1(
-                    Input(
+    content = mui.DivCentered(
+        mui.Card(
+            mui.DivCentered(
+                mui.H1(
+                    mui.Input(
                         id="title",
                         placeholder=i18n.t("events.create.title.name", locale=session.get("locale")),
                         required=True,
@@ -192,10 +189,10 @@ def create(session):
                 ),
                 cls="required",
             ),
-            Grid(
+            mui.Grid(
                 icon_text(
                     "clock",
-                    Input(
+                    mui.Input(
                         type="time",
                         id="start_time",
                         required=True,
@@ -205,7 +202,7 @@ def create(session):
                 ),
                 right_icon_text(
                     "clock-10",
-                    Input(
+                    mui.Input(
                         type="time",
                         id="end_time",
                         title=i18n.t("events.create.end.description", locale=session.get("locale")),
@@ -213,7 +210,7 @@ def create(session):
                 ),
                 icon_text(
                     "calendar",
-                    Input(
+                    mui.Input(
                         type="date",
                         id="date",
                         required=True,
@@ -223,7 +220,7 @@ def create(session):
                 ),
                 right_icon_text(
                     "pin",
-                    Input(
+                    mui.Input(
                         id="place",
                         placeholder=i18n.t("events.create.place.name", locale=session.get("locale")),
                         required=True,
@@ -233,21 +230,16 @@ def create(session):
                 ),
                 icon_text(
                     "user",
-                    Input(
+                    mui.Input(
                         id="org_name",
-                        value=s.table("users")
-                        .select("display_name")
-                        .eq("id", session.get("id"))
-                        .execute()
-                        .data[0]["display_name"]
-                        .title(),
+                        value=session["display_name"].title(),
                         title=i18n.t("events.create.org_name.description", locale=session.get("locale")),
                     ),
                 ),
                 fh.Div(),
                 icon_text(
                     "palette",
-                    Input(
+                    mui.Input(
                         id="theme",
                         placeholder=i18n.t("events.create.theme.name", locale=session.get("locale")),
                         title=i18n.t("events.create.theme.description", locale=session.get("locale")),
@@ -256,7 +248,7 @@ def create(session):
                 icon_text(
                     "shirt",
                     (
-                        Input(
+                        mui.Input(
                             id="dresscode",
                             placeholder=i18n.t(
                                 "events.create.dresscode.name",
@@ -264,27 +256,27 @@ def create(session):
                             ),
                             title=i18n.t("events.create.dresscode.description", locale=session.get("locale")),
                         ),
-                        Switch(
+                        mui.Switch(
                             id="dresscode_mandatory",
                             title=i18n.t("events.create.dresscode_mandatory.description", locale=session.get("locale")),
                         ),
                         fh.P(
                             i18n.t("events.create.dresscode_mandatory.name", locale=session.get("locale")),
-                            cls=TextPresets.muted_sm,
+                            cls=mui.TextPresets.muted_sm,
                         ),
                     ),
                 ),
                 cols=2,
                 cls="gap-1 items-center justify-center",
             ),
-            DivCentered(
-                TextArea(
+            mui.DivCentered(
+                mui.TextArea(
                     id="description",
                     placeholder=i18n.t("events.create.description.default", locale=session.get("locale")),
                     title=i18n.t("events.create.description.description", locale=session.get("locale")),
                 )
             ),
-            Switch(i18n.t("events.create.is_private", locale=session.get("locale")), id="private"),
+            mui.Switch(i18n.t("events.create.is_private", locale=session.get("locale")), id="private"),
             fh.Div(
                 fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
                 fh.Select(
@@ -296,7 +288,7 @@ def create(session):
                 ),
                 fh.Div(id="form"),
             ),
-            Select(
+            mui.Select(
                 *[
                     form_option(f["title"], f["id"])
                     for f in s.table("Form").select("id, title").ilike("title", "Feedback").execute().data
@@ -305,15 +297,15 @@ def create(session):
                 searchable=True,
                 placeholder=i18n.t("events.create.select_feedback_form", locale=session.get("locale")),
             ),
-            Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=ButtonT.primary),
+            mui.Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=mui.ButtonT.primary),
         )
     )
     return fh.Container(
         fh.Form(
-            DivCentered(
+            mui.DivCentered(
                 fh.H1(i18n.t("events.create.add.title", locale=session.get("locale"))),
                 i18n.t("events.create.add.description", locale=session.get("locale")),
-                DividerLine(),
+                mui.DividerLine(),
             ),
             content,
             cls="space-y-3 mt-4",
@@ -339,9 +331,9 @@ def add(session, responses: dict):
         return Event(**responses).info_card()
 
     except Exception as ex:
-        return DivCentered(i18n.t("events.create.add.failed", locale=session.get("locale"))), DivRAligned(ex)
+        return mui.DivCentered(i18n.t("events.create.add.failed", locale=session.get("locale"))), mui.DivRAligned(ex)
 
-    return DivCentered(i18n.t("events.create.add.success", locale=session.get("locale"))), DivRAligned("Test")
+    return mui.DivCentered(i18n.t("events.create.add.success", locale=session.get("locale"))), mui.DivRAligned("Test")
 
 
 @rt("/mine")

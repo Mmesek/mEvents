@@ -38,16 +38,6 @@ def register(name: str = None, type_: type = None):
     return inner
 
 
-def guests(event_id: str, target: str = "guestlist"):
-    return Button(
-        "Lista gości",
-        cls=ButtonT.ghost,
-        submit=False,
-        hx_target=f"#{target}",
-        hx_get=f"/forms/guests?event_id={event_id}",
-    )
-
-
 @register("INPUT", str)
 @register("ANSWER", str)
 def generate_input(

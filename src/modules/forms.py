@@ -4,16 +4,12 @@ from fasthtml import common as fh
 from monsterui.all import (
     Button,
     ButtonT,
-    Container,
     DivCentered,
     DividerLine,
     DivRAligned,
-    Form,
     Input,
     TextArea,
     render_md,
-    Switch,
-    ListT,
 )
 import i18n
 
@@ -24,7 +20,7 @@ from src.components import FormLayout, handle_updating_responses, with_layout, L
 from src.components.headers import HEADERS
 from src.db import s
 from src.forms import Question
-from src.generators import QuestionType, guests
+from src.generators import QuestionType
 from src.modules.events import Event
 
 app, rt = fh.fast_app(
@@ -35,12 +31,6 @@ app, rt = fh.fast_app(
 
 def back_to_main():
     return fh.A(Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False), href="/")
-
-
-@rt("/guests")
-def list_guests(event_id: str):
-    names = s.table("users").select("display_name").eq("event_id", event_id).order("timestamp").execute().data
-    return DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=ListT.decimal))
 
 
 def form(f, event_id, path="submit"):
@@ -54,13 +44,7 @@ def form(f, event_id, path="submit"):
         ],
         key=lambda x: x.order,
     )
-    content = [
-        DivRAligned(
-            guests(event_id, target="guestlist"),
-            id="guestlist",
-        )
-    ]
-    content.extend([q.generate(event_id) for q in questions])
+    content = [q.generate(event_id) for q in questions]
     if not questions:
         content.append(back_to_main())
     else:
