@@ -1,3 +1,4 @@
+import time
 from fasthtml import common as fh
 from src.components.translations import Translation
 from src.db import supa
@@ -13,11 +14,12 @@ def store_session(res: AuthResponse, session: dict):
     session["display_name"] = res.user.user_metadata.get("name", res.user.email)
     session["auth"] = res.session.access_token
     session["refresh_token"] = res.session.refresh_token
+    session["expires_at"] = res.session.expires_at
 
 
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
-    if not supa.auth.get_user():
+    if sess.get("expires_at", 0) < time.time():
         auth = supa.auth.refresh_session(sess.get("refresh_token"))
         store_session(auth, sess)
     if not auth:
