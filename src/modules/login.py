@@ -1,6 +1,7 @@
 import os
 
-from fasthtml.common import A, P, Redirect, fast_app
+import supabase
+from fasthtml import common as fh
 from monsterui import all as mui
 
 from src.beforeware import store_session
@@ -16,7 +17,7 @@ PROVIDERS = {
     # "https://facebook.com": ("facebook", "Facebook'a"),
 }
 
-app, rt = fast_app(hdrs=HEADERS)
+app, rt = fh.fast_app(hdrs=HEADERS)
 
 
 def magic_link():
@@ -28,23 +29,27 @@ def magic_link():
     )
 
 
+def provider_button(name: str, url: str):
+    return fh.A(
+        LOGIN_STRING.format(name[1]),
+        href=url,
+        hx_get="/login?provider=" + name[0],
+    )
+
+
 @rt("/")
 @with_layout(title="Login")
 def login(provider: str = None):
     if provider:
         return oauth_login(provider)
     return (
-        *[
-            mui.Card(
-                A(
-                    LOGIN_STRING.format(v[1]),
-                    href=k,
-                    hx_get="/login?provider=" + v[0],
-                ),
-            )
-            for k, v in PROVIDERS.items()
-        ],
-        mui.Card(magic_link()),
+        fh.Div(
+            mui.CardBody(
+                "Podany (lub powiązany z metodą logowania) adres e-mail zostanie użyty do wysłania informacji organizacyjnych przed wydarzeniem (jeśli dotyczy wydarzenia)",
+            ),
+            *[mui.Card(provider_button(v, k)) for k, v in PROVIDERS.items()],
+            mui.Card(magic_link()),
+        ),
     )
 
 
@@ -53,7 +58,7 @@ def oauth_login(provider: str, scopes: list[str] = None):
     if scopes:
         options["scopes"] = scopes
     res = supa.auth.sign_in_with_oauth({"provider": provider, "options": options})
-    return Redirect(res.url)
+    return fh.Redirect(res.url)
 
 
 @rt("/email")
@@ -65,10 +70,10 @@ def login_email(email: str, session):
                 "options": {"email_redirect_to": f"{BASE_URL}/login/verify"},
             }
         )
-    except:
+    except supabase.AuthApiError:
         return "Wprowadzony adres e-mail jest nie poprawny", magic_link()
     session["otp_email"] = email
-    return P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), mui.Form(
+    return fh.P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), mui.Form(
         mui.Input(id="otp", placeholder="123456"),
         mui.Button("Użyj kodu", cls=mui.ButtonT.primary),
         hx_post="/login/otp",
@@ -78,7 +83,7 @@ def login_email(email: str, session):
 def finish_login(res, session):
     store_session(res, session)
 
-    return Redirect(session.get("referrer", "/"))
+    return fh.Redirect(session.get("referrer", "/"))
 
 
 @rt("/otp")
