@@ -29,25 +29,29 @@ from src.beforeware import beforeware
 from uuid import UUID
 
 
+class Response(Base):
+    user_id: UUID = None
+
+
 class Event(Base):
     id: int = None
     title: str = None
-    description: str = None
-    form_id: int = None
-    feedback_form_id: int = None
+    description: str | None = None
+    form_id: int | None = None
+    feedback_form_id: int | None = None
     user_id: UUID = None
-    place: str = None
+    place: str | None = None
     start_time: datetime = None
     end_time: datetime | None = None
     theme: str | None = None
     dresscode: str | None = None
-    dresscode_mandatory: bool = None
+    dresscode_mandatory: bool | None = None
     discord_event: str | None = None
-    wrap: str = None
-    image: str = None
-    responses: list[dict] = None
-    org_name: str = None
-    private: bool = None
+    wrap: str | None = None
+    image: str | None = None
+    responses: list[Response] = None
+    org_name: str | None = None
+    private: bool | None = None
 
     def __post_init__(self):
         if type(self.start_time) is str:
@@ -61,6 +65,7 @@ class Event(Base):
         logged_in: bool = False,
         user_id: str = None,
     ):
+        user_id = UUID(user_id)
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
         align = right_icon_text if count else icon_text
@@ -86,11 +91,7 @@ class Event(Base):
                     icon_text("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
                     right_icon_text("pin", f"{self.place}"),
                     (icon_text("users", f"**Liczba zapisanych**: {count}")) if count else None,
-                    (align("user", f"**Organizator**: {self.org_name}")) if self.org_name else None,  # s.table("users")
-                    # .select("display_name")
-                    # .eq("id", self.user_id)
-                    # .execute()
-                    # .data[0]["display_name"],
+                    (align("user", f"**Organizator**: {self.org_name}")) if self.org_name else None,
                     cols=2,
                     cls="gap-1",
                 ),
@@ -119,7 +120,7 @@ class Event(Base):
                     if self.user_id == user_id
                     else None,
                     fh.A(Button("Przygotowania", cls=ButtonT.ghost, submit=False), href=f"/contributions/{self.id}")
-                    if any(user_id == x["user_id"] for x in self.responses)
+                    if any(user_id == x.user_id for x in self.responses)
                     else None,
                     DivLAligned(
                         guests(self.id, target=f"guestlist_{self.id}"),
@@ -168,7 +169,7 @@ def events(
 
     return [
         f.info_card(
-            count=len({list(i.values())[0] for i in f.responses}),
+            count=len({i.user_id for i in f.responses}),
             logged_in=session.get("email") is not None,
             user_id=session.get("id"),
         )
