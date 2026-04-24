@@ -38,7 +38,7 @@ def provider_button(name: str, url: str):
 
 
 @rt("/")
-@with_layout(title="Login")
+# @with_layout(title="Login")
 def login(provider: str = None):
     if provider:
         return oauth_login(provider)
