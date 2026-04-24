@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 import i18n
+import pytz
 from fasthtml import common as fh
 from monsterui import all as mui
 
@@ -9,6 +10,8 @@ from src.beforeware import beforeware
 from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout
 from src.components.headers import HEADERS
 from src.db import Base, s
+
+TIMEZONE = pytz.timezone("Europe/Warsaw")
 
 
 class Response(Base):
@@ -35,12 +38,16 @@ class Event(Base):
     org_name: str | None = None
     private: bool | None = None
 
+    def __post_init__(self):
+        self.start_time = self.start_time.astimezone(TIMEZONE)
+        self.end_time = self.end_time.astimezone(TIMEZONE)
+
     def info_card(self, user_id: str = None):
         if user_id:
             user_id = UUID(user_id)
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
-        count = len({i.user_id for i in self.responses})
+        count = len({i.user_id for i in self.responses}) if self.responses else None
         align = right_icon_text if count else icon_text
         return mui.DivCentered(
             mui.Card(
@@ -89,7 +96,7 @@ class Event(Base):
 
     @property
     def event_started(self):
-        return self.start_time < datetime.now()
+        return self.start_time < datetime.now(TIMEZONE)
 
     def render_button_guests(self):
         return mui.Button(
@@ -115,9 +122,9 @@ class Event(Base):
 
     def event_buttons(self, user_id: UUID):
         buttons = []
-        if self.user_id == user_id:
+        if self.user_id and self.user_id == user_id:
             buttons.append(self.render_button_form_responses())
-        if is_guest := any(user_id == x.user_id for x in self.responses):
+        if is_guest := any(user_id == x.user_id for x in self.responses) if self.responses else None:
             buttons.append(fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.ghost), href=f"/contributions/{self.id}"))
         if user_id:
             buttons.append(mui.DivLAligned(self.render_button_guests(), id=f"guestlist_{self.id}"))

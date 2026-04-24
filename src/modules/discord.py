@@ -10,6 +10,7 @@ from .events import Event
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
+TIMEZONE = pytz.timezone("Europe/Warsaw")
 
 
 @rt("/discord")
@@ -23,8 +24,8 @@ async def discord_events(guild_id: int = DISCORD_GUILD):
         *[
             Event(
                 title=fh.A(f.name, cls=AT.classic, href=f"/forms/?event={f.id}"),
-                start_time=f"{f.scheduled_start_time.astimezone(pytz.timezone('Europe/Warsaw'))}",
-                end_time=f"{f.scheduled_end_time.astimezone(pytz.timezone('Europe/Warsaw'))}",
+                start_time=f.scheduled_start_time.astimezone(TIMEZONE),
+                end_time=f.scheduled_end_time.astimezone(TIMEZONE),
                 place=f.entity_metadata.location,
                 discord_event=f"https://discord.com/events/{f.guild_id}/{f.id}",
                 description=f.description,
