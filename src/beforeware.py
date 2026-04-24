@@ -19,7 +19,7 @@ def store_session(res: AuthResponse, session: dict):
 
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
-    if sess.get("expires_at", 0) < time.time():
+    if auth and sess.get("expires_at", 0) < time.time():
         auth = supa.auth.refresh_session(sess.get("refresh_token"))
         store_session(auth, sess)
     if not auth:
