@@ -27,7 +27,6 @@ class Items(Base):
     contributions: list["Contributions"] = list
 
     def __post_init__(self):
-        self.display_name = (self.user or {}).get("display_name", self.user_id)
         self.quantity = int(self.quantity)
 
     @classmethod
