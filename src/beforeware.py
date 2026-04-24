@@ -22,7 +22,7 @@ def user_auth_before(req, sess):
     if auth and sess.get("auth") and sess.get("expires_at", 0) < time.time():
         auth = supa.auth.refresh_session(sess.get("refresh_token"))
         store_session(auth, sess)
-    if not auth:
+    if not auth or not sess.get("auth"):
         sess["referrer"] = req.url.path
         return fh.RedirectResponse("/login", 303)
 
