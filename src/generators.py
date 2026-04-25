@@ -1,27 +1,10 @@
-from functools import partial
 from datetime import datetime
+from functools import partial
 
-from fasthtml.common import P, Img, A
-from monsterui.all import (
-    DivLAligned,
-    DivRAligned,
-    FormLabel,
-    Input,
-    LabelInput,
-    Radio,
-    Range,
-    Switch,
-    TextArea,
-    render_md,
-    H1,
-    Card,
-    DivCentered,
-    Grid,
-    Button,
-    ButtonT,
-)
+from fasthtml import common as fh
+from monsterui import all as mui
 
-from src.components import HelpText, QuestionText, icon_text, right_icon_text
+from src.components import HelpText, QuestionText
 
 QuestionType = {}
 QuestionTypes = {}
@@ -51,7 +34,7 @@ def generate_input(
     return (
         QuestionText(question, required),
         HelpText(description),
-        Input(id=question_id, placeholder=placeholder, **kwargs),
+        mui.Input(id=question_id, placeholder=placeholder, **kwargs),
     )
 
 
@@ -67,24 +50,24 @@ def generate_long_input(
     return (
         QuestionText(question, required),
         HelpText(description),
-        TextArea(kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs),
+        mui.TextArea(kwargs.get("default"), id=question_id, placeholder=placeholder, **kwargs),
     )
 
 
 @register("TEXT")
 def generate_text(description: str, *args, **kwargs):
-    return P(render_md(description))
+    return fh.P(mui.render_md(description))
 
 
 def RadioLabel(label, name, default="Yes"):
-    return DivLAligned(Radio(name=name, checked=(label == default)), FormLabel(label))
+    return mui.DivLAligned(mui.Radio(name=name, checked=(label == default)), mui.FormLabel(label))
 
 
 @register("CHOICE", list)
 def generate_radio(question: str, question_id: int, options: list[str], **kwargs):
     radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
     return (
-        FormLabel(question),
+        mui.FormLabel(question),
         *map(
             radio,
             options,
@@ -103,14 +86,14 @@ def generate_hour_picker(
     return (
         QuestionText(question, required),
         HelpText(description),
-        Input(type="time", id=question_id, **kwargs),
+        mui.Input(type="time", id=question_id, **kwargs),
     )
 
 
 @register("BOOL", bool)
 def generate_switch(question: str, question_id: int, description: str = None, **kwargs):
     return (
-        Switch(question, id=question_id, value=kwargs.pop("value", None) or "on", **kwargs),
+        mui.Switch(question, id=question_id, value=kwargs.pop("value", None) or "on", **kwargs),
         HelpText(description),
     )
 
@@ -128,7 +111,7 @@ def generate_scale(
     return (
         QuestionText(question, required),
         HelpText(description),
-        Range(min=min, max=max, name=question_id, **kwargs),
+        mui.Range(min=min, max=max, name=question_id, **kwargs),
     )
 
 
@@ -137,7 +120,7 @@ def generate_date_picker(question: str, question_id: int, description: str, requ
     return (
         QuestionText(question, required),
         HelpText(description),
-        Input(type="date", id=question_id, **kwargs),
+        mui.Input(type="date", id=question_id, **kwargs),
     )
 
 
@@ -146,5 +129,5 @@ def generate_datetime_picker(question: str, question_id: int, description: str, 
     return (
         QuestionText(question, required),
         HelpText(description),
-        Input(type="datetime-local", id=question_id, **kwargs),
+        mui.Input(type="datetime-local", id=question_id, **kwargs),
     )

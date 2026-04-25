@@ -1,61 +1,45 @@
 import time
-from collections.abc import Iterable
 from functools import wraps
 
 import fasthtml.common as fh
-from fasthtml.common import Div, P
-from monsterui.all import (
-    H1,
-    H3,
-    Card,
-    Container,
-    DivCentered,
-    DividerLine,
-    DivLAligned,
-    DivRAligned,
-    Form,
-    TextPresets,
-    UkIcon,
-    UkIconLink,
-    render_md,
-)
+from monsterui import all as mui
 
 
 def FormSectionDiv(*c, cls="space-y-2", **kwargs):
-    return Card(*c, cls=cls, **kwargs)
+    return mui.Card(*c, cls=cls, **kwargs)
 
 
 def QuestionText(c, required: bool = False):
-    return H3(c, cls=TextPresets.muted_sm + ("required" if required else ""))
+    return mui.H3(c, cls=mui.TextPresets.muted_sm + ("required" if required else ""))
 
 
 def HelpText(c):
-    return P(c, cls=TextPresets.muted_sm)
+    return fh.P(c, cls=mui.TextPresets.muted_sm)
 
 
 def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/submit"):
-    return Container(
-        DivCentered(
-            H1(title),
+    return mui.Container(
+        mui.DivCentered(
+            mui.H1(title),
             subtitle,
-            DividerLine(),
-            Form(*content, cls=cls, hx_post=destination),
+            mui.DividerLine(),
+            mui.Form(*content, cls=cls, hx_post=destination),
         )
     )
 
 
 def icon_text(icon, text, style="", icon_style=None):
-    return Div(
-        UkIcon(icon, cls=icon_style),
-        render_md(text) if type(text) is str else text,
+    return fh.Div(
+        mui.UkIcon(icon, cls=icon_style),
+        mui.render_md(text) if type(text) is str else text,
         cls="inline-flex space-y-0 space-x-1 justify-start items-center" + " " + style,
     )
 
 
 def right_icon_text(icon, text, style="", icon_style=None):
-    return Div(
-        UkIcon(icon, cls=icon_style),
-        render_md(text) if type(text) is str else text,
+    return fh.Div(
+        mui.UkIcon(icon, cls=icon_style),
+        mui.render_md(text) if type(text) is str else text,
         cls="inline-flex space-y-0 space-x-1 justify-end items-center" + " " + style,
     )
 
@@ -84,7 +68,7 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
         fh.Title(title),
         fh.Main(
             fh.Header(
-                DivRAligned(
+                mui.DivRAligned(
                     "Zalogowano jako:",
                     fh.Img(src=session.get("picture"), height="24", width="24"),
                     session.get("email"),
@@ -92,14 +76,14 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
                 if session.get("email")
                 else None,
             ),
-            DivCentered(H1(title)),
-            DivCentered(*body),
+            mui.DivCentered(mui.H1(title)),
+            mui.DivCentered(*body),
             fh.Footer(
-                Card(
-                    footer=DivCentered(
-                        DivLAligned(
-                            *[UkIconLink(icon, href=url) for icon, url in socials],
-                            DivRAligned(f"Page generated in {t:>.3}s"),
+                mui.Card(
+                    footer=mui.DivCentered(
+                        mui.DivLAligned(
+                            *[mui.UkIconLink(icon, href=url) for icon, url in socials],
+                            mui.DivRAligned(f"Page generated in {t:>.3}s"),
                         ),
                     ),
                 ),

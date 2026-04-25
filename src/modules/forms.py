@@ -3,18 +3,9 @@ from datetime import datetime
 
 import i18n
 from fasthtml import common as fh
-from monsterui.all import (
-    Button,
-    ButtonT,
-    DivCentered,
-    DividerLine,
-    DivRAligned,
-    Input,
-    TextArea,
-    render_md,
-)
+from monsterui import all as mui
 
-from src.components import FormLayout, Layout, handle_updating_responses, with_layout, TIMEZONE
+from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout
 from src.components.app_factory import make_app
 from src.components.models import Form, Response
 from src.forms import Question
@@ -26,12 +17,12 @@ rt = make_app("forms")
 
 
 def back_to_main():
-    return fh.A(Button("Wróć do listy wydarzeń", cls=ButtonT.ghost, submit=False), href="/")
+    return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.ghost, submit=False), href="/")
 
 
 def form(f, event_id, path="submit"):
     if not f:
-        return DivCentered("Podany formularz nie istnieje", back_to_main())
+        return mui.DivCentered("Podany formularz nie istnieje", back_to_main())
     f = f.data.get("form") or {}
     questions = sorted(
         [
@@ -44,12 +35,12 @@ def form(f, event_id, path="submit"):
     if not questions:
         content.append(back_to_main())
     else:
-        content.append(Button("Zapisz", cls=ButtonT.primary))
+        content.append(mui.Button("Zapisz", cls=mui.ButtonT.primary))
     info = Event(title=f["title"], **f.get("info")).info_card() if f.get("info") else None
 
     return info, FormLayout(
         "",
-        render_md(f.get("description")) if f.get("description") else None,
+        mui.render_md(f.get("description")) if f.get("description") else None,
         *content,
         destination=f"/forms/{path}/{event_id}",
     )
@@ -87,7 +78,7 @@ def new(session, form_id: int = None):
         )
 
     return fh.Title(i18n.t("forms.create.title", locale=session.get("locale"))), FormLayout(
-        Input(
+        mui.Input(
             placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
             id="form-title",
             required=True,
@@ -95,12 +86,12 @@ def new(session, form_id: int = None):
             value=res.get("title"),
         ),
         i18n.t("forms.create.help", locale=session.get("locale")),
-        TextArea(
+        mui.TextArea(
             res.get("description"),
             placeholder=i18n.t("forms.create.description", locale=session.get("locale")),
             id="form-description",
         ),
-        DividerLine(),
+        mui.DividerLine(),
         fh.Div(
             *[
                 q.edit_form(session)
@@ -112,15 +103,15 @@ def new(session, form_id: int = None):
             id="questions-list",
         ),
         fh.Grid(
-            Button(
+            mui.Button(
                 i18n.t("forms.create.add_question", locale=session.get("locale")),
                 hx_target="#questions-list",
                 hx_post="/forms/add-question",
                 hx_swap="beforeend",
             ),
-            Button(
+            mui.Button(
                 i18n.t("forms.create.submit", locale=session.get("locale")),
-                cls=ButtonT.primary,
+                cls=mui.ButtonT.primary,
             ),
         ),
         cls="space-y-4",
@@ -149,18 +140,18 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
     if selected == "SCALE":
         items.append(
             fh.Grid(
-                Input(title="Minimum", type="number", inputmode="numeric", value=0, id="min"),
-                Input(title="Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
+                mui.Input(title="Minimum", type="number", inputmode="numeric", value=0, id="min"),
+                mui.Input(title="Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
             )
         )
     if selected == "CHOICE":
         items.append(add_option(session, idx, 0))
-    return DivCentered(*items, id=f"type-{idx}")
+    return mui.DivCentered(*items, id=f"type-{idx}")
 
 
 @rt("/add-option")
 def add_option(session, idx: int, order: int):
-    return Input(
+    return mui.Input(
         id=f"option-{idx}-{order}",
         hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
         placeholder=i18n.t("forms.create.option", locale=session.get("locale"), x=idx),
@@ -265,16 +256,18 @@ def submit(session, event: str, responses: dict):
     try:
         save_to_db(session, event, responses)
     except Exception as ex:
-        return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
-    return DivCentered(
+        return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
+    return mui.DivCentered(
         "Dzięki za zapis!",
-        Button(
-            fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"), submit=False, cls=ButtonT.primary
+        mui.Button(
+            fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
+            submit=False,
+            cls=mui.ButtonT.primary,
         ),
         "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem - Sprawdź wtedy swoją skrzynkę odbiorczą:",
-        Button(session["email"], cls=ButtonT.secondary, submit=False),
+        mui.Button(session["email"], cls=mui.ButtonT.secondary, submit=False),
         "i potwierdź obecność gdy otrzymasz zaproszenie!",
-    ), DivRAligned(back_to_main())
+    ), mui.DivRAligned(back_to_main())
 
 
 @rt("/submit-feedback/{event}")
@@ -282,5 +275,5 @@ def submit_feedback(session, event: str, responses: dict):
     try:
         save_to_db(session, event, responses)
     except:
-        return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
-    return DivCentered("Dzięki za feedback! Zapraszam na następne wydarzenia!"), DivRAligned(back_to_main())
+        return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
+    return mui.DivCentered("Dzięki za feedback! Zapraszam na następne wydarzenia!"), mui.DivRAligned(back_to_main())

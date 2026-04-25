@@ -2,8 +2,9 @@ import datetime
 from itertools import chain
 
 from fasthtml import common as fh
-from monsterui.all import H3, Card, Label, ListT
+from monsterui import all as mui
 
+from src.components import TIMEZONE
 from src.components.app_factory import make_app
 from src.components.components import with_layout
 from src.modules.events import Event
@@ -18,7 +19,7 @@ def generate(q: dict, date: datetime.datetime):
             r = [[int(i) for i in a["value"][0].split(":")] for a in q["answer"]]
             r = [date.replace(hour=h, minute=m) for h, m in r]
             avg = datetime.datetime.strftime(
-                datetime.datetime.fromtimestamp(sum(map(datetime.datetime.timestamp, r)) / len(r)), "%H:%M"
+                datetime.datetime.fromtimestamp(sum(map(datetime.datetime.timestamp, r)) / len(r), TIMEZONE), "%H:%M"
             )
         case "SCALE":
             avg = list(chain.from_iterable([[int(i) for i in a["value"][0]] for a in q["answer"]]))
@@ -28,15 +29,15 @@ def generate(q: dict, date: datetime.datetime):
         if len(a["value"]) == 1:
             a["value"] = a["value"][0]
 
-    return Card(
-        H3(q["title"]),
+    return mui.Card(
+        mui.H3(q["title"]),
         fh.P(q["description"]),
         fh.P(f"Avg: {avg}") if avg else None,
         fh.Ul(
             *[
                 fh.Li(
                     fh.P(a["display_name"]),
-                    fh.Ul(Label(v) for v in a["value"]) if type(a["value"]) is list else Label(a["value"]),
+                    fh.Ul(mui.Label(v) for v in a["value"]) if type(a["value"]) is list else mui.Label(a["value"]),
                 )
                 for a in sorted(
                     q["answer"],
@@ -45,7 +46,7 @@ def generate(q: dict, date: datetime.datetime):
                     else x["value"],
                 )
             ],
-            style=ListT.bullet,
+            style=mui.ListT.bullet,
         ),
     )
 
@@ -75,4 +76,4 @@ def responses(session, event_id: int, user_id: str = None, feedback: bool = Fals
         key=lambda x: x["order"],
     )
     date = datetime.datetime.fromisoformat(f["start_time"])
-    return [generate(q, date) for q in questions]
+    return mui.Card(generate(q, date) for q in questions)

@@ -2,9 +2,9 @@ import os
 
 from fasthtml import common as fh
 from mdiscord.http.client import HTTP_Client as HTTP
-from monsterui.all import AT, H1, DivCentered
+from monsterui import all as mui
 
-from .events import Event, rt, TIMEZONE
+from .events import TIMEZONE, Event, rt
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
@@ -17,10 +17,10 @@ async def discord_events(guild_id: int = DISCORD_GUILD):
     await client.close()
     return (
         fh.Title("Nadchodzące wydarzenia Discordowe"),
-        DivCentered(H1("Nadchodzące wydarzenia")),
+        mui.DivCentered(mui.H1("Nadchodzące wydarzenia")),
         *[
             Event(
-                title=fh.A(f.name, cls=AT.classic, href=f"/forms/?event={f.id}"),
+                title=fh.A(f.name, cls=mui.AT.classic, href=f"/forms/?event={f.id}"),
                 start_time=f.scheduled_start_time.astimezone(TIMEZONE),
                 end_time=f.scheduled_end_time.astimezone(TIMEZONE),
                 place=f.entity_metadata.location,
