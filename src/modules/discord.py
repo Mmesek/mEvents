@@ -1,16 +1,13 @@
 import os
 
-import pytz
 from fasthtml import common as fh
 from mdiscord.http.client import HTTP_Client as HTTP
 from monsterui.all import AT, H1, DivCentered
 
-from .events import rt
-from .events import Event
+from .events import Event, rt, TIMEZONE
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
-TIMEZONE = pytz.timezone("Europe/Warsaw")
 
 
 @rt("/discord")
