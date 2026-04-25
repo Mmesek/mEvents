@@ -65,11 +65,11 @@ def responses(session, event_id: int, user_id: str = None, feedback: bool = Fals
     if user_id:
         f = f.eq("form.questions.question.answer.user_id", user_id)
 
-    f = (f.maybe_single().execute()).data
+    f = (f.maybe_single().execute()).data or {}
     questions = sorted(
         [
             dict(order=q.get("order"), **q.get("question"))
-            for q in f.get("form", {}).get("questions", {})
+            for q in (f.get("form", {}) or {}).get("questions", {})
             if q.get("question", {}).get("answer")
         ],
         key=lambda x: x["order"],

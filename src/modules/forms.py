@@ -229,7 +229,7 @@ def feedback_form(session, event_id: str):
         .maybe_single()
         .execute()
     )
-    if f and datetime.fromisoformat(f.end_time) > datetime.now(TIMEZONE):
+    if f and datetime.fromisoformat(f.data["end_time"]).astimezone(TIMEZONE) > datetime.now(TIMEZONE):
         return "Wróć po skończeniu wydarzenia!"
 
     return form(f, event_id, path="submit-feedback")
