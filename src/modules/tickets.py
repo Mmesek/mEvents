@@ -7,12 +7,12 @@ from monsterui import all as mui
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 
-from src.beforeware import beforeware
 from src.components import with_layout
-from src.components.headers import HEADERS
-from src.db import s, Base
+from src.components.app_factory import make_app
+from src.db import Base
+from src.modules.events import Event
 
-app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
+rt = make_app("tickets")
 
 
 class Attendance(Base):
@@ -79,7 +79,7 @@ def tickets(session, event_id: int):
 
 
 def _verify(session, event_id: int, user_id: int):
-    org = s.table("Event").select("user_id").eq("id", event_id).maybe_single().execute().data
+    org = Event.select(session["auth"], "user_id").eq("id", event_id).maybe_single().execute().data
     if session["id"] != org["user_id"]:
         return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)
     if (

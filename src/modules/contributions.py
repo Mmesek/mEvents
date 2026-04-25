@@ -6,12 +6,11 @@ from fasthtml import common as fh
 from monsterui import all as mui
 from msgspec import Meta
 
-from src.beforeware import beforeware
 from src.components import with_layout
-from src.components.headers import HEADERS
+from src.components.app_factory import make_app
 from src.db import Base
 
-app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
+rt = make_app("contributions")
 
 uint = Annotated[int, Meta(ge=0)]
 
@@ -69,15 +68,15 @@ class Items(Base):
         )
 
     @classmethod
-    def fetch(cls, event_id: int) -> list["Items"]:
+    def fetch(cls, auth: str, event_id: int) -> list["Items"]:
         return Items.get(
-            Items.table()
+            Items.table(auth)
             .select('*, contributions:"Contributions" (*, user:"users" (display_name))')
             .eq("event_id", event_id)
             .eq("contributions.user.event_id", event_id)
         )
 
-    def add(self):
+    def add(self, auth: str):
         item = {
             "event_id": self.event_id,
             "user_id": self.user_id,
@@ -87,7 +86,7 @@ class Items(Base):
         }
         if self.id:
             item["id"] = self.id
-        return Items.get_one(Items.table().upsert(item))
+        return Items.get_one(Items.table(auth).upsert(item))
 
 
 class Contributions(Base):
@@ -137,12 +136,12 @@ class Contributions(Base):
         )
 
     @classmethod
-    def fetch(cls, item_id: int) -> list["Contributions"]:
-        return Contributions.get(Contributions.select().eq("item_id", item_id))
+    def fetch(cls, auth: str, item_id: int) -> list["Contributions"]:
+        return Contributions.get(Contributions.select(auth).eq("item_id", item_id))
 
-    def add(self):
+    def add(self, auth: str):
         return Contributions.get_one(
-            Contributions.table().upsert(
+            Contributions.table(auth).upsert(
                 {
                     "item_id": self.item_id,
                     "user_id": self.user_id,
@@ -156,14 +155,14 @@ class Contributions(Base):
 @rt("/items/{event_id}")
 def add(session, event_id: int, responses: dict):
     item = Items(event_id=event_id, user_id=session["id"], **responses)
-    item = item.add()
+    item = item.add(session["auth"])
     return item.display(session["id"])
 
 
 @rt("/contribute/{item_id}")
 def contribute(session, item_id: int, responses: dict):
     c = Contributions(user_id=session["id"], item_id=item_id, **responses)
-    c = c.add()
+    c = c.add(session["auth"])
     c.display_name = session.get("display_name", "Ty")
     return c.display()
 
@@ -171,7 +170,7 @@ def contribute(session, item_id: int, responses: dict):
 @rt("/{event_id}")
 @with_layout(title="Lista przedmiotów potrzebnych do wydarzenia")
 def contributions(session, event_id: int):
-    items = Items.fetch(event_id)
+    items = Items.fetch(session["auth"], event_id)
     return mui.Card(
         mui.Accordion(
             *(item.display(session["id"]) for item in sorted(items, key=lambda x: x.quantity, reverse=True)),

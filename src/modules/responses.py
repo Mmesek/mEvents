@@ -1,14 +1,14 @@
 import datetime
-from fasthtml import common as fh
-from monsterui.all import H3, Label, ListT, Card
-
-from src.components.headers import HEADERS
-from src.components.components import with_layout
-from src.db import s
-from src.beforeware import beforeware, translations
 from itertools import chain
 
-app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware, translations])
+from fasthtml import common as fh
+from monsterui.all import H3, Card, Label, ListT
+
+from src.components.app_factory import make_app
+from src.components.components import with_layout
+from src.modules.events import Event
+
+rt = make_app("responses")
 
 
 def generate(q: dict, date: datetime.datetime):
@@ -52,11 +52,11 @@ def generate(q: dict, date: datetime.datetime):
 
 @rt("/{event_id}")
 @with_layout()
-def responses(event_id: int, user_id: str = None, feedback: bool = False):
+def responses(session, event_id: int, user_id: str = None, feedback: bool = False):
     f = (
-        s.table("Event")
-        .select(
-            f'title, start_time, form:{"feedback_" if feedback else ""}form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))'
+        Event.select(
+            session["auth"],
+            f'title, start_time, form:{"feedback_" if feedback else ""}form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))',
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)

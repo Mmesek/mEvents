@@ -5,6 +5,7 @@ from fasthtml import common as fh
 from monsterui import all as mui
 
 from src.beforeware import store_session
+from src.components.app_factory import add_mount
 from src.components.components import with_layout
 from src.components.headers import HEADERS
 from src.db import supa
@@ -18,6 +19,7 @@ PROVIDERS = {
 }
 
 app, rt = fh.fast_app(hdrs=HEADERS)
+add_mount("login", app)
 
 
 def magic_link():
@@ -37,11 +39,8 @@ def provider_button(name: str, url: str):
     )
 
 
-@rt("/")
-# @with_layout(title="Login")
-def login(provider: str = None):
-    if provider:
-        return oauth_login(provider)
+@with_layout(title="Login")
+def login_buttons():
     return (
         fh.Div(
             mui.CardBody(
@@ -51,6 +50,13 @@ def login(provider: str = None):
             mui.Card(magic_link()),
         ),
     )
+
+
+@rt("/")
+def login(provider: str = None):
+    if provider:
+        return oauth_login(provider)
+    return login_buttons()
 
 
 def oauth_login(provider: str, scopes: list[str] = None):

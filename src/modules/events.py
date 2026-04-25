@@ -2,20 +2,15 @@ from datetime import datetime
 from uuid import UUID
 
 import i18n
-import pytz
 from fasthtml import common as fh
 from monsterui import all as mui
 
-from src.beforeware import beforeware
-from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout
-from src.components.headers import HEADERS
+from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout, TIMEZONE
+from src.components.app_factory import make_app
+from src.components.models import Form, Response
 from src.db import Base, s
 
-TIMEZONE = pytz.timezone("Europe/Warsaw")
-
-
-class Response(Base):
-    user_id: UUID = None
+rt = make_app("events")
 
 
 class Event(Base):
@@ -37,6 +32,7 @@ class Event(Base):
     responses: list[Response] = None
     org_name: str | None = None
     private: bool | None = None
+    form: dict | None = None
 
     def __post_init__(self):
         self.start_time = self.start_time.astimezone(TIMEZONE)
@@ -143,9 +139,6 @@ class Event(Base):
         return buttons
 
 
-app, rt = fh.fast_app(hdrs=HEADERS, before=[beforeware])
-
-
 @rt("/guests")
 def list_guests(session, event_id: str):
     names = (
@@ -171,7 +164,7 @@ def events(
 ):
     forms_stmt = Event.table().select('*, responses:"Response" (user_id)')
     if not include_previous:
-        forms_stmt = forms_stmt.gt("end_time", datetime.now())
+        forms_stmt = forms_stmt.gt("end_time", datetime.now(TIMEZONE))
     if name:
         forms_stmt = forms_stmt.like("title", name)
     forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
@@ -287,7 +280,10 @@ def create(session):
             fh.Div(
                 fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
                 fh.Select(
-                    *[form_option(f["title"], f["id"]) for f in s.table("Form").select("id, title").execute().data],
+                    *[
+                        form_option(f["title"], f["id"])
+                        for f in Form.select(session["auth"], "id, title").execute().data
+                    ],
                     form_option(i18n.t("events.create.new_form", locale=session.get("locale")), form_id=0),
                     searchable=True,
                     hx_target="#form",
@@ -298,7 +294,7 @@ def create(session):
             mui.Select(
                 *[
                     form_option(f["title"], f["id"])
-                    for f in s.table("Form").select("id, title").ilike("title", "Feedback").execute().data
+                    for f in Form.select(session["auth"], "id, title").ilike("title", "Feedback").execute().data
                 ],
                 form_option(i18n.t("events.create.no_form", locale=session.get("locale")), None),
                 searchable=True,
@@ -333,7 +329,7 @@ def add(session, responses: dict):
     responses = handle_updating_responses(responses)
 
     try:
-        pass  # s.table("Event").upsert([{"user_id": session["id"], **responses}]).execute()
+        # Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
         responses["start_time"] = responses.pop("date") + " " + responses["start_time"]
         return Event(**responses).info_card()
 
