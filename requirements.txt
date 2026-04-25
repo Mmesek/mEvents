@@ -6,5 +6,6 @@ pytz
 python-i18n[YAML]
 qrcode[pil]
 msgspec
+sentry-sdk
 git+https://github.com/Mmesek/mdiscord
 git+https://github.com/Mmesek/mlib

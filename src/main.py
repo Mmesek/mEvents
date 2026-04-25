@@ -12,6 +12,20 @@ from src.modules.forms import app as forms_app
 from src.beforeware import beforeware, translations
 from src.components.headers import HEADERS
 
+import sentry_sdk
+import dotenv
+import os
+
+dotenv.load_dotenv()
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_URL"),
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+    # Enable sending logs to Sentry
+    enable_logs=True,
+)
+
 
 # Create your app with the theme
 app, rt = fh.fast_app(
