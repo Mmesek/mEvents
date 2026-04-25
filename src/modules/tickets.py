@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 from io import BytesIO
 
 import qrcode
@@ -7,7 +8,7 @@ from monsterui import all as mui
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 
-from src.components import with_layout
+from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base
 from src.modules.events import Event
@@ -43,10 +44,17 @@ def make_qr(data: str):
 
 @rt("/qr")
 def qr(session, event_id: int):
+    Attendance.table(session["auth"]).upsert(
+        {
+            "event_id": event_id,
+            "user_id": session["id"],
+            "downloaded_ticket": datetime.now(TIMEZONE).isoformat(),
+        }
+    ).execute()
     return fh.Response(
         make_qr(f"https://mms-events.vercel.app/tickets/verify/{event_id}/{session['id']}"),
         media_type="image/png",
-        headers={"Content-Disposition": "attachment; filename=ticket.png"},
+        headers={"Content-Disposition": f"attachment; filename=ticket-{event_id}_{session['id'][:5]}.png"},
     )
 
 
@@ -87,12 +95,18 @@ def _verify(session, event_id: int, user_id: int):
         .select("*")
         .eq("event_id", event_id)
         .eq("user_id", user_id)
+        .not_.is_("arrived", None)
         .maybe_single()
         .execute()
     ):
         return mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive)
     Attendance.table(session["auth"]).upsert(
-        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"]}
+        {
+            "event_id": event_id,
+            "user_id": user_id,
+            "authorized_by": session["id"],
+            "arrived": datetime.now(TIMEZONE).isoformat(),
+        }
     ).execute()
     return mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary)
 

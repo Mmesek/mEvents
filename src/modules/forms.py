@@ -20,6 +20,7 @@ from src.components.models import Form, Response
 from src.forms import Question
 from src.generators import QuestionType
 from src.modules.events import Event
+from src.modules.tickets import Attendance
 
 rt = make_app("forms")
 
@@ -250,13 +251,20 @@ def save_to_db(session, event, responses):
             if v
         ]
     ).execute()
+    Attendance.table(session["auth"]).upsert(
+        {
+            "event_id": event,
+            "user_id": session["id"],
+            "filled_form": datetime.now(TIMEZONE).isoformat(),
+        }
+    ).execute()
 
 
 @rt("/submit/{event}")
 def submit(session, event: str, responses: dict):
     try:
         save_to_db(session, event, responses)
-    except:
+    except Exception as ex:
         return DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
     return DivCentered(
         "Dzięki za zapis!",
