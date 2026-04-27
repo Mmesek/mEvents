@@ -29,24 +29,26 @@ def generate(q: dict, date: datetime.datetime):
         if len(a["value"]) == 1:
             a["value"] = a["value"][0]
 
-    return mui.Card(
+    return mui.AccordionItem(
         mui.H3(q["title"]),
-        fh.P(q["description"]),
-        fh.P(f"Avg: {avg}") if avg else None,
-        fh.Ul(
-            *[
-                fh.Li(
-                    fh.P(a["display_name"]),
-                    fh.Ul(mui.Label(v) for v in a["value"]) if type(a["value"]) is list else mui.Label(a["value"]),
-                )
-                for a in sorted(
-                    q["answer"],
-                    key=lambda x: int(x["value"])
-                    if type(x["value"]) is not list and x["value"].isdigit()
-                    else x["value"],
-                )
-            ],
-            style=mui.ListT.bullet,
+        mui.Card(
+            fh.P(q["description"]),
+            fh.P(f"Avg: {avg}") if avg else None,
+            fh.Ul(
+                *[
+                    fh.Li(
+                        fh.P(a["display_name"]),
+                        fh.Ul(mui.Label(v) for v in a["value"]) if type(a["value"]) is list else mui.Label(a["value"]),
+                    )
+                    for a in sorted(
+                        q["answer"],
+                        key=lambda x: int(x["value"])
+                        if type(x["value"]) is not list and x["value"].isdigit()
+                        else x["value"],
+                    )
+                ],
+                style=mui.ListT.bullet,
+            ),
         ),
     )
 
@@ -76,4 +78,4 @@ def responses(session, event_id: int, user_id: str = None, feedback: bool = Fals
         key=lambda x: x["order"],
     )
     date = datetime.datetime.fromisoformat(f["start_time"])
-    return mui.Card(generate(q, date) for q in questions)
+    return mui.Card(mui.Accordion(generate(q, date) for q in questions))
