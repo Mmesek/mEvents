@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fasthtml import common as fh
 from monsterui import all as mui
-from msgspec import Meta
+from msgspec import Meta, field
 
 from src.components import with_layout
 from src.components.app_factory import make_app
@@ -23,7 +23,7 @@ class Items(Base):
     description: str = None
     quantity: uint = None
     created_at: datetime = None
-    contributions: list["Contributions"] = list
+    contributions: list["Contributions"] = field(default_factory=list)
 
     def __post_init__(self):
         self.quantity = int(self.quantity)
