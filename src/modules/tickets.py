@@ -1,5 +1,5 @@
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 
 import qrcode
@@ -18,12 +18,14 @@ rt = make_app("tickets")
 
 class Attendance(Base):
     event_id: int
-    user_id: int
-    filled_form: str
-    downloaded_ticket: str
-    arrived: str
-    withdrew: str
-    authorized_by: str
+    user_id: str
+    filled_form: str | None = None
+    downloaded_ticket: str | None = None
+    arrived: datetime | None = None
+    withdrew: str | None = None
+    authorized_by: str | None = None
+    created_at: datetime | None = None
+    display_name: str = None
 
 
 def make_qr(data: str):
@@ -114,3 +116,25 @@ def _verify(session, event_id: int, user_id: int):
 @rt("/verify/{event_id}/{user_id}")
 def verify(session, event_id: int, user_id: str):
     return mui.DivCentered(_verify(session, event_id, user_id))
+
+
+@rt("/attendance/{event_id}")
+@with_layout(title="Lista uczestników")
+def attendance_list(session, event_id: int):
+    guests = Attendance.get(
+        Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
+    )
+    return mui.DivCentered(
+        fh.Ul(
+            mui.Grid(
+                mui.Card(mui.DivCentered(g[1].strftime("%Y/%m/%d %H:%M") if g[2] else "❌")),
+                mui.Card(mui.DivCentered(g[0])),
+                cols_min=2,
+            )
+            for g in sorted(
+                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived) for g in guests},
+                key=lambda k: k[1],
+                reverse=True,
+            )
+        )
+    )
