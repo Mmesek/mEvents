@@ -6,7 +6,7 @@ from fasthtml import common as fh
 from monsterui import all as mui
 from msgspec import Meta, field
 
-from src.components import with_layout
+from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base
 
@@ -53,6 +53,8 @@ class Items(Base):
         )
 
     def display(self, user_id: UUID = None):
+        if user_id:
+            user_id = UUID(user_id)
         filled = sum(c.quantity for c in self.contributions) if self.contributions else 0
         user_contributed = next(filter(lambda x: x.user_id == user_id, self.contributions), Contributions())
         return mui.AccordionItem(
@@ -95,6 +97,7 @@ class Contributions(Base):
     quantity: uint = 0
     note: str = None
     created_at: datetime = None
+    updated_at: datetime = None
     display_name: str = None
     user: dict = None
 
@@ -147,6 +150,7 @@ class Contributions(Base):
                     "user_id": self.user_id,
                     "quantity": max(self.quantity, 0),
                     "note": self.note,
+                    "updated_at": datetime.now(TIMEZONE).isoformat(),
                 }
             )
         )

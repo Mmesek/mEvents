@@ -237,6 +237,7 @@ def save_to_db(session, event, responses):
                 "event_id": event,
                 "question_id": k,
                 "value": [v],
+                "updated_at": datetime.now(TIMEZONE).isoformat(),
             }
             for k, v in responses.items()
             if v
