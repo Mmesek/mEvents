@@ -2,7 +2,7 @@ import time
 from fasthtml import common as fh
 from src.components.translations import Translation
 from src.db import supa
-from supabase_auth import AuthResponse
+from supabase_auth import AuthResponse, errors
 
 
 def store_session(res: AuthResponse, session: dict):
@@ -20,8 +20,11 @@ def store_session(res: AuthResponse, session: dict):
 def user_auth_before(req, sess):
     auth = req.scope["email"] = sess.get("email", None)
     if auth and sess.get("auth") and sess.get("expires_at", 0) < time.time():
-        auth = supa.auth.refresh_session(sess.get("refresh_token"))
-        store_session(auth, sess)
+        try:
+            auth = supa.auth.refresh_session(sess.get("refresh_token"))
+            store_session(auth, sess)
+        except errors.AuthSessionMissingError:
+            auth = None
     if not auth or not sess.get("auth"):
         sess["referrer"] = req.url.path
         return fh.RedirectResponse("/login", 303)
