@@ -120,6 +120,10 @@ class Event(Base):
         buttons = []
         if self.user_id and self.user_id == user_id:
             buttons.append(self.render_button_form_responses())
+            if self.event_started:
+                buttons.append(
+                    fh.A(mui.Button("Obecność", cls=mui.ButtonT.ghost), href=f"/tickets/attendance/{self.id}")
+                )
         if is_guest := any(user_id == x.user_id for x in self.responses) if self.responses else None:
             buttons.append(fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.ghost), href=f"/contributions/{self.id}"))
         if user_id:
