@@ -13,6 +13,8 @@ from src.components.app_factory import make_app
 from src.db import Base
 from src.modules.events import Event
 
+from functools import partial
+
 rt = make_app("tickets")
 
 
@@ -25,6 +27,7 @@ class Attendance(Base):
     withdrew: str | None = None
     authorized_by: str | None = None
     created_at: datetime | None = None
+    companions: int | None = None
     display_name: str = None
 
 
@@ -96,7 +99,18 @@ def _verify(session, event_id: int, user_id: int):
         return mui.Button(
             "Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mui.ButtonT.destructive
         )
-    if (
+    companions = partial(
+        mui.LabelInput,
+        label="+1",
+        id="amount",
+        type="number",
+        inputmode="numeric",
+        min=0,
+        hx_swap="replace",
+        hx_target="innerHTML",
+    )
+
+    if attendance := (
         Attendance.table(session["auth"])
         .select("*")
         .eq("event_id", event_id)
@@ -105,7 +119,19 @@ def _verify(session, event_id: int, user_id: int):
         .maybe_single()
         .execute()
     ):
-        return mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive)
+        return (
+            mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive),
+            mui.Form(
+                companions(value=attendance.data.get("companions")),
+                mui.Button(
+                    "Dodaj gości",
+                    hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
+                    hx_target="#amount",
+                    hx_swap="outerHTML",
+                    cls=mui.ButtonT.ghost,
+                ),
+            ),
+        )
     Attendance.table(session["auth"]).upsert(
         {
             "event_id": event_id,
@@ -114,7 +140,27 @@ def _verify(session, event_id: int, user_id: int):
             "arrived": datetime.now(TIMEZONE).isoformat(),
         }
     ).execute()
-    return mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary)
+    return (
+        mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary),
+        mui.Form(
+            companions(),
+            mui.Button(
+                "Dodaj gości",
+                hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
+                hx_target="#amount",
+                hx_swap="outerHTML",
+                cls=mui.ButtonT.ghost,
+            ),
+        ),
+    )
+
+
+@rt("/verify/companions/{event_id}/{user_id}")
+def companions(session, event_id: int, user_id: str, amount: int):
+    Attendance.table(session["auth"]).upsert(
+        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "companions": amount}
+    ).execute()
+    return mui.Button(f"Dodano +1 w liczbie {amount}")
 
 
 @rt("/verify/{event_id}/{user_id}")
