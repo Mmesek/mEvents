@@ -89,9 +89,13 @@ def tickets(session, event_id: int):
 
 
 def _verify(session, event_id: int, user_id: int):
-    org = Event.select(session["auth"], "user_id").eq("id", event_id).maybe_single().execute().data
+    org = Event.select(session["auth"], "user_id, start_time").eq("id", event_id).maybe_single().execute().data
     if session["id"] != org["user_id"]:
         return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)
+    if datetime.fromisoformat(org["start_time"]).date() > datetime.now(TIMEZONE).date():
+        return mui.Button(
+            "Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mui.ButtonT.destructive
+        )
     if (
         Attendance.table(session["auth"])
         .select("*")
