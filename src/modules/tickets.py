@@ -174,18 +174,46 @@ def attendance_list(session, event_id: int):
     guests = Attendance.get(
         Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
     )
-    return mui.DivCentered(
-        fh.Ul(
-            mui.Grid(
-                mui.Card(mui.DivCentered(g[1].strftime("%Y/%m/%d %H:%M") if g[2] else "❌")),
-                mui.Card(mui.DivCentered(g[0])),
-                mui.Card(mui.DivCentered(g[3] +1)),
-                cols_min=3,
-            )
-            for g in sorted(
-                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived, g.companions or 0) for g in guests},
-                key=lambda k: k[1],
-                reverse=True,
-            )
+    num = 0
+    missing = 0
+    return fh.Div(
+        mui.Steps(
+            (
+                mui.LiStep(
+                    mui.Grid(
+                        mui.Card(
+                            mui.DivCentered(g[0] if g[1] else "❌"),
+                            cls="w-[110px]",
+                        ),
+                        mui.Card(mui.DivCentered(g[1]), cls="max-w-[40px]"),
+                        mui.Card(mui.DivCentered(g[2]), cls="max-w-[400px]"),
+                        cols=3,
+                    ),
+                    cls=mui.StepT.neutral if g[1] else mui.StepT.secondary,
+                    data_content=(num := num + (g[1] or 1))
+                    if type(g[1]) is not str
+                    else g[1]
+                    if g[1]
+                    else (missing := missing + 1),
+                )
+                for g in [
+                    ("Data", "+1", "Nazwa"),
+                    *sorted(
+                        {
+                            (
+                                (g.arrived or datetime.fromtimestamp(0, timezone.utc))
+                                .astimezone(TIMEZONE)
+                                .strftime("%Y/%m/%d %H:%M"),
+                                (g.companions or 0) + (1 if g.arrived else 0),
+                                g.display_name or g.user_id,
+                            )
+                            for g in guests
+                        },
+                        key=lambda k: k[0],
+                        reverse=True,
+                    ),
+                ]
+            ),
+            cls=mui.StepsT.vertical,
         )
     )
