@@ -23,7 +23,7 @@ def user_auth_before(req, sess):
         try:
             auth = supa.auth.refresh_session(sess.get("refresh_token"))
             store_session(auth, sess)
-        except errors.AuthSessionMissingError:
+        except (errors.AuthSessionMissingError, errors.AuthApiError):
             auth = None
     if not auth or not sess.get("auth"):
         sess["referrer"] = req.url.path
