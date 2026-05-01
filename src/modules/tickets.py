@@ -28,7 +28,7 @@ class Attendance(Base):
     authorized_by: str | None = None
     created_at: datetime | None = None
     companions: int | None = None
-    display_name: str = None
+    display_name: str | None = None
 
 
 def make_qr(data: str):
