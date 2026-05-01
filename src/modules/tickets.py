@@ -179,10 +179,11 @@ def attendance_list(session, event_id: int):
             mui.Grid(
                 mui.Card(mui.DivCentered(g[1].strftime("%Y/%m/%d %H:%M") if g[2] else "❌")),
                 mui.Card(mui.DivCentered(g[0])),
-                cols_min=2,
+                mui.Card(mui.DivCentered(g[2] +1)),
+                cols_min=3,
             )
             for g in sorted(
-                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived) for g in guests},
+                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived, g.amount or 0) for g in guests},
                 key=lambda k: k[1],
                 reverse=True,
             )
