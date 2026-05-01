@@ -183,7 +183,7 @@ def attendance_list(session, event_id: int):
                 cols_min=3,
             )
             for g in sorted(
-                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived, g.amount or 0) for g in guests},
+                {(g.display_name, g.arrived or datetime.fromtimestamp(0, timezone.utc), g.arrived, g.companions or 0) for g in guests},
                 key=lambda k: k[1],
                 reverse=True,
             )
