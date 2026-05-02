@@ -28,6 +28,7 @@ class Attendance(Base):
     authorized_by: str | None = None
     created_at: datetime | None = None
     companions: int | None = None
+    left: datetime | None = None
     display_name: str | None = None
 
 
@@ -163,9 +164,45 @@ def companions(session, event_id: int, user_id: str, amount: int):
     return mui.Button(f"Dodano +1 w liczbie {amount}")
 
 
+@rt("/companions/{event_id}/{user_id}")
+def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: bool = False):
+    amount = max(int(amount), 0)
+    if not dry_run:
+        Attendance.table(session["auth"]).upsert(
+            {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "companions": amount}
+        ).execute()
+    return mui.DivHStacked(
+        mui.Button(
+            "-",
+            hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount - 1}",
+            hx_target=f"#amount-{user_id}",
+            hx_swap="innerHTML",
+            cls=mui.ButtonT.icon + "max-w-[20px] space-x-1",
+        ),
+        mui.DivCentered(amount),
+        mui.Button(
+            "+",
+            hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount + 1}",
+            hx_target=f"#amount-{user_id}",
+            hx_swap="innerHTML",
+            cls=mui.ButtonT.icon + "max-w-[20px] space-x-1",
+        ),
+        id=f"amount-{user_id}",
+    )
+
+
 @rt("/verify/{event_id}/{user_id}")
 def verify(session, event_id: int, user_id: str):
     return mui.DivCentered(_verify(session, event_id, user_id))
+
+
+@rt("/attendance/leave/{event_id}/{user_id}")
+def leave(session, event_id: int, user_id: str):
+    dt = datetime.now(TIMEZONE)
+    Attendance.table(session["auth"]).upsert(
+        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "left": dt.isoformat()}
+    ).execute()
+    return mui.DivCentered(dt.strftime("%m/%d %H:%M"))
 
 
 @rt("/attendance/{event_id}")
