@@ -211,44 +211,59 @@ def attendance_list(session, event_id: int):
     guests = Attendance.get(
         Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
     )
-    num = 0
-    missing = 0
+    sorted_guests = sorted(
+        {
+            (
+                (g.arrived or datetime.fromtimestamp(0, timezone.utc)).astimezone(TIMEZONE).strftime("%m/%d %H:%M"),
+                (g.companions or 0) + (1 if g.arrived else 0),
+                g.display_name or g.user_id,
+                g.user_id,
+                g.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if g.left else (None if g.arrived else False),
+            )
+            for g in guests
+        },
+        key=lambda k: k[0],
+        reverse=True,
+    )
+    num = sum([i[1] for i in sorted_guests]) + 1
+    missing = sum(1 for i in sorted_guests if not i[1]) + 1
+
     return fh.Div(
         mui.Steps(
             (
                 mui.LiStep(
-                    mui.Grid(
+                    mui.DivHStacked(
                         mui.Card(
-                            mui.DivCentered(g[0] if g[1] else "❌"),
-                            cls="w-[110px]",
-                        ),
-                        mui.Card(mui.DivCentered(g[1]), cls="max-w-[40px]"),
-                        mui.Card(mui.DivCentered(g[2]), cls="max-w-[400px]"),
-                        cols=3,
+                            mui.Grid(
+                                mui.DivCentered(g[0] if g[1] else "❌"),
+                                mui.DivCentered(g[1]),
+                                mui.Label(g[2].split(" ", 1)[0][:10]),
+                                mui.Button(
+                                    "📤",
+                                    cls=mui.ButtonT.icon + " space-x-2",
+                                    hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
+                                    hx_swap="outerHTML",
+                                    submit=True,
+                                )
+                                if g[4] is None
+                                else mui.DivCentered(g[4])
+                                if g[4]
+                                else None,
+                                cols=4,
+                                cls="gap-2",
+                            ),
+                        )
                     ),
-                    cls=mui.StepT.neutral if g[1] else mui.StepT.secondary,
-                    data_content=(num := num + (g[1] or 1))
-                    if type(g[1]) is not str
-                    else g[1]
+                    cls=mui.StepT.neutral if g[4] else mui.StepT.success if g[1] else mui.StepT.error,
+                    data_content=num - 1
+                    if g[1] == "Goście"
+                    else (num := num - (g[1] or 1))
                     if g[1]
-                    else (missing := missing + 1),
+                    else (missing := missing - 1),
                 )
                 for g in [
-                    ("Data", "+1", "Nazwa"),
-                    *sorted(
-                        {
-                            (
-                                (g.arrived or datetime.fromtimestamp(0, timezone.utc))
-                                .astimezone(TIMEZONE)
-                                .strftime("%Y/%m/%d %H:%M"),
-                                (g.companions or 0) + (1 if g.arrived else 0),
-                                g.display_name or g.user_id,
-                            )
-                            for g in guests
-                        },
-                        key=lambda k: k[0],
-                        reverse=True,
-                    ),
+                    ("Data", "Goście", "Nazwa", "Koniec", False),
+                    *sorted_guests,
                 ]
             ),
             cls=mui.StepsT.vertical,
