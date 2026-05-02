@@ -254,8 +254,14 @@ def attendance_list(session, event_id: int):
                             ),
                         )
                     ),
-                    cls=mui.StepT.neutral if g[4] else mui.StepT.success if g[1] else mui.StepT.error,
-                    data_content=num - 1
+                    cls=mui.StepT.accent
+                    if g[1] == "Goście"
+                    else mui.StepT.neutral
+                    if g[4]
+                    else mui.StepT.success
+                    if g[1]
+                    else mui.StepT.error,
+                    data_content=num - 2
                     if g[1] == "Goście"
                     else (num := num - (g[1] or 1))
                     if g[1]
