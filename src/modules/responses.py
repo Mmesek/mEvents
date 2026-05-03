@@ -18,11 +18,11 @@ def generate(q: dict, date: datetime.datetime):
         case "HOUR":
             r = [[int(i) for i in a["value"][0].split(":")] for a in q["answer"]]
             r = [date.replace(hour=h, minute=m) for h, m in r]
-            avg = datetime.datetime.strftime(
-                datetime.datetime.fromtimestamp(sum(map(datetime.datetime.timestamp, r)) / len(r), TIMEZONE), "%H:%M"
+            avg = datetime.datetime.fromtimestamp(sum(map(datetime.datetime.timestamp, r)) / len(r), TIMEZONE).strftime(
+                "%H:%M"
             )
         case "SCALE":
-            avg = list(chain.from_iterable([[int(i) for i in a["value"][0]] for a in q["answer"]]))
+            avg = list(chain.from_iterable([[int(i) for i in a["value"]] for a in q["answer"]]))
             avg = sum(avg) / len(avg)
 
     for a in q["answer"]:
