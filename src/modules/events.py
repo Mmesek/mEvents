@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 import i18n
@@ -44,7 +44,6 @@ class Event(Base):
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
         count = len({i.user_id for i in self.responses}) if self.responses else None
-        align = right_icon_text if count else icon_text
         return mui.DivCentered(
             mui.Card(
                 fh.Img(
@@ -60,21 +59,33 @@ class Event(Base):
                     mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
                 ),
                 mui.Grid(
-                    icon_text("clock", self.start_time.strftime("%H:%M")),
-                    right_icon_text("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
+                    (
+                        right_icon_text(x[0], x[1]) if n % 2 else icon_text(x[0], x[1])
+                        for n, x in enumerate(
+                            [
+                                x
+                                for x in (
+                                    (
+                                        ("clock", self.start_time.strftime("%H:%M")),
+                                        ("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
+                                        ("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
+                                        ("calendar", f"{self.end_time.date()}, {self.end_time.strftime('%A')}")
+                                        if self.end_time.date() - self.start_time.date() > timedelta(1)
+                                        else None,
+                                        ("pin", f"{self.place}"),
+                                        ("users", f"**Liczba zapisanych**: {count}") if count else None,
+                                        ("user", f"**Organizator**: {self.org_name}") if self.org_name else None,
+                                        ("palette", f"**Temat Przewodni**: {self.theme}") if self.theme else None,
+                                        ("shirt", f"**Dresscode**: {self.dresscode}") if self.dresscode else None,
+                                    )
+                                )
+                                if x
+                            ]
+                        )
+                    ),
                     cols=2,
                     cls="gap-1 items-center justify-center",
                 ),
-                mui.Grid(
-                    icon_text("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
-                    right_icon_text("pin", f"{self.place}"),
-                    (icon_text("users", f"**Liczba zapisanych**: {count}")) if count else None,
-                    (align("user", f"**Organizator**: {self.org_name}")) if self.org_name else None,
-                    cols=2,
-                    cls="gap-1",
-                ),
-                (icon_text("palette", f"**Temat Przewodni**: {self.theme}")) if self.theme else None,
-                (icon_text("shirt", f"**Dresscode**: {self.dresscode}")) if self.dresscode else None,
                 mui.DivCentered(
                     icon_text(
                         "messages-square",
@@ -84,7 +95,7 @@ class Event(Base):
                 if self.discord_event
                 else None,
                 mui.DivCentered(mui.render_md(self.description)) if self.description else None,
-                mui.DivRAligned(*self.event_buttons(user_id)),
+                mui.DivRAligned(mui.Grid(*self.event_buttons(user_id))),
                 body_cls="space-y-0",
                 style="max-width: 1000px; min-width: 35%",
             )
