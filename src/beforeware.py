@@ -1,6 +1,5 @@
 import time
 from fasthtml import common as fh
-from src.components.translations import Translation
 from src.db import supa
 from supabase_auth import AuthResponse, errors
 
@@ -35,7 +34,6 @@ def refresh_session(req, sess):
 
 def set_locale(sess):
     sess["locale"] = "pl"
-    # sess.t = Translation(sess.get("locale"))
 
 
 STATIC = [

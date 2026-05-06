@@ -10,5 +10,5 @@ class Translation:
     def __init__(self, locale: str) -> None:
         self._locale = locale
 
-    def t(self, key: str, **kwargs):
-        i18n.t(key, locale=self._locale, **kwargs)
+    def __call__(self, key: str, **kwargs):
+        return i18n.t(key, locale=self._locale, **kwargs)
