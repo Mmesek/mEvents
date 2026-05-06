@@ -7,11 +7,12 @@ from monsterui import all as mui
 
 from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout
 from src.components.app_factory import make_app
-from src.components.models import Form, Response
+from src.components.models import Form, Response, Question as Question_db
 from src.forms import Question
 from src.generators import QuestionType
 from src.modules.events import Event
 from src.modules.tickets import Attendance
+from src.db import s
 
 rt = make_app("forms")
 
@@ -65,29 +66,27 @@ def save(session, responses: dict, event_id: int):
 
 @rt("/new")
 def new(session, form_id: int = None):
-    res = {}
+    res = Form()
     if form_id:
-        res = (
-            Form.get_one(
-                Form.select(
-                    session["auth"],
-                    '*, questions:"Form_Questions" (order, required, ..."Question" (*, options:"Question_Options" (id, value)))',
-                ).eq("id", form_id)
-            )
-            or Form()
+        res = Form.get_one(
+            Form.select(
+                session["auth"],
+                '*, questions:"Form_Questions" (order, required, ..."Question" (*, options:"Question_Options" (id, value)))',
+            ).eq("id", form_id)
         )
 
-    return fh.Title(i18n.t("forms.create.title", locale=session.get("locale"))), FormLayout(
+    return FormLayout(
+        i18n.t("forms.create.title", locale=session.get("locale")),
+        i18n.t("forms.create.help", locale=session.get("locale")),
         mui.Input(
             placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
             id="form-title",
             required=True,
             cls="required",
-            value=res.get("title"),
+            value=res.title,
         ),
-        i18n.t("forms.create.help", locale=session.get("locale")),
         mui.TextArea(
-            res.get("description"),
+            res.description,
             placeholder=i18n.t("forms.create.description", locale=session.get("locale")),
             id="form-description",
         ),
@@ -96,7 +95,7 @@ def new(session, form_id: int = None):
             *[
                 q.edit_form(session)
                 for q in sorted(
-                    [Question(**q) for q in res.get("questions", [{}])],
+                    [Question(**q) for q in res.questions or [{"id": 0}]],
                     key=lambda x: x.order,
                 )
             ],
@@ -109,10 +108,25 @@ def new(session, form_id: int = None):
                 hx_post="/forms/add-question",
                 hx_swap="beforeend",
             ),
-            mui.Button(
-                i18n.t("forms.create.submit", locale=session.get("locale")),
-                cls=mui.ButtonT.primary,
+            fh.Div(
+                fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
+                fh.Select(
+                    *[
+                        fh.Option(
+                            f["title"],
+                            hx_post=f"/forms/add-question?question_id={f['id']}",
+                        )
+                        for f in Question_db.select(session["auth"], "id, title").execute().data
+                    ],
+                    searchable=True,
+                    hx_target="#questions-list",
+                    hx_swap="beforeend",
+                ),
             ),
+        ),
+        mui.Button(
+            i18n.t("forms.create.submit", locale=session.get("locale")),
+            cls=mui.ButtonT.primary,
         ),
         cls="space-y-4",
         destination="/forms/add",
@@ -120,8 +134,30 @@ def new(session, form_id: int = None):
 
 
 @rt("/add-question")
-def add_question(session):
-    return Question(int(time.time() % 10000)).edit_form(session)
+def add_question(session, responses: dict, question_id: int = None):
+    if type(responses["order"]) is not list:
+        responses["order"] = [responses["order"]]
+    order = len(responses["order"])
+    if question_id:
+        res = (
+            Question_db.get_one(
+                Question_db.select(
+                    session["auth"],
+                    '*, options:"Question_Options" (*)',
+                ).eq("id", question_id)
+            )
+            or Question_db()
+        )
+        return Question(
+            res.id,
+            res.title,
+            res.type,
+            max_length=res.max_length,
+            min_length=res.min_length,
+            options=res.options,
+            allow_multiple_answer=res.allow_multiple_answers,
+        ).edit_form(session, order + 1)
+    return Question().edit_form(session, order + 1)
 
 
 @rt("/question-type")
@@ -169,16 +205,22 @@ def get_next(responses: dict, key: str):
 @rt("/add")
 def add_form(session, responses: dict):
     questions = []
+    if type(responses["order"]) is not list:
+        responses["order"] = [responses["order"]]
+        responses["question"] = [responses["question"]]
+        responses["description"] = [responses["description"]]
     for idx, q, desc in zip(responses["order"], responses["question"], responses["description"], strict=True):
+        if f"select-type-{idx}" not in responses:
+            responses[f"select-type-{idx}"] = "INPUT"
         question = {
-            "type": responses[f"type-{idx}"],
+            "type": responses[f"select-type-{idx}"],
             "title": q,
             "description": desc,
         }
-        if responses[f"type-{idx}"] == "SCALE":
-            question["min_length"] = get_next(responses, "min")
-            question["max_length"] = get_next(responses, "max")
-        if responses[f"type-{idx}"] == "CHOICE":
+        if responses[f"select-type-{idx}"] == "SCALE":
+            question["min_length"] = int(get_next(responses, "min"))
+            question["max_length"] = int(get_next(responses, "max"))
+        if responses[f"select-type-{idx}"] == "CHOICE":
             options = []
             for k, v in responses.items():
                 if k.startswith(f"option-{idx}") and v:
@@ -186,6 +228,19 @@ def add_form(session, responses: dict):
             question["options"] = options
         questions.append(question)
     print(questions)
+    res = (
+        s.auth(session["auth"])
+        .rpc(
+            "create_form_with_questions",
+            {"title": responses["form-title"], "description": responses["form-description"], "questions": questions},
+        )
+        .execute()
+    )
+    print(res)
+    print(res.data)
+    # _questions = Question_db.table(session["auth"]).insert(questions).execute().data
+    # _form = Form.table(session["auth"]).insert({"title": responses["title"], "description": responses["form_description"]}).execute().data
+
     return i18n.t("forms.create.success", locale=session.get("locale"))
 
 

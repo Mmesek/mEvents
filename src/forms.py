@@ -49,31 +49,36 @@ class Question:
             fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
         )
 
-    def edit_form(self, session):
+    def edit_form(self, session, order: int = None):
         from src.modules.forms import question_type
 
+        order = order or self.order or 0
+
         return fh.Div(
-            fh.Input(id="order", type="hidden", value=self.order),
+            fh.Input(id="order", type="hidden", value=order),
+            fh.Input(id="original_id", type="hidden", value=self.id),
             ui.Input(
                 placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
                 id="question",
                 required=True,
                 cls="required",
                 value=self.title,
+                disabled=True if self.id else False,
             ),
             ui.TextArea(
                 self.description,
                 placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
                 id="description",
+                disabled=True if self.id else False,
             ),
             ui.Switch(
                 i18n.t("forms.create.is_required", locale=session.get("locale")),
                 id="is_required",
                 checked=self.required,
             ),
-            question_type(session, {}, self.id, self.type_name),
+            question_type(session, {}, order, self.type_name),
             ui.DividerLine(),
-            id=self.id,
+            id=order,
         )
 
 
