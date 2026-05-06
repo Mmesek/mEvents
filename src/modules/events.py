@@ -177,7 +177,7 @@ def events(
     include_previous: bool = False,
     user_id: str = None,
 ):
-    forms_stmt = Event.table().select('*, responses:"Response" (user_id)')
+    forms_stmt = Event.select(session.get("auth"), '*, responses:"Response" (user_id)')
     if not include_previous:
         forms_stmt = forms_stmt.gt("end_time", datetime.now(TIMEZONE))
     if name:
