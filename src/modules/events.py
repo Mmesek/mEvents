@@ -227,7 +227,17 @@ def create(session):
                     "calendar",
                     mui.Input(
                         type="date",
-                        id="date",
+                        id="start_date",
+                        required=True,
+                        title=i18n.t("events.create.date.description", locale=session.get("locale")),
+                    ),
+                    icon_style="required",
+                ),
+                icon_text(
+                    "calendar",
+                    mui.Input(
+                        type="date",
+                        id="end_date",
                         required=True,
                         title=i18n.t("events.create.date.description", locale=session.get("locale")),
                     ),
@@ -344,8 +354,10 @@ def add(session, responses: dict):
     responses = handle_updating_responses(responses)
 
     try:
-        # Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
-        responses["start_time"] = responses.pop("date") + " " + responses["start_time"]
+        responses["start_time"] = responses.pop("start_date") + " " + responses["start_time"]
+        responses["end_time"] = responses.pop("end_date") + " " + responses["end_time"]
+        responses["dresscode_mandatory"] = responses.get("dresscode_mandatory", False)
+        Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
         return Event(**responses).info_card()
 
     except Exception as ex:
