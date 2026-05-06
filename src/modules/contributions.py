@@ -99,7 +99,7 @@ class Contributions(Base):
     created_at: datetime = None
     updated_at: datetime = None
     display_name: str = None
-    user: dict = None
+    user: dict | None = None
 
     def __post_init__(self):
         self.display_name = (self.user or {}).get("display_name", self.user_id)
