@@ -10,7 +10,7 @@ from src.components.app_factory import ROUTES
 
 import src.modules.discord
 import src.components.translations
-from src.beforeware import beforeware, translations
+from src.beforeware import refreshware
 from src.components.headers import HEADERS
 
 import sentry_sdk
@@ -32,7 +32,7 @@ sentry_sdk.init(
 app, rt = fh.fast_app(
     hdrs=HEADERS,
     routes=ROUTES,
-    before=[beforeware],
+    before=[refreshware, beforeware],
 )
 
 

@@ -1,5 +1,5 @@
 from fasthtml import common as fh
-from src.beforeware import beforeware
+from src.beforeware import beforeware, refreshware
 from src.components.headers import HEADERS
 
 ROUTES = []
@@ -8,7 +8,7 @@ ROUTES = []
 def make_app(route: str):
     app, rt = fh.fast_app(
         hdrs=HEADERS,
-        before=beforeware,
+        before=[refreshware, beforeware],
     )
     add_mount(route, app)
     return rt

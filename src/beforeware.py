@@ -2,7 +2,7 @@ import time
 from fasthtml import common as fh
 from src.components.translations import Translation
 from src.db import supa
-from supabase_auth import AuthResponse, errors
+from supabase_auth import AuthResponse
 
 
 def store_session(res: AuthResponse, session: dict):
@@ -18,16 +18,14 @@ def store_session(res: AuthResponse, session: dict):
 
 
 def user_auth_before(req, sess):
-    auth = req.scope["email"] = sess.get("email", None)
-    if auth and sess.get("auth") and sess.get("expires_at", 0) < time.time():
-        try:
-            auth = supa.auth.refresh_session(sess.get("refresh_token"))
-            store_session(auth, sess)
-        except (errors.AuthSessionMissingError, errors.AuthApiError):
-            auth = None
-    if not auth or not sess.get("auth"):
+    if not sess.get("refresh_token"):
         sess["referrer"] = req.url.path
         return fh.RedirectResponse("/login", 303)
+
+
+def refresh_session(sess):
+    if sess.get("refresh_token") and sess.get("expires_at", 0) < time.time():
+        store_session(supa.auth.refresh_session(sess.get("refresh_token")), sess)
 
 
 def set_locale(sess):
@@ -35,14 +33,18 @@ def set_locale(sess):
     # sess.t = Translation(sess.get("locale"))
 
 
+STATIC = [
+    r"/favicon\.ico",
+    r"/static/.*",
+    r".*\.css",
+    r".*\.js",
+    "/login",
+]
+
 beforeware = fh.Beforeware(
     user_auth_before,
     skip=[
-        r"/favicon\.ico",
-        r"/static/.*",
-        r".*\.css",
-        r".*\.js",
-        "/login",
+        *STATIC,
         "/",
         "/events/",
         "/privacy-policy",
@@ -51,4 +53,4 @@ beforeware = fh.Beforeware(
     ],
 )
 
-translations = fh.Beforeware(set_locale)
+refreshware = fh.Beforeware(refresh_session, skip=STATIC)
