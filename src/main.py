@@ -10,7 +10,7 @@ from src.components.app_factory import ROUTES
 
 import src.modules.discord
 import src.components.translations
-from src.beforeware import refreshware
+from src.beforeware import refreshware, beforeware, translations
 from src.components.headers import HEADERS
 
 import sentry_sdk
