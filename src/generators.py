@@ -65,14 +65,15 @@ def RadioLabel(label, name, default="Yes"):
 
 @register("CHOICE", list)
 def generate_radio(question: str, question_id: int, options: list[str], **kwargs):
-    radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
-    return (
-        mui.FormLabel(question),
-        *map(
-            radio,
-            options,
-        ),
-    )
+    # radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
+    return mui.LabelSelect(mui.Options(*options), label=question, id=question_id, **kwargs)
+    # return (
+    #    mui.FormLabel(question),
+    #    *map(
+    #        radio,
+    #        options,
+    #    ),
+    # )
 
 
 @register("HOUR")
