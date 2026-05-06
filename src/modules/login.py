@@ -25,7 +25,7 @@ add_mount("login", app)
 def magic_link():
     return mui.Form(
         LOGIN_STRING.format("magicznego linku"),
-        mui.Input(id="email", placeholder="email@hostname.tld"),
+        mui.Input(id="email", placeholder="email@hostname.tld", required=True),
         mui.Button("Wyślij link do logowania", cls=mui.ButtonT.primary),
         hx_post="/login/email",
     )
@@ -69,6 +69,8 @@ def oauth_login(provider: str, scopes: list[str] = None):
 
 @rt("/email")
 def login_email(email: str, session):
+    if not email:
+        return magic_link()
     try:
         supa.auth.sign_in_with_otp(
             {
@@ -89,7 +91,7 @@ def login_email(email: str, session):
 def finish_login(res, session):
     store_session(res, session)
 
-    return fh.Redirect(session.get("referrer", "/"))
+    return fh.Redirect(session.pop("referrer", "/"))
 
 
 @rt("/otp")
