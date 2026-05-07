@@ -18,14 +18,15 @@ import dotenv
 import os
 
 dotenv.load_dotenv()
-sentry_sdk.init(
-    dsn=os.getenv("SENTRY_URL"),
-    # Add data like request headers and IP for users,
-    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-    send_default_pii=True,
-    # Enable sending logs to Sentry
-    enable_logs=True,
-)
+if os.getenv("SENTRY_URL"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_URL"),
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+        # Enable sending logs to Sentry
+        enable_logs=True,
+    )
 
 
 # Create your app with the theme
@@ -34,7 +35,6 @@ app, rt = fh.fast_app(
     routes=ROUTES,
     before=[refreshware, beforeware],
 )
-
 
 
 @rt("/")
