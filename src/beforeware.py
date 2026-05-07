@@ -42,6 +42,9 @@ STATIC = [
     r".*\.css",
     r".*\.js",
     "/login",
+    "/service-worker",
+    "/manifest.json",
+    "/icon",
 ]
 
 beforeware = fh.Beforeware(

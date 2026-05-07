@@ -59,5 +59,26 @@ def deleteme():
     return fh.P("Skontaktuj się z @Mmesek w celu usunięcia twoich danych.")
 
 
+from src.modules.pwa import MANIFEST, SERVICE_WORKER, SVG
+
+
+@rt("/manifest.json")
+def manifest():
+    return fh.Response(MANIFEST, media_type="application/json")
+
+
+@rt("/service-worker")
+def service_worker():
+    return fh.Response(
+        SERVICE_WORKER,
+        media_type="text/javascript",
+    )
+
+
+@rt("/icon")
+def icon():
+    return fh.Response(SVG, media_type="image/svg+xml")
+
+
 if __name__ == "__main__":
     fh.serve()
