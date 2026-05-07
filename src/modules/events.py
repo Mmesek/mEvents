@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import UUID
 
-import i18n
 from fasthtml import common as fh
 from monsterui import all as mui
 
@@ -190,16 +189,16 @@ def events(
 
 
 @rt("/create")
-def create(session):
+def create(session, t):
     content = mui.DivCentered(
         mui.Card(
             mui.DivCentered(
                 mui.H1(
                     mui.Input(
                         id="title",
-                        placeholder=i18n.t("events.create.title.name", locale=session.get("locale")),
+                        placeholder=t("events.create.title.name"),
                         required=True,
-                        title=i18n.t("events.create.title.description", locale=session.get("locale")),
+                        title=t("events.create.title.description"),
                     ),
                 ),
                 cls="required",
@@ -211,7 +210,7 @@ def create(session):
                         type="time",
                         id="start_time",
                         required=True,
-                        title=i18n.t("events.create.start.description", locale=session.get("locale")),
+                        title=t("events.create.start.description"),
                     ),
                     icon_style="required",
                 ),
@@ -220,7 +219,7 @@ def create(session):
                     mui.Input(
                         type="time",
                         id="end_time",
-                        title=i18n.t("events.create.end.description", locale=session.get("locale")),
+                        title=t("events.create.end.description"),
                     ),
                 ),
                 icon_text(
@@ -229,7 +228,7 @@ def create(session):
                         type="date",
                         id="start_date",
                         required=True,
-                        title=i18n.t("events.create.date.description", locale=session.get("locale")),
+                        title=t("events.create.date.description"),
                     ),
                     icon_style="required",
                 ),
@@ -239,7 +238,7 @@ def create(session):
                         type="date",
                         id="end_date",
                         required=True,
-                        title=i18n.t("events.create.date.description", locale=session.get("locale")),
+                        title=t("events.create.date.description"),
                     ),
                     icon_style="required",
                 ),
@@ -247,9 +246,9 @@ def create(session):
                     "pin",
                     mui.Input(
                         id="place",
-                        placeholder=i18n.t("events.create.place.name", locale=session.get("locale")),
+                        placeholder=t("events.create.place.name"),
                         required=True,
-                        title=i18n.t("events.create.place.description", locale=session.get("locale")),
+                        title=t("events.create.place.description"),
                     ),
                     icon_style="required",
                 ),
@@ -258,7 +257,7 @@ def create(session):
                     mui.Input(
                         id="org_name",
                         value=session["display_name"].title(),
-                        title=i18n.t("events.create.org_name.description", locale=session.get("locale")),
+                        title=t("events.create.org_name.description"),
                     ),
                 ),
                 fh.Div(),
@@ -266,8 +265,8 @@ def create(session):
                     "palette",
                     mui.Input(
                         id="theme",
-                        placeholder=i18n.t("events.create.theme.name", locale=session.get("locale")),
-                        title=i18n.t("events.create.theme.description", locale=session.get("locale")),
+                        placeholder=t("events.create.theme.name"),
+                        title=t("events.create.theme.description"),
                     ),
                 ),
                 icon_text(
@@ -275,18 +274,15 @@ def create(session):
                     (
                         mui.Input(
                             id="dresscode",
-                            placeholder=i18n.t(
-                                "events.create.dresscode.name",
-                                locale=session.get("locale"),
-                            ),
-                            title=i18n.t("events.create.dresscode.description", locale=session.get("locale")),
+                            placeholder=t("events.create.dresscode.name"),
+                            title=t("events.create.dresscode.description"),
                         ),
                         mui.Switch(
                             id="dresscode_mandatory",
-                            title=i18n.t("events.create.dresscode_mandatory.description", locale=session.get("locale")),
+                            title=t("events.create.dresscode_mandatory.description"),
                         ),
                         fh.P(
-                            i18n.t("events.create.dresscode_mandatory.name", locale=session.get("locale")),
+                            t("events.create.dresscode_mandatory.name"),
                             cls=mui.TextPresets.muted_sm,
                         ),
                     ),
@@ -297,19 +293,19 @@ def create(session):
             mui.DivCentered(
                 mui.TextArea(
                     id="description",
-                    placeholder=i18n.t("events.create.description.default", locale=session.get("locale")),
-                    title=i18n.t("events.create.description.description", locale=session.get("locale")),
+                    placeholder=t("events.create.description.default"),
+                    title=t("events.create.description.description"),
                 )
             ),
-            mui.Switch(i18n.t("events.create.is_private", locale=session.get("locale")), id="private"),
+            mui.Switch(t("events.create.is_private"), id="private"),
             fh.Div(
-                fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
+                fh.Label(t("events.create.select_form")),
                 fh.Select(
                     *[
                         form_option(f["title"], f["id"])
                         for f in Form.select(session["auth"], "id, title").execute().data
                     ],
-                    form_option(i18n.t("events.create.new_form", locale=session.get("locale")), form_id=0),
+                    form_option(t("events.create.new_form"), form_id=0),
                     searchable=True,
                     hx_target="#form",
                     hx_swap="innerHTML",
@@ -321,18 +317,18 @@ def create(session):
                     form_option(f["title"], f["id"])
                     for f in Form.select(session["auth"], "id, title").ilike("title", "Feedback").execute().data
                 ],
-                form_option(i18n.t("events.create.no_form", locale=session.get("locale")), None),
+                form_option(t("events.create.no_form"), None),
                 searchable=True,
-                placeholder=i18n.t("events.create.select_feedback_form", locale=session.get("locale")),
+                placeholder=t("events.create.select_feedback_form"),
             ),
-            mui.Button(i18n.t("events.create.add.add", locale=session.get("locale")), cls=mui.ButtonT.primary),
+            mui.Button(t("events.create.add.add"), cls=mui.ButtonT.primary),
         )
     )
     return fh.Container(
         fh.Form(
             mui.DivCentered(
-                fh.H1(i18n.t("events.create.add.title", locale=session.get("locale"))),
-                i18n.t("events.create.add.description", locale=session.get("locale")),
+                fh.H1(t("events.create.add.title")),
+                t("events.create.add.description"),
                 mui.DividerLine(),
             ),
             content,
@@ -349,8 +345,8 @@ def form_option(name: str, form_id: int):
     )
 
 
-@rt("/add")
-def add(session, responses: dict):
+@rt
+def add(session, responses: dict, t):
     responses = handle_updating_responses(responses)
 
     try:
@@ -358,14 +354,14 @@ def add(session, responses: dict):
         responses["end_time"] = responses.pop("end_date") + " " + responses["end_time"]
         responses["dresscode_mandatory"] = responses.get("dresscode_mandatory", False)
         Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
-        return Event(**responses).info_card()
+        return Event.from_dict(responses).info_card()
 
     except Exception as ex:
-        return mui.DivCentered(i18n.t("events.create.add.failed", locale=session.get("locale"))), mui.DivRAligned(ex)
+        return mui.DivCentered(t("events.create.add.failed")), mui.DivRAligned(ex)
 
-    return mui.DivCentered(i18n.t("events.create.add.success", locale=session.get("locale"))), mui.DivRAligned("Test")
+    return mui.DivCentered(t("events.create.add.success")), mui.DivRAligned("Test")
 
 
-@rt("/mine")
-def my_events(session):
+@rt
+def mine(session):
     return events(session, include_previous=True, user_id=session["id"])

@@ -1,7 +1,5 @@
-import time
 from datetime import datetime
 
-import i18n
 from fasthtml import common as fh
 from monsterui import all as mui
 
@@ -64,8 +62,8 @@ def save(session, responses: dict, event_id: int):
     ).execute()
 
 
-@rt("/new")
-def new(session, form_id: int = None):
+@rt
+def new(session, t, form_id: int = None):
     res = Form()
     if form_id:
         res = Form.get_one(
@@ -76,20 +74,10 @@ def new(session, form_id: int = None):
         )
 
     return FormLayout(
-        i18n.t("forms.create.title", locale=session.get("locale")),
-        i18n.t("forms.create.help", locale=session.get("locale")),
-        mui.Input(
-            placeholder=i18n.t("forms.create.name", locale=session.get("locale")),
-            id="form-title",
-            required=True,
-            cls="required",
-            value=res.title,
-        ),
-        mui.TextArea(
-            res.description,
-            placeholder=i18n.t("forms.create.description", locale=session.get("locale")),
-            id="form-description",
-        ),
+        t("forms.create.title"),
+        t("forms.create.help"),
+        mui.Input(placeholder=t("forms.create.name"), id="form-title", required=True, cls="required", value=res.title),
+        mui.TextArea(res.description, placeholder=t("forms.create.description"), id="form-description"),
         mui.DividerLine(),
         fh.Div(
             *[
@@ -103,13 +91,13 @@ def new(session, form_id: int = None):
         ),
         fh.Grid(
             mui.Button(
-                i18n.t("forms.create.add_question", locale=session.get("locale")),
+                t("forms.create.add_question"),
                 hx_target="#questions-list",
                 hx_post="/forms/add-question",
                 hx_swap="beforeend",
             ),
             fh.Div(
-                fh.Label(i18n.t("events.create.select_form", locale=session.get("locale"))),
+                fh.Label(t("events.create.select_form")),
                 fh.Select(
                     *[
                         fh.Option(
@@ -124,10 +112,7 @@ def new(session, form_id: int = None):
                 ),
             ),
         ),
-        mui.Button(
-            i18n.t("forms.create.submit", locale=session.get("locale")),
-            cls=mui.ButtonT.primary,
-        ),
+        mui.Button(t("forms.create.submit"), cls=mui.ButtonT.primary),
         cls="space-y-4",
         destination="/forms/add",
     )
@@ -161,7 +146,7 @@ def add_question(session, responses: dict, question_id: int = None):
 
 
 @rt("/question-type")
-def question_type(session, responses: dict, idx: int = 0, __selected: str = None):
+def question_type(session, t, responses: dict, idx: int = 0, __selected: str = None):
     selected = __selected or responses.get(f"select-type-{idx}", "ANSWER")
     items = [
         fh.Select(
@@ -170,7 +155,7 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
             hx_post=f"/forms/question-type?idx={idx}",
             hx_swap="outerHTML",
             id=f"select-type-{idx}",
-            title=i18n.t("forms.create.type", locale=session.get("locale")),
+            title=t("forms.create.type"),
         )
     ]
     if selected == "SCALE":
@@ -186,11 +171,11 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
 
 
 @rt("/add-option")
-def add_option(session, idx: int, order: int):
+def add_option(t, idx: int, order: int):
     return mui.Input(
         id=f"option-{idx}-{order}",
         hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
-        placeholder=i18n.t("forms.create.option", locale=session.get("locale"), x=idx),
+        placeholder=t("forms.create.option", x=idx),
         hx_target=f"#option-{idx}-{order}",
         hx_swap="afterend",
     )
@@ -202,8 +187,8 @@ def get_next(responses: dict, key: str):
     return responses[key]
 
 
-@rt("/add")
-def add_form(session, responses: dict):
+@rt
+def add(session, t, responses: dict):
     questions = []
     if type(responses["order"]) is not list:
         responses["order"] = [responses["order"]]
@@ -227,7 +212,6 @@ def add_form(session, responses: dict):
                     options.append(v)
             question["options"] = options
         questions.append(question)
-    print(questions)
     res = (
         s.auth(session["auth"])
         .rpc(
@@ -236,12 +220,8 @@ def add_form(session, responses: dict):
         )
         .execute()
     )
-    print(res)
-    print(res.data)
-    # _questions = Question_db.table(session["auth"]).insert(questions).execute().data
-    # _form = Form.table(session["auth"]).insert({"title": responses["title"], "description": responses["form_description"]}).execute().data
 
-    return i18n.t("forms.create.success", locale=session.get("locale"))
+    return t("forms.create.success")
 
 
 @rt("/{event_id}")
