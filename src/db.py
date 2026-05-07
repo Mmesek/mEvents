@@ -33,12 +33,19 @@ class Base(msgspec.Struct):
         return stmt.table(cls.__name__)
 
     @classmethod
+    def from_dict(cls: T, json: dict) -> T:
+        return msgspec.convert(json, cls)
+
+    def to_dict(self):
+        return {k: v for k, v in msgspec.structs.asdict(self).items() if not k.startswith("_")}
+
+    @classmethod
     def get(cls: T, query: SyncSelectRequestBuilder) -> list[T]:
-        return [msgspec.convert(i, cls) for i in query.execute().data]
+        return [cls.from_dict(i) for i in query.execute().data]
 
     @classmethod
     def get_one(cls: T, query: SyncQueryRequestBuilder) -> T:
-        return msgspec.convert(query.execute().data[0], cls)
+        return cls.from_dict(query.execute().data[0])
 
     @classmethod
     def select(cls, auth: str = None, select: str = "*") -> SyncSelectRequestBuilder:
