@@ -59,7 +59,7 @@ def deleteme():
     return fh.P("Skontaktuj się z @Mmesek w celu usunięcia twoich danych.")
 
 
-from src.modules.pwa import MANIFEST, SERVICE_WORKER, SVG
+from src.modules.pwa import MANIFEST, SERVICE_WORKER, SVG, Notification
 
 
 @rt("/manifest.json")
@@ -78,6 +78,12 @@ def service_worker():
 @rt("/icon")
 def icon():
     return fh.Response(SVG, media_type="image/svg+xml")
+
+
+@rt("/notification/register")
+def save_token(session, subscription: str):
+    Notification.table(session["auth"]).upsert({"subscription": subscription}).execute()
+    return {"status": True}
 
 
 if __name__ == "__main__":
