@@ -87,7 +87,7 @@ def generate_hour_picker(
     return (
         QuestionText(question, required),
         HelpText(description),
-        mui.Input(type="time", id=question_id, **kwargs),
+        mui.Input(type="time", id=question_id, required=required, **kwargs),
     )
 
 
