@@ -346,7 +346,7 @@ def form_option(name: str, form_id: int):
 
 
 @rt
-def add(session, responses: dict, t):
+def add(session, responses: dict, *, t=None):
     responses = handle_updating_responses(responses)
 
     try:

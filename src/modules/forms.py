@@ -146,7 +146,7 @@ def add_question(session, responses: dict, question_id: int = None):
 
 
 @rt("/question-type")
-def question_type(session, t, responses: dict, idx: int = 0, __selected: str = None):
+def question_type(session, responses: dict, idx: int = 0, __selected: str = None, *, t=None):
     selected = __selected or responses.get(f"select-type-{idx}", "ANSWER")
     items = [
         fh.Select(
@@ -171,7 +171,7 @@ def question_type(session, t, responses: dict, idx: int = 0, __selected: str = N
 
 
 @rt("/add-option")
-def add_option(t, idx: int, order: int):
+def add_option(idx: int, order: int, *, t=None):
     return mui.Input(
         id=f"option-{idx}-{order}",
         hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
@@ -188,7 +188,7 @@ def get_next(responses: dict, key: str):
 
 
 @rt
-def add(session, t, responses: dict):
+def add(session, responses: dict, *, t=None):
     questions = []
     if type(responses["order"]) is not list:
         responses["order"] = [responses["order"]]
