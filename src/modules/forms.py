@@ -12,6 +12,9 @@ from src.modules.events import Event
 from src.modules.tickets import Attendance
 from src.db import s
 
+mui.franken_class_map["ul"] = "list-[square] list-inside space-y-2 mb-6 ml-6 text-lg"
+
+
 rt = make_app("forms")
 
 

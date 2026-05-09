@@ -3,6 +3,7 @@ from functools import wraps
 
 import fasthtml.common as fh
 from monsterui import all as mui
+import mistletoe
 
 
 def FormSectionDiv(*c, cls="space-y-2", **kwargs):
@@ -14,7 +15,8 @@ def QuestionText(c, required: bool = False):
 
 
 def HelpText(c):
-    return fh.P(c, cls=mui.TextPresets.muted_sm)
+    if c:
+        return fh.NotStr(mistletoe.markdown(c.strip()))  # , cls=mui.TextPresets.muted_sm)
 
 
 def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/submit"):
