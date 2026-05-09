@@ -296,17 +296,30 @@ def submit(session, event: str, responses: dict):
         save_to_db(session, event, responses)
     except Exception as ex:
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
-    return mui.DivCentered(
-        "Dzięki za zapis!",
-        mui.Button(
-            fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
-            submit=False,
-            cls=mui.ButtonT.primary,
+    return (
+        mui.DivCentered(
+            "Dzięki za zapis!",
+            mui.Button(
+                fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
+                submit=False,
+                cls=mui.ButtonT.primary,
+            ),
+            "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:",
+            mui.Button(session["email"], cls=mui.ButtonT.secondary, submit=False),
+            "i potwierdź obecność gdy otrzymasz zaproszenie!",
         ),
-        "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem - Sprawdź wtedy swoją skrzynkę odbiorczą:",
-        mui.Button(session["email"], cls=mui.ButtonT.secondary, submit=False),
-        "i potwierdź obecność gdy otrzymasz zaproszenie!",
-    ), mui.DivRAligned(back_to_main())
+        mui.DivFullySpaced(
+            fh.A(
+                mui.Button(
+                    "Strona z deklaracją przyniesienia przedmiotów na wydarzenie",
+                    cls=mui.ButtonT.ghost,
+                    submit=False,
+                ),
+                href=f"/contributions/{event}",
+            ),
+            mui.DivRAligned(back_to_main()),
+        ),
+    )
 
 
 @rt("/submit-feedback/{event}")
