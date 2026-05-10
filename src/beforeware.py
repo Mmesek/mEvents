@@ -16,6 +16,16 @@ def store_session(res: AuthResponse, session: dict):
     session["expires_at"] = res.session.expires_at
 
 
+def logout(s: dict):
+    s.pop("email", None)
+    s.pop("id", None)
+    s.pop("picture", None)
+    s.pop("display_name", None)
+    s.pop("auth", None)
+    s.pop("refresh_token", None)
+    s.pop("expires_at", None)
+
+
 def user_auth_before(req, sess):
     if not sess.get("refresh_token"):
         sess["referrer"] = req.url.path
@@ -28,8 +38,10 @@ def refresh_session(req, sess):
             auth = supa.auth.refresh_session(sess.get("refresh_token"))
             store_session(auth, sess)
         except errors.AuthApiError:
-            sess.pop("refresh_token")
+            logout(sess)
             return user_auth_before(req, sess)
+    elif not sess.get("refresh_token"):
+        logout(sess)
 
 
 def set_locale(sess):
