@@ -35,11 +35,12 @@ def dependency_injection(rt):
     return register_wrapper
 
 
+def server_error(request: fh.Request, exc: fh.HTTPException):
+    return fh.Card("Error! Jeśli problem będzie się powtarzał, skontakuj się ze mną bezpośrednio!")
+
+
 def make_app(route: str):
-    app, rt = fh.fast_app(
-        hdrs=HEADERS,
-        before=[refreshware, beforeware],
-    )
+    app, rt = fh.fast_app(hdrs=HEADERS, before=[refreshware, beforeware], exception_handlers={500: server_error})
     add_mount(route, app)
     return dependency_injection(rt)
 
