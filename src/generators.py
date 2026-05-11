@@ -112,7 +112,16 @@ def generate_scale(
     return (
         QuestionText(question, required),
         HelpText(description),
-        mui.Range(min=min, max=max, name=question_id, **kwargs),
+        fh.Div(
+            fh.Input(
+                mui.DivFullySpaced(*[fh.Span(f"{i}", cls=mui.TextPresets.muted_sm) for i in range(min, max + 1)]),
+                type="range",
+                min=min,
+                max=max,
+                name=question_id,
+                **kwargs,
+            ),
+        ),
     )
 
 
