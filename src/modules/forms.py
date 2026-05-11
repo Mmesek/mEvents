@@ -201,42 +201,37 @@ def add(session, responses: dict, *, t=None):
     return t("forms.create.success")
 
 
-@rt("/{event_id}")
-@with_layout(Layout, "Rejestracja na wydarzenie")
-def event_form(session, event_id: str):
-    f = (
+def get_form(session, event_id: str, feedback: bool = False):
+    return Event.maybe_one(
         Event.select(
             session["auth"],
-            'form:form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))',
+            f'*, form:{"feedback_" if feedback else ""}form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))',
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
         .eq("form.questions.question.answer.user_id", session["id"])
-        .maybe_single()
-        .execute()
     )
 
-    return form(f, event_id)
+
+@rt("/{event_id}")
+@with_layout(Layout, "Rejestracja na wydarzenie")
+def event_form(session, event_id: str):
+    f = get_form(session, event_id)
+    if not f or not f.form:
+        return mui.DivCentered("Podany formularz nie istnieje", back_to_main())
+    return form(f)
 
 
 @rt("/feedback/{event_id}")
 @with_layout(Layout, "Feedback z wydarzenia")
 def feedback_form(session, event_id: str):
-    f = (
-        Event.select(
-            session["auth"],
-            'end_time, form:feedback_form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))',
-        )
-        .eq("id", event_id)
-        .eq("form.questions.question.answer.event_id", event_id)
-        .eq("form.questions.question.answer.user_id", session["id"])
-        .maybe_single()
-        .execute()
-    )
-    if f and datetime.fromisoformat(f.data["end_time"]).astimezone(TIMEZONE) > datetime.now(TIMEZONE):
+    f = get_form(session, event_id, True)
+    if not f or not f.form:
+        return mui.DivCentered("Podany formularz nie istnieje", back_to_main())
+    if f and f.end_time > datetime.now(TIMEZONE):
         return "Wróć po skończeniu wydarzenia!"
 
-    return form(f, event_id, path="submit-feedback")
+    return form(f, path="submit-feedback")
 
 
 def save_to_db(session, event, responses):
