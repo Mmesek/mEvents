@@ -33,7 +33,7 @@ def user_auth_before(req, sess):
 
 
 def refresh_session(req, sess):
-    if sess.get("refresh_token") and sess.get("expires_at", 0) < time.time():
+    if sess.get("refresh_token") and (sess.get("expires_at", 0) - 90) < time.time():
         try:
             auth = supa.auth.refresh_session(sess.get("refresh_token"))
             store_session(auth, sess)
