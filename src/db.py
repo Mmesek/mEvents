@@ -48,5 +48,10 @@ class Base(msgspec.Struct):
         return cls.from_dict(query.execute().data[0])
 
     @classmethod
+    def maybe_one(cls: T, query: SyncSelectRequestBuilder) -> T | None:
+        if data := query.maybe_single().execute():
+            return cls.from_dict(data.data)
+
+    @classmethod
     def select(cls, auth: str = None, select: str = "*") -> SyncSelectRequestBuilder:
         return cls.table(auth).select(select)
