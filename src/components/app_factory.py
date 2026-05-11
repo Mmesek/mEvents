@@ -1,4 +1,5 @@
 from fasthtml import common as fh
+from monsterui import all as mui
 from src.beforeware import beforeware, refreshware
 from src.components.headers import HEADERS
 from functools import wraps
@@ -36,7 +37,7 @@ def dependency_injection(rt):
 
 
 def server_error(request: fh.Request, exc: fh.HTTPException):
-    return fh.Card("Error! Jeśli problem będzie się powtarzał, skontakuj się ze mną bezpośrednio!")
+    return mui.Card("Error! Jeśli problem będzie się powtarzał, skontakuj się ze mną bezpośrednio!")
 
 
 def make_app(route: str):
