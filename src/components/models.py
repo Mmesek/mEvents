@@ -31,9 +31,9 @@ class QuestionType(Enum):
 
 
 class Question_Options(Base):
-    id: int
-    question_id: int
-    value: str
+    id: int | None = None
+    question_id: int | None = None
+    value: str | None = None
 
 
 class Question(Base):
@@ -82,21 +82,31 @@ class Form(Base):
 
     def render(self, event_id, path="submit"):
         content = [q.question.generate(event_id, q.required) for q in sorted(self.questions, key=lambda x: x.order)]
+        registered = all(q.question.answer for q in self.questions if q.required)
 
         if not content:
             content.append(back_to_main())
         else:
             content.append(mui.Button("Zapisz", cls=mui.ButtonT.primary))
 
-        return FormLayout(
-            "",
+        return (
+            mui.DivCentered(
+                fh.NotStr(
+                    mui.render_md(
+                        "**JESZCZE NIE JESTEŚ ZAPISANY/A NA WYDARZENIE!** Jedynie pytania oznaczone gwiazdką `(*)` są wymagane do zapisu."
+                    )
+                ),
+            )
+            if not registered
+            else None,
             fh.Div(
-                "Jeżeli pola poniżej są puste to... JESZCZE NIE JESTEŚ ZAPISANY/A NA WYDARZENIE!",
-                "Jedynie pytania oznaczone gwiazdką (*) są wymagane do zapisu.",
-                "Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste.",
-                "Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony.",
+                fh.P("Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste, chyba że jest wymagane."),
+                fh.P("Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony."),
             ),
-            mui.render_md(self.description) if self.description else None,
-            *content,
-            destination=f"/forms/{path}/{event_id}",
+            mui.DividerLine(),
+            mui.DivCentered(
+                mui.render_md(self.description) if self.description else None, style="max-width: 100em; min-width: 35%"
+            ),
+            mui.DividerLine(),
+            mui.Form(*content, cls="space-y-3 mt-4", hx_post=f"/forms/{path}/{event_id}"),
         )
