@@ -31,7 +31,7 @@ class Event(Base):
     responses: list[Response] = None
     org_name: str | None = None
     private: bool | None = None
-    form: dict | None = None
+    form: Form | None = None
 
     def __post_init__(self):
         self.start_time = self.start_time.astimezone(TIMEZONE)

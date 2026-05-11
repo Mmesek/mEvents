@@ -1,16 +1,17 @@
 from uuid import UUID
 from src.db import Base
 from enum import Enum
+import fasthtml.common as fh
+import monsterui.all as mui
+
+from src.components import FormSectionDiv, FormLayout, back_to_main
+
+from src.generators import QuestionType as type_registry
 
 
 class Response(Base):
     user_id: UUID = None
-
-
-class Form(Base):
-    title: str = None
-    description: str | None = None
-    questions: list | None = None
+    value: list[str] = None
 
 
 class QuestionType(Enum):
@@ -25,6 +26,9 @@ class QuestionType(Enum):
     BOOL = "BOOL"
     DATETIME = "DATETIME"
 
+    def __call__(self, **kwargs):
+        return type_registry.get(self.value)(**kwargs)
+
 
 class Question_Options(Base):
     id: int
@@ -33,11 +37,66 @@ class Question_Options(Base):
 
 
 class Question(Base):
-    id: int
-    type: QuestionType
-    title: str
+    id: int | None = None
+    type: QuestionType | None = None
+    title: str | None = None
     description: str | None = None
     allow_multiple_answers: bool | None = None
     min_length: int | None = None
     max_length: int | None = None
     options: list[Question_Options] = None
+    answer: list[Response] = None
+
+    def generate(self, event_id: int = None, required: bool = False):
+        value = ", ".join([", ".join(i.value) for i in self.answer])
+        return FormSectionDiv(
+            self.type(
+                question=self.title,
+                question_id=self.id,
+                description=self.description,
+                required=required,
+                max_length=self.max_length,
+                min_length=self.min_length,
+                min=self.min_length,
+                max=self.max_length,
+                default=value,
+                value=value,
+                checked=value == "on",
+                options=[i.value for i in self.options],
+                hx_post=f"/forms/save/{event_id}" if self.type not in {QuestionType.BOOL, QuestionType.SCALE} else None,
+            ),
+            fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
+        )
+
+
+class Form_Questions(Base):
+    order: int
+    required: bool
+    question: Question
+
+
+class Form(Base):
+    title: str = None
+    description: str | None = None
+    questions: list[Form_Questions] = None
+
+    def render(self, event_id, path="submit"):
+        content = [q.question.generate(event_id, q.required) for q in sorted(self.questions, key=lambda x: x.order)]
+
+        if not content:
+            content.append(back_to_main())
+        else:
+            content.append(mui.Button("Zapisz", cls=mui.ButtonT.primary))
+
+        return FormLayout(
+            "",
+            fh.Div(
+                "Jeżeli pola poniżej są puste to... JESZCZE NIE JESTEŚ ZAPISANY/A NA WYDARZENIE!",
+                "Jedynie pytania oznaczone gwiazdką (*) są wymagane do zapisu.",
+                "Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste.",
+                "Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony.",
+            ),
+            mui.render_md(self.description) if self.description else None,
+            *content,
+            destination=f"/forms/{path}/{event_id}",
+        )

@@ -3,7 +3,7 @@ from datetime import datetime
 from fasthtml import common as fh
 from monsterui import all as mui
 
-from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout
+from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout, back_to_main
 from src.components.app_factory import make_app
 from src.components.models import Form, Response, Question as Question_db
 from src.forms import Question
@@ -18,34 +18,8 @@ mui.franken_class_map["ul"] = "list-[square] list-inside space-y-2 mb-6 ml-6 tex
 rt = make_app("forms")
 
 
-def back_to_main():
-    return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.ghost, submit=False), href="/")
-
-
-def form(f, event_id, path="submit"):
-    if not f:
-        return mui.DivCentered("Podany formularz nie istnieje", back_to_main())
-    f = f.data.get("form") or {}
-    questions = sorted(
-        [
-            Question(order=q.get("order"), required=q.get("required"), **q.get("question", {}))
-            for q in f.get("questions", [])
-        ],
-        key=lambda x: x.order,
-    )
-    content = [q.generate(event_id) for q in questions]
-    if not questions:
-        content.append(back_to_main())
-    else:
-        content.append(mui.Button("Zapisz", cls=mui.ButtonT.primary))
-    info = Event(title=f["title"], **f.get("info")).info_card() if f.get("info") else None
-
-    return info, FormLayout(
-        "",
-        mui.render_md(f.get("description")) if f.get("description") else None,
-        *content,
-        destination=f"/forms/{path}/{event_id}",
-    )
+def form(e: Event, path="submit"):
+    return e.form.render(e.id, path)
 
 
 @rt("/save/{event_id}")

@@ -6,6 +6,10 @@ from monsterui import all as mui
 import mistletoe
 
 
+def back_to_main():
+    return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.ghost, submit=False), href="/")
+
+
 def FormSectionDiv(*c, cls="space-y-2", **kwargs):
     return mui.Card(*c, cls=cls, **kwargs)
 
