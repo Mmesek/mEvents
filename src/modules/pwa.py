@@ -5,10 +5,27 @@ with open("static/service-worker.js", encoding="utf-8") as file:
     SERVICE_WORKER = file.read()
 
 with open("static/app.js", encoding="utf-8") as file:
-    PWA_SCRIPT = file.read().replace("{VAPID_PUBLIC_KEY}", os.getenv("VAPID_PUBLIC_KEY"))
+    PWA_SCRIPT = (
+        file.read()
+        .replace("{VAPID_PUBLIC_KEY}", os.getenv("VAPID_PUBLIC_KEY"))
+        .replace("{BASE_URL}", os.getenv("BASE_URL", "http://localhost:5001"))
+    )
 
 with open("static/manifest.json", encoding="utf-8") as file:
     MANIFEST = file.read()
+
+manifest = {
+    "name": os.getenv("APP_NAME"),
+    "short_name": os.getenv("SHORT_NAME"),
+    "start_url": "/events/",
+    "display": "standalone",
+    "background_color": "#0C0A09",
+    "theme_color": "#F6AF62",
+    "icons": [
+        {"src": os.getenv("ICON_192", "/icon.png"), "sizes": "192x192", "type": "image/png"},
+        {"src": os.getenv("ICON_512", "/icon.png"), "sizes": "512x512", "type": "image/png"},
+    ],
+}
 
 
 class Notification(Base):

@@ -19,7 +19,7 @@ if ('serviceWorker' in navigator) {
                 applicationServerKey: '{VAPID_PUBLIC_KEY}'
             });
             console.log(subscription);
-            fetch("http://localhost:5001/notification/register",
+            fetch("{BASE_URL}/notification/register",
                 {
                     method: "POST",
                     body: JSON
