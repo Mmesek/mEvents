@@ -11,10 +11,7 @@ with open("static/app.js", encoding="utf-8") as file:
         .replace("{BASE_URL}", os.getenv("BASE_URL", "http://localhost:5001"))
     )
 
-with open("static/manifest.json", encoding="utf-8") as file:
-    MANIFEST = file.read()
-
-manifest = {
+MANIFEST = {
     "name": os.getenv("APP_NAME"),
     "short_name": os.getenv("SHORT_NAME"),
     "start_url": "/events/",
