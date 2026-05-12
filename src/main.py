@@ -64,7 +64,7 @@ from src.modules.pwa import MANIFEST, SERVICE_WORKER, SVG, Notification
 
 @rt("/manifest.json")
 def manifest():
-    return fh.Response(MANIFEST, media_type="application/json")
+    return fh.Response(str(MANIFEST), media_type="application/json")
 
 
 @rt("/service-worker")
