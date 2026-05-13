@@ -6,6 +6,7 @@ import src.modules.responses
 import src.modules.contributions
 import src.modules.tickets
 import src.modules.forms
+import src.modules.profile
 from src.components.app_factory import ROUTES
 
 import src.modules.discord
