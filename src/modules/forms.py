@@ -5,7 +5,7 @@ from monsterui import all as mui
 
 from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout, back_to_main
 from src.components.app_factory import make_app
-from src.components.models import Form, Response, Question
+from src.components.models import Form, Response, Question, Question_Options
 
 from src.generators import QuestionType
 from src.modules.events import Event
@@ -53,8 +53,17 @@ def new(session, t, form_id: int = None):
     return FormLayout(
         t("forms.create.title"),
         t("forms.create.help"),
-        mui.Input(placeholder=t("forms.create.name"), id="form-title", required=True, cls="required", value=res.title),
-        mui.TextArea(res.description, placeholder=t("forms.create.description"), id="form-description"),
+        mui.Input(
+            placeholder=t("forms.create.name"),
+            id="form-title",
+            required=True,
+            cls="required",
+            disabled=bool(form_id),
+            value=res.title,
+        ),
+        mui.TextArea(
+            res.description, placeholder=t("forms.create.description"), id="form-description", disabled=bool(form_id)
+        ),
         mui.DividerLine(),
         fh.Div(
             *[
@@ -116,7 +125,18 @@ def add_question(session, responses: dict, question_id: int = None):
 
 
 @rt("/question-type")
-def question_type(session, responses: dict, idx: int = 0, __selected: str = None, *, t=None):
+def question_type(
+    session,
+    responses: dict,
+    idx: int = 0,
+    __selected: str = None,
+    disabled: bool = None,
+    _min: int = 0,
+    _max: int = 10,
+    options: list[str] = None,
+    *,
+    t=None,
+):
     selected = __selected or responses.get(f"select-type-{idx}", "ANSWER")
     items = [
         fh.Select(
@@ -126,28 +146,42 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
             hx_swap="outerHTML",
             id=f"select-type-{idx}",
             title=t("forms.create.type"),
+            disabled=disabled,
         )
     ]
     if selected == "SCALE":
         items.append(
             mui.Grid(
-                mui.Input(title="Minimum", type="number", inputmode="numeric", value=0, id="min"),
-                mui.Input(title="Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
+                mui.Input(title="Minimum", type="number", inputmode="numeric", value=_min, id="min", disabled=disabled),
+                mui.Input(
+                    title="Maximum",
+                    type="number",
+                    inputmode="numeric",
+                    value=_max,
+                    pattern=r"\d*",
+                    id="max",
+                    disabled=disabled,
+                ),
             )
         )
     if selected == "CHOICE":
-        items.append(add_option(idx, 0))
+        items.append(add_option(idx, 0, disabled=disabled, options=options))
     return mui.DivCentered(*items, id=f"type-{idx}")
 
 
 @rt("/add-option")
-def add_option(idx: int, order: int, *, t=None):
-    return mui.Input(
-        id=f"option-{idx}-{order}",
-        hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
-        placeholder=t("forms.create.option", x=idx),
-        hx_target=f"#option-{idx}-{order}",
-        hx_swap="afterend",
+def add_option(idx: int, order: int, disabled: bool = None, options: list[str] = None, *, t=None):
+    return fh.Div(
+        mui.Input(
+            id=f"option-{idx}-{order}",
+            hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
+            placeholder=t("forms.create.option", x=idx),
+            hx_target=f"#option-{idx}-{order}",
+            hx_swap="afterend",
+            disabled=disabled,
+            value=v.value,
+        )
+        for v in (options or [Question_Options()])
     )
 
 
@@ -227,7 +261,7 @@ def feedback_form(session, event_id: str):
     return form(f, path="submit-feedback")
 
 
-def save_to_db(session, event, responses):
+def save_to_db(session, event, responses, feedback: bool = False):
     responses = handle_updating_responses(responses)
 
     Response.table(session["auth"]).upsert(
@@ -247,7 +281,7 @@ def save_to_db(session, event, responses):
         {
             "event_id": event,
             "user_id": session["id"],
-            "filled_form": datetime.now(TIMEZONE).isoformat(),
+            "filled_form" if not feedback else "feedback_filled": datetime.now(TIMEZONE).isoformat(),
         }
     ).execute()
 
@@ -287,7 +321,7 @@ def submit(session, event: str, responses: dict):
 @rt("/submit-feedback/{event}")
 def submit_feedback(session, event: str, responses: dict):
     try:
-        save_to_db(session, event, responses)
+        save_to_db(session, event, responses, feedback=True)
     except:
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
     return mui.DivCentered("Dzięki za feedback! Zapraszam na następne wydarzenia!"), mui.DivRAligned(back_to_main())

@@ -76,27 +76,28 @@ class Question(Base):
             fh.Input(id="order", type="hidden", value=order),
             fh.Input(id="original_id", type="hidden", value=self.id),
             mui.DivHStacked(
+                mui.Switch(
+                    i18n.t("forms.create.is_required", locale=session.get("locale")),
+                    id="is_required",
+                    checked=required,
+                    disabled=bool(self.id),
+                ),
                 mui.Input(
                     placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
                     id="question",
                     required=True,
                     cls="required",
                     value=self.title,
-                    disabled=True if self.id else False,
-                ),
-                mui.Switch(
-                    i18n.t("forms.create.is_required", locale=session.get("locale")),
-                    id="is_required",
-                    checked=required,
+                    disabled=bool(self.id),
                 ),
             ),
             mui.TextArea(
                 self.description,
                 placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
                 id="description",
-                disabled=True if self.id else False,
+                disabled=bool(self.id),
             ),
-            question_type(session, {}, order, self.type.value),
+            question_type(session, {}, order, self.type.value, disabled=bool(self.id), options=self.options or []),
             mui.DividerLine(),
             id=order,
         )
