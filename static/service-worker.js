@@ -46,19 +46,30 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener('push', (event) => {
     const data = event.data.json();
-    console.log(data);
 
     self.registration.showNotification(data.title, {
         body: data.body,
         data: data.url ?? '/',
-        icon: '/icon.png',
+        icon: '/icon',
         badge: '/icons/badge-72.png'
     });
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", (event) => {
     event.notification.close();
+
+    // This looks to see if the current is already open and
+    // focuses if it is
     event.waitUntil(
-        clients.openWindow('/')
+        clients
+            .matchAll({
+                type: "window",
+            })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url === "/" && "focus" in client) return client.focus();
+                }
+                if (clients.openWindow) return clients.openWindow("/");
+            }),
     );
 });
