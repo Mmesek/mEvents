@@ -5,8 +5,8 @@ from monsterui import all as mui
 
 from src.components import TIMEZONE, FormLayout, Layout, handle_updating_responses, with_layout, back_to_main
 from src.components.app_factory import make_app
-from src.components.models import Form, Response, Question as Question_db
-from src.forms import Question
+from src.components.models import Form, Response, Question
+
 from src.generators import QuestionType
 from src.modules.events import Event
 from src.modules.tickets import Attendance
@@ -46,7 +46,7 @@ def new(session, t, form_id: int = None):
         res = Form.get_one(
             Form.select(
                 session["auth"],
-                '*, questions:"Form_Questions" (order, required, ..."Question" (*, options:"Question_Options" (id, value)))',
+                '*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value)))',
             ).eq("id", form_id)
         )
 
@@ -58,15 +58,15 @@ def new(session, t, form_id: int = None):
         mui.DividerLine(),
         fh.Div(
             *[
-                q.edit_form(session)
+                q.question.edit_form(session, q.order, q.required)
                 for q in sorted(
-                    [Question(**q) for q in res.questions or [{"id": 0}]],
+                    res.questions or [],
                     key=lambda x: x.order,
                 )
             ],
             id="questions-list",
         ),
-        fh.Grid(
+        mui.Grid(
             mui.Button(
                 t("forms.create.add_question"),
                 hx_target="#questions-list",
@@ -81,7 +81,7 @@ def new(session, t, form_id: int = None):
                             f["title"],
                             hx_post=f"/forms/add-question?question_id={f['id']}",
                         )
-                        for f in Question_db.select(session["auth"], "id, title").execute().data
+                        for f in Question.select(session["auth"], "id, title").execute().data
                     ],
                     searchable=True,
                     hx_target="#questions-list",
@@ -97,28 +97,21 @@ def new(session, t, form_id: int = None):
 
 @rt("/add-question")
 def add_question(session, responses: dict, question_id: int = None):
-    if type(responses["order"]) is not list:
+    order = responses.get("order", [])
+    if type(order) is not list:
         responses["order"] = [responses["order"]]
-    order = len(responses["order"])
+    order = len(order)
     if question_id:
         res = (
-            Question_db.get_one(
-                Question_db.select(
+            Question.get_one(
+                Question.select(
                     session["auth"],
                     '*, options:"Question_Options" (*)',
                 ).eq("id", question_id)
             )
-            or Question_db()
+            or Question()
         )
-        return Question(
-            res.id,
-            res.title,
-            res.type,
-            max_length=res.max_length,
-            min_length=res.min_length,
-            options=res.options,
-            allow_multiple_answer=res.allow_multiple_answers,
-        ).edit_form(session, order + 1)
+        return res.edit_form(session, order + 1)
     return Question().edit_form(session, order + 1)
 
 
@@ -137,13 +130,13 @@ def question_type(session, responses: dict, idx: int = 0, __selected: str = None
     ]
     if selected == "SCALE":
         items.append(
-            fh.Grid(
+            mui.Grid(
                 mui.Input(title="Minimum", type="number", inputmode="numeric", value=0, id="min"),
                 mui.Input(title="Maximum", type="number", inputmode="numeric", value=10, pattern=r"\d*", id="max"),
             )
         )
     if selected == "CHOICE":
-        items.append(add_option(session, idx, 0))
+        items.append(add_option(idx, 0))
     return mui.DivCentered(*items, id=f"type-{idx}")
 
 

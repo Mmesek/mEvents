@@ -7,6 +7,7 @@ import monsterui.all as mui
 from src.components import FormSectionDiv, FormLayout, back_to_main
 
 from src.generators import QuestionType as type_registry
+import i18n
 
 
 class Response(Base):
@@ -38,7 +39,7 @@ class Question_Options(Base):
 
 class Question(Base):
     id: int | None = None
-    type: QuestionType | None = None
+    type: QuestionType | None = QuestionType.ANSWER
     title: str | None = None
     description: str | None = None
     allow_multiple_answers: bool | None = None
@@ -66,6 +67,38 @@ class Question(Base):
                 hx_post=f"/forms/save/{event_id}" if self.type not in {QuestionType.BOOL, QuestionType.SCALE} else None,
             ),
             fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
+        )
+
+    def edit_form(self, session, order: int = None, required: bool = None):
+        from src.modules.forms import question_type
+
+        return fh.Div(
+            fh.Input(id="order", type="hidden", value=order),
+            fh.Input(id="original_id", type="hidden", value=self.id),
+            mui.DivHStacked(
+                mui.Input(
+                    placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
+                    id="question",
+                    required=True,
+                    cls="required",
+                    value=self.title,
+                    disabled=True if self.id else False,
+                ),
+                mui.Switch(
+                    i18n.t("forms.create.is_required", locale=session.get("locale")),
+                    id="is_required",
+                    checked=required,
+                ),
+            ),
+            mui.TextArea(
+                self.description,
+                placeholder=i18n.t("forms.create.question_description", locale=session.get("locale")),
+                id="description",
+                disabled=True if self.id else False,
+            ),
+            question_type(session, {}, order, self.type.value),
+            mui.DividerLine(),
+            id=order,
         )
 
 
