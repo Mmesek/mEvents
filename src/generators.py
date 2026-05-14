@@ -118,6 +118,7 @@ def generate_scale(
                 type="range",
                 min=min,
                 max=max,
+                value=kwargs.pop("value", None) or 0,
                 name=question_id,
                 **kwargs,
             ),
