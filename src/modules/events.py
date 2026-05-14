@@ -75,7 +75,7 @@ class Event(Base):
                                         ("users", f"**Liczba zapisanych**: {count}") if count else None,
                                         ("user", f"**Organizator**: {self.org_name}") if self.org_name else None,
                                         ("palette", f"**Temat Przewodni**: {self.theme}") if self.theme else None,
-                                        ("shirt", f"**Dresscode**: {self.dresscode}") if self.dresscode else None,
+                                        ("shirt", f"**Styl Ubioru**: {self.dresscode}") if self.dresscode else None,
                                     )
                                 )
                                 if x
@@ -93,6 +93,7 @@ class Event(Base):
                 )
                 if self.discord_event
                 else None,
+                # mui.DivCentered(icon_text("", text=f"**[Facebook]({self.facebook_event})**")) if self.facebook_event else None,
                 mui.DivCentered(mui.render_md(self.description)) if self.description else None,
                 mui.DivRAligned(mui.Grid(*self.event_buttons(user_id))),
                 body_cls="space-y-0",
@@ -260,7 +261,6 @@ def create(session, t):
                         title=t("events.create.org_name.description"),
                     ),
                 ),
-                fh.Div(),
                 icon_text(
                     "palette",
                     mui.Input(
@@ -305,7 +305,8 @@ def create(session, t):
                         form_option(f["title"], f["id"])
                         for f in Form.select(session["auth"], "id, title").execute().data
                     ],
-                    form_option(t("events.create.new_form"), form_id=0),
+                    form_option(t("events.create.new_form"), form_id=None),
+                    id="form_id",
                     searchable=True,
                     hx_target="#form",
                     hx_swap="innerHTML",
@@ -320,6 +321,7 @@ def create(session, t):
                 form_option(t("events.create.no_form"), None),
                 searchable=True,
                 placeholder=t("events.create.select_feedback_form"),
+                id="feedback_form_id",
             ),
             mui.Button(t("events.create.add.add"), cls=mui.ButtonT.primary),
         )
@@ -339,10 +341,7 @@ def create(session, t):
 
 
 def form_option(name: str, form_id: int):
-    return fh.Option(
-        name,
-        hx_post=f"/forms/new?form_id={form_id}",
-    )
+    return fh.Option(name, hx_post=f"/forms/new?form_id={form_id}", value=form_id)
 
 
 @rt
@@ -354,6 +353,9 @@ def add(session, responses: dict, *, t=None):
         responses["end_time"] = responses.pop("end_date") + "T" + responses["end_time"] + ":00"
         responses["dresscode_mandatory"] = responses.get("dresscode_mandatory", False) == "on"
         Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
+        responses["form_id"] = int(responses.get("form_id", 0))
+        responses["feedback_form_id"] = int(responses.get("feedback_form_id", 0))
+
         return Event.from_dict(responses).info_card()
 
     except Exception as ex:
