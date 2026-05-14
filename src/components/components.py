@@ -91,6 +91,7 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
                             *[mui.UkIconLink(icon, href=url) for icon, url in socials],
                             mui.DivRAligned(f"Page generated in {t:>.3}s"),
                         ),
+                        mui.Button("Włącz powiadomienia", id="subscribe"),
                     ),
                 ),
             ),
