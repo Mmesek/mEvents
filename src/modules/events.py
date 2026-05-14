@@ -324,7 +324,7 @@ def create(session, t):
             mui.Button(t("events.create.add.add"), cls=mui.ButtonT.primary),
         )
     )
-    return fh.Container(
+    return mui.Container(
         fh.Form(
             mui.DivCentered(
                 fh.H1(t("events.create.add.title")),
@@ -350,9 +350,9 @@ def add(session, responses: dict, *, t=None):
     responses = handle_updating_responses(responses)
 
     try:
-        responses["start_time"] = responses.pop("start_date") + " " + responses["start_time"]
-        responses["end_time"] = responses.pop("end_date") + " " + responses["end_time"]
-        responses["dresscode_mandatory"] = responses.get("dresscode_mandatory", False)
+        responses["start_time"] = responses.pop("start_date") + "T" + responses["start_time"] + ":00"
+        responses["end_time"] = responses.pop("end_date") + "T" + responses["end_time"] + ":00"
+        responses["dresscode_mandatory"] = responses.get("dresscode_mandatory", False) == "on"
         Event.table(session["auth"]).upsert([{"user_id": session["id"], **responses}]).execute()
         return Event.from_dict(responses).info_card()
 
