@@ -3,10 +3,11 @@ from monsterui import all as mui
 
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
-from src.db import Base
+from src.db import Base, supa
 from src.modules.tickets import Attendance
 
 rt = make_app("profile")
+from src.modules.login import PROVIDERS
 
 
 class Profile(Base):
@@ -14,6 +15,8 @@ class Profile(Base):
     display_name: str
 
     def edit(self, session):
+        r = supa.auth.get_user(session["auth"])
+        identities = {i.provider: i.identity_data for i in r.user.identities}
         return mui.DivCentered(
             mui.Form(
                 mui.Card(
@@ -35,8 +38,24 @@ class Profile(Base):
                         title="W celu publikacji na mediach społecznościowych",
                         disabled=True,
                     ),
+                    mui.LabelInput(
+                        "Alergie",
+                        title="Załączone do zapisów na wydarzenia które zawierają żywność",
+                        value="Brak",
+                        disabled=True,
+                    ),
+                    mui.LabelInput(
+                        "Data Urodzenia",
+                        title="Dla statystyk, oraz by określić średnią wieku na wydarzeniach",
+                        type="date",
+                        disabled=True,
+                    ),
                     mui.Button("Zapisz", disabled=True),
                     mui.DividerSplit("Połączone konta"),
+                    mui.Grid(
+                        mui.Button("", PROVIDERS.get(k.title(), k.title()), " - ", v.get("full_name"), disabled=True)
+                        for k, v in identities.items()
+                    ),
                 )
             )
         )
