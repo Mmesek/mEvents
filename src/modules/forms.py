@@ -185,6 +185,63 @@ def add_option(idx: int, order: int, disabled: bool = None, options: list[str] =
     )
 
 
+def build_query(**kwargs):
+    return "&".join(f"{k}={v}" for k, v in kwargs.items() if v is not None)
+
+
+@rt("/add-answer")
+def add_answer(
+    responses: dict,
+    id: int,
+    type_: str,
+    required: bool = False,
+    min_: int = None,
+    max_: int = None,
+    value: str = None,
+    options: list[str] = None,
+    allow_multiple: bool = False,
+    event_id: int = None,
+    session=None,
+):
+    responses.pop("event_id", None)
+    responses.pop("id", None)
+    responses.pop("allow_multiple", None)
+    responses.pop("type_", None)
+    responses = handle_updating_responses(responses)
+    if responses:
+        r = [
+            {
+                "user_id": session["id"],
+                "event_id": event_id,
+                "question_id": k,
+                "value": [v] if type(v) is not list else [i for i in v if i],
+            }
+            for k, v in responses.items()
+            if v
+        ]
+        Response.table(session["auth"]).upsert(r).execute()
+    if not responses or allow_multiple:
+        if value:
+            value = value.strip() or None
+        if options:
+            options = [v.strip() or None for v in (options or [])]
+        return QuestionType.get(type_)(
+            id=id,
+            required=required,
+            max_length=max_,
+            min_length=min_,
+            min=min_,
+            max=max_,
+            default=value,
+            value=value,
+            checked=value == "on",
+            options=options,
+            hx_post=f"/forms/add-answer?{build_query(type_=type_, event_id=event_id, id=id, allow_multiple=allow_multiple)}",
+            hx_swap="beforeend",
+            hx_target=f"#question-{id}",
+        )
+
+
 def get_next(responses: dict, key: str):
     if type(responses[key]) is list:
         return next(responses[key])
@@ -271,7 +328,7 @@ def save_to_db(session, event, responses, feedback: bool = False):
                 "user_id": session["id"],
                 "event_id": event,
                 "question_id": k,
-                "value": [v],
+                "value": [v] if type(v) is not list else [i for i in v if i],
                 "updated_at": datetime.now(TIMEZONE).isoformat(),
             }
             for k, v in responses.items()

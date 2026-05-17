@@ -5,9 +5,10 @@ import fasthtml.common as fh
 import monsterui.all as mui
 
 from src.components import FormSectionDiv, FormLayout, back_to_main
-
+from src.modules.tickets import Attendance
 from src.generators import QuestionType as type_registry
 import i18n
+import mistletoe
 
 
 class Response(Base):
@@ -49,24 +50,30 @@ class Question(Base):
     answer: list[Response] = None
 
     def generate(self, event_id: int = None, required: bool = False):
-        value = ", ".join([", ".join(i.value) for i in self.answer])
+        from src.modules.forms import add_answer
+
         return FormSectionDiv(
-            self.type(
-                question=self.title,
-                question_id=self.id,
-                description=self.description,
-                required=required,
-                max_length=self.max_length,
-                min_length=self.min_length,
-                min=self.min_length,
-                max=self.max_length,
-                default=value,
-                value=value,
-                checked=value == "on",
-                options=[i.value for i in self.options],
-                hx_post=f"/forms/save/{event_id}" if self.type not in {QuestionType.BOOL, QuestionType.SCALE} else None,
+            mui.H3(self.title, cls=mui.TextPresets.muted_sm + ("required" if required else "")),
+            fh.NotStr(mistletoe.markdown(self.description.strip())) if self.description else None,
+            fh.Div(
+                *[
+                    add_answer(
+                        {},
+                        self.id,
+                        self.type.value,
+                        required,
+                        self.min_length,
+                        self.max_length,
+                        i,
+                        [i],
+                        self.allow_multiple_answers,
+                        event_id=event_id,
+                    )
+                    for i in ((self.answer or [Response()])[0].value or [""])
+                ],
+                id=f"question-{self.id}",
             ),
-            fh.Input(id=f"previous_{self.id}", value=value, hidden=True),
+            fh.Input(id=f"previous_{self.id}", value=[i.value for i in self.answer], hidden=True),
         )
 
     def edit_form(self, session, order: int = None, required: bool = None):
