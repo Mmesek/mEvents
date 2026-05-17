@@ -55,3 +55,15 @@ class Base(msgspec.Struct):
     @classmethod
     def select(cls, auth: str = None, select: str = "*") -> SyncSelectRequestBuilder:
         return cls.table(auth).select(select)
+
+    def insert(self, auth: str = None):
+        return self.table(auth).insert(self.to_dict()).execute().data
+
+    def update(self, auth: str = None):
+        return self.table(auth).update(self.to_dict()).execute().data
+
+    def upsert(self, auth: str = None):
+        return self.table(auth).upsert(self.to_dict()).execute().data
+
+    def delete(self, auth: str = None):
+        return self.table(auth).delete().execute().data
