@@ -11,7 +11,6 @@ from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base
-from src.modules.events import Event
 
 from functools import partial
 
@@ -19,8 +18,8 @@ rt = make_app("tickets")
 
 
 class Attendance(Base):
-    event_id: int
-    user_id: str
+    event_id: int | None = None
+    user_id: str | None = None
     filled_form: str | None = None
     downloaded_ticket: str | None = None
     arrived: datetime | None = None
@@ -29,7 +28,9 @@ class Attendance(Base):
     created_at: datetime | None = None
     companions: int | None = None
     left: datetime | None = None
+    feedback_filled: datetime | None = None
     display_name: str | None = None
+    event: dict | None = None
 
 
 def make_qr(data: str):
@@ -93,6 +94,8 @@ def tickets(session, event_id: int):
 
 
 def _verify(session, event_id: int, user_id: int):
+    from src.modules.events import Event
+
     org = Event.select(session["auth"], "user_id, start_time").eq("id", event_id).maybe_single().execute().data
     if session["id"] != org["user_id"]:
         return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)

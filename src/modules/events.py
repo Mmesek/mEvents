@@ -6,8 +6,9 @@ from monsterui import all as mui
 
 from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout, TIMEZONE
 from src.components.app_factory import make_app
-from src.components.models import Form, Response
-from src.db import Base, s
+from src.components.models import Form
+from src.modules.tickets import Attendance
+from src.db import Base
 
 rt = make_app("events")
 
@@ -28,7 +29,7 @@ class Event(Base):
     discord_event: str | None = None
     wrap: str | None = None
     image: str | None = None
-    responses: list[Response] = None
+    tickets: list[Attendance] = None
     org_name: str | None = None
     private: bool | None = None
     form: Form | None = None
@@ -42,7 +43,8 @@ class Event(Base):
             user_id = UUID(user_id)
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
-        count = len({i.user_id for i in self.responses}) if self.responses else None
+        count = len(self.tickets) if self.tickets else None
+        companions = sum([i.companions or 0 for i in self.tickets]) if self.tickets else None
         return mui.DivCentered(
             mui.Card(
                 fh.Img(
@@ -72,7 +74,12 @@ class Event(Base):
                                         if self.end_time.date() - self.start_time.date() > timedelta(1)
                                         else None,
                                         ("pin", f"{self.place}"),
-                                        ("users", f"**Liczba zapisanych**: {count}") if count else None,
+                                        (
+                                            "users",
+                                            f"**Liczba zapisanych**: {count}{(f' + {companions}') if companions else ''}",
+                                        )
+                                        if count
+                                        else None,
                                         ("user", f"**Organizator**: {self.org_name}") if self.org_name else None,
                                         ("palette", f"**Temat Przewodni**: {self.theme}") if self.theme else None,
                                         ("shirt", f"**Styl Ubioru**: {self.dresscode}") if self.dresscode else None,
@@ -135,7 +142,7 @@ class Event(Base):
                 buttons.append(
                     fh.A(mui.Button("Obecność", cls=mui.ButtonT.ghost), href=f"/tickets/attendance/{self.id}")
                 )
-        if is_guest := any(user_id == x.user_id for x in self.responses) if self.responses else None:
+        if is_guest := any(user_id == x.user_id for x in self.tickets) if self.tickets else None:
             buttons.append(fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.ghost), href=f"/contributions/{self.id}"))
         if user_id:
             buttons.append(mui.DivLAligned(self.render_button_guests(), id=f"guestlist_{self.id}"))
@@ -157,11 +164,11 @@ class Event(Base):
 @rt("/guests")
 def list_guests(session, event_id: str):
     names = (
-        s.auth(session["auth"])
-        .table("users")
-        .select("display_name")
+        Attendance.select(session["auth"], "*, ...users!Attendance_user_id_fkey (display_name)")
         .eq("event_id", event_id)
-        .order("timestamp")
+        .eq("users.event_id", event_id)
+        .filter("withdrew", "is", "null")
+        .order("created_at")
         .execute()
         .data
     )
@@ -177,7 +184,10 @@ def events(
     include_previous: bool = False,
     user_id: str = None,
 ):
-    forms_stmt = Event.select(session.get("auth"), '*, responses:"Response" (user_id)')
+    forms_stmt = Event.select(None, '*, tickets:"Attendance" (user_id, companions)').filter(
+        "tickets.withdrew", "is", "null"
+    )
+
     if not include_previous and not id:
         forms_stmt = forms_stmt.gt("end_time", datetime.now(TIMEZONE))
     if name:
