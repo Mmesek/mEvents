@@ -19,7 +19,7 @@ rt = make_app("forms")
 
 
 def form(e: Event, path="submit"):
-    return e.form.render(e.id, path)
+    return e.form.render(e.id, path, registered=e.tickets)
 
 
 @rt("/save/{event_id}")
@@ -232,11 +232,12 @@ def get_form(session, event_id: str, feedback: bool = False):
     return Event.maybe_one(
         Event.select(
             session["auth"],
-            f'*, form:{"feedback_" if feedback else ""}form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value))))',
+            f'*, form:{"feedback_" if feedback else ""}form_id (*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value)))), tickets:"Attendance" (user_id, filled_form, feedback_filled)',
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
         .eq("form.questions.question.answer.user_id", session["id"])
+        .eq("tickets.user_id", session["id"])
     )
 
 

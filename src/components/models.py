@@ -114,9 +114,9 @@ class Form(Base):
     description: str | None = None
     questions: list[Form_Questions] = None
 
-    def render(self, event_id, path="submit"):
+    def render(self, event_id, path="submit", registered: list["Attendance"] = None):
         content = [q.question.generate(event_id, q.required) for q in sorted(self.questions, key=lambda x: x.order)]
-        registered = all(q.question.answer for q in self.questions if q.required)
+        # registered = all(q.question.answer for q in self.questions if q.required)
 
         if not content:
             content.append(back_to_main())
