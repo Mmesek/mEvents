@@ -12,6 +12,16 @@ from src.db import Base
 
 rt = make_app("events")
 
+LOCALIZED_NAMES = {
+    "Monday": "Poniedziałek",
+    "Tuesday": "Wtorek",
+    "Wednesday": "Środa",
+    "Thursday": "Czwartek",
+    "Friday": "Piątek",
+    "Saturday": "Sobota",
+    "Sunday": "Niedziela",
+}
+
 
 class Event(Base):
     id: int = None
@@ -69,8 +79,14 @@ class Event(Base):
                                     (
                                         ("clock", self.start_time.strftime("%H:%M")),
                                         ("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
-                                        ("calendar", f"{self.start_time.date()}, {self.start_time.strftime('%A')}"),
-                                        ("calendar", f"{self.end_time.date()}, {self.end_time.strftime('%A')}")
+                                        (
+                                            "calendar",
+                                            f"{self.start_time.date()}, {LOCALIZED_NAMES[self.start_time.strftime('%A')]}",
+                                        ),
+                                        (
+                                            "calendar",
+                                            f"{self.end_time.date()}, {LOCALIZED_NAMES[self.end_time.strftime('%A')]}",
+                                        )
                                         if self.end_time.date() - self.start_time.date() > timedelta(1)
                                         else None,
                                         ("pin", f"{self.place}"),
