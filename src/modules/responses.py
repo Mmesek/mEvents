@@ -44,7 +44,7 @@ def generate(q: dict, date: datetime.datetime):
                         q["answer"],
                         key=lambda x: int(x["value"] or "")
                         if type(x["value"]) is not list and x["value"].isdigit()
-                        else x["value"] or "",
+                        else ", ".join(x["value"]) or "",
                     )
                     if a["value"]
                 ],
