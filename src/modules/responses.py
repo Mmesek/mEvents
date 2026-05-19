@@ -42,9 +42,9 @@ def generate(q: dict, date: datetime.datetime):
                     )
                     for a in sorted(
                         q["answer"],
-                        key=lambda x: int(x["value"])
+                        key=lambda x: int(x["value"] or "")
                         if type(x["value"]) is not list and x["value"].isdigit()
-                        else x["value"],
+                        else x["value"] or "",
                     )
                 ],
                 style=mui.ListT.bullet,
