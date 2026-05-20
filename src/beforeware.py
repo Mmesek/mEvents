@@ -1,4 +1,4 @@
-import time
+import time, random
 from fasthtml import common as fh
 from src.db import supa
 from supabase_auth import AuthResponse, errors
@@ -33,7 +33,8 @@ def user_auth_before(req, sess):
 
 
 def refresh_session(req, sess):
-    if sess.get("refresh_token") and (sess.get("expires_at", 0) - 90) < time.time():
+    jitter = random.randint(60, 120)
+    if sess.get("refresh_token") and (sess.get("expires_at", 0) - jitter) < time.time():
         try:
             auth = supa.auth.refresh_session(sess.get("refresh_token"))
             store_session(auth, sess)
