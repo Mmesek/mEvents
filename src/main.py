@@ -13,7 +13,6 @@ from src.components.app_factory import ROUTES
 
 import src.modules.discord
 import src.components.translations
-from src.beforeware import refreshware, beforeware
 from src.components.headers import HEADERS
 
 import sentry_sdk
@@ -33,11 +32,7 @@ if os.getenv("SENTRY_URL"):
 
 
 # Create your app with the theme
-app, rt = fh.fast_app(
-    hdrs=HEADERS,
-    routes=ROUTES,
-    before=[refreshware, beforeware],
-)
+app, rt = fh.fast_app(hdrs=HEADERS, routes=ROUTES)
 
 
 @rt("/")
