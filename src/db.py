@@ -10,7 +10,7 @@ dotenv.load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-supa = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
+supa = supabase.create_client(SUPABASE_URL, SUPABASE_KEY, options=supabase.ClientOptions(auto_refresh_token=False))
 s = supa.schema("forms")
 
 
