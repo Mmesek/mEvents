@@ -169,3 +169,9 @@ def verify_otp(access_token: str, type: str, session):
 @rt("/calendar")
 def calendar():
     return oauth_login("google", ["https://www.googleapis.com/auth/calendar.events"])
+
+
+@rt("/link-identity")
+def link_identity(provider: str):
+    res = supa.auth.link_identity({"provider": provider})
+    return fh.Redirect(res.url)
