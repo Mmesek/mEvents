@@ -141,19 +141,28 @@ def finish_login(res, session):
 
 @rt("/otp")
 def otp(otp: str, session):
-    res = supa.auth.verify_otp({"email": session["otp_email"], "token": otp, "type": "email"})
+    try:
+        res = supa.auth.verify_otp({"email": session["otp_email"], "token": otp, "type": "email"})
+    except supabase.AuthApiError as ex:
+        return fh.P("Błąd: ", ex)
     return finish_login(res, session)
 
 
 @rt("/redirect")
 def redirect(code: str, session):
-    res = supa.auth.exchange_code_for_session({"auth_code": code})
+    try:
+        res = supa.auth.exchange_code_for_session({"auth_code": code})
+    except supabase.AuthApiError as ex:
+        return fh.P("Błąd: ", ex)
     return finish_login(res, session)
 
 
 @rt("/verify")
 def verify_otp(access_token: str, type: str, session):
-    res = supa.auth.verify_otp({"token_hash": access_token, "type": type})
+    try:
+        res = supa.auth.verify_otp({"token_hash": access_token, "type": type})
+    except supabase.AuthApiError as ex:
+        return fh.P("Błąd: ", ex)
     return finish_login(res, session)
 
 
