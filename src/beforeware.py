@@ -39,6 +39,7 @@ def refresh_session(req, sess):
             auth = supa.auth.refresh_session(sess.get("refresh_token"))
             store_session(auth, sess)
         except errors.AuthApiError:
+            supa.auth.sign_out()
             logout(sess)
             return user_auth_before(req, sess)
     elif not sess.get("refresh_token"):
