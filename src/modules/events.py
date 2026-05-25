@@ -118,7 +118,7 @@ class Event(Base):
                 else None,
                 # mui.DivCentered(icon_text("", text=f"**[Facebook]({self.facebook_event})**")) if self.facebook_event else None,
                 mui.DivCentered(mui.render_md(self.description)) if self.description else None,
-                mui.DivRAligned(mui.Grid(*self.event_buttons(user_id))),
+                mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
                 body_cls="space-y-0",
                 style="max-width: 1000px; min-width: 35%",
             )
