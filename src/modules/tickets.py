@@ -10,7 +10,7 @@ from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
-from src.db import Base
+from src.db import Base, supa
 
 from functools import partial
 
@@ -51,13 +51,7 @@ def make_qr(data: str):
 
 @rt("/qr")
 def qr(session, event_id: int):
-    Attendance.table(session["auth"]).upsert(
-        {
-            "event_id": event_id,
-            "user_id": session["id"],
-            "downloaded_ticket": datetime.now(TIMEZONE).isoformat(),
-        }
-    ).execute()
+    Attendance(event_id, session["id"], downloaded_ticket=datetime.now(TIMEZONE).isoformat()).upsert(session["auth"])
     return fh.Response(
         make_qr(f"https://mms-events.vercel.app/tickets/verify/{event_id}/{session['id']}"),
         media_type="image/png",
@@ -136,14 +130,9 @@ def _verify(session, event_id: int, user_id: int):
                 ),
             ),
         )
-    Attendance.table(session["auth"]).upsert(
-        {
-            "event_id": event_id,
-            "user_id": user_id,
-            "authorized_by": session["id"],
-            "arrived": datetime.now(TIMEZONE).isoformat(),
-        }
-    ).execute()
+    Attendance(event_id, user_id, authorized_by=session["id"], arrived=datetime.now(TIMEZONE).isoformat()).upsert(
+        session["auth"]
+    )
     return (
         mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary),
         mui.Form(
@@ -161,9 +150,7 @@ def _verify(session, event_id: int, user_id: int):
 
 @rt("/verify/companions/{event_id}/{user_id}")
 def companions(session, event_id: int, user_id: str, amount: int):
-    Attendance.table(session["auth"]).upsert(
-        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "companions": amount}
-    ).execute()
+    Attendance(event_id, user_id, authorized_by=session["id"], companions=amount).upsert(session["auth"])
     return mui.Button(f"Dodano +1 w liczbie {amount}")
 
 
@@ -171,9 +158,7 @@ def companions(session, event_id: int, user_id: str, amount: int):
 def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: bool = False):
     amount = max(int(amount), 0)
     if not dry_run:
-        Attendance.table(session["auth"]).upsert(
-            {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "companions": amount}
-        ).execute()
+        Attendance(event_id, user_id, authorized_by=session["id"], companions=amount).upsert(session["auth"])
     return mui.DivHStacked(
         mui.Button(
             "-",
@@ -202,9 +187,7 @@ def verify(session, event_id: int, user_id: str):
 @rt("/attendance/leave/{event_id}/{user_id}")
 def leave(session, event_id: int, user_id: str):
     dt = datetime.now(TIMEZONE)
-    Attendance.table(session["auth"]).upsert(
-        {"event_id": event_id, "user_id": user_id, "authorized_by": session["id"], "left": dt.isoformat()}
-    ).execute()
+    Attendance(event_id, user_id, authorized_by=session["id"], left=dt.isoformat()).upsert(session["auth"]).execute()
     return mui.DivCentered(dt.strftime("%m/%d %H:%M"))
 
 

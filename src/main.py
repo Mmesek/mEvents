@@ -80,7 +80,7 @@ def icon():
 
 @rt("/notification/register")
 def save_token(session, subscription: str):
-    Notification.table(session["auth"]).upsert({"subscription": subscription}).execute()
+    Notification(None, subscription=subscription).upsert(session["auth"])
     return {"status": True}
 
 
