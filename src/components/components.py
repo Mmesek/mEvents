@@ -110,3 +110,17 @@ def with_layout(layout=Layout, *args, **kwargs):
         return wrapper
 
     return inner
+
+
+def open_graph(title, description, thumbnail_url):
+    return (
+        fh.Meta(property="og:site_name", content="Mistyczne Wydarzenia Ognia i Popiołu"),
+        fh.Meta(property="og:title", content=title),
+        fh.Meta(property="og:description", content=description),
+        fh.Meta(property="og:image", content=thumbnail_url),
+        fh.Meta(property="og:type", content="article"),
+        fh.Meta(name="twitter:card", content="summary"),
+        fh.Meta(name="twitter:title", content=title),
+        fh.Meta(name="twitter:description", content=description),
+        fh.Meta(name="twitter:image", content=thumbnail_url),
+    )

@@ -4,7 +4,15 @@ from uuid import UUID
 from fasthtml import common as fh
 from monsterui import all as mui
 
-from src.components import Layout, handle_updating_responses, icon_text, right_icon_text, with_layout, TIMEZONE
+from src.components import (
+    TIMEZONE,
+    Layout,
+    handle_updating_responses,
+    icon_text,
+    open_graph,
+    right_icon_text,
+    with_layout,
+)
 from src.components.app_factory import make_app
 from src.components.models import Form
 from src.modules.tickets import Attendance
@@ -189,20 +197,6 @@ def list_guests(session, event_id: str):
         .data
     )
     return mui.DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=mui.ListT.decimal))
-
-
-def open_graph(title, description, thumbnail_url):
-    return (
-        fh.Meta(property="og:site_name", content="Mistyczne Wydarzenia Ognia i Popiołu"),
-        fh.Meta(property="og:title", content=title),
-        fh.Meta(property="og:description", content=description),
-        fh.Meta(property="og:image", content=thumbnail_url),
-        fh.Meta(property="og:type", content="article"),
-        fh.Meta(name="twitter:card", content="summary"),
-        fh.Meta(name="twitter:title", content=title),
-        fh.Meta(name="twitter:description", content=description),
-        fh.Meta(name="twitter:image", content=thumbnail_url),
-    )
 
 
 @rt("/")
