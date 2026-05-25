@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from uuid import UUID
 
+import msgspec
 from fasthtml import common as fh
 from monsterui import all as mui
 
@@ -15,8 +16,8 @@ from src.components import (
 )
 from src.components.app_factory import make_app
 from src.components.models import Form
-from src.modules.tickets import Attendance
 from src.db import Base
+from src.modules.tickets import Attendance
 
 rt = make_app("events")
 
@@ -29,6 +30,82 @@ LOCALIZED_NAMES = {
     "Saturday": "Sobota",
     "Sunday": "Niedziela",
 }
+
+ICONS = {
+    "start_time": "clock",
+    "end_time": "clock-10",
+    "start_date": "calendar",
+    "end_date": "calendar",
+    "place": "pin",
+    "users": "users",
+    "org_name": "user",
+    "theme": "palette",
+    "dresscode": "shirt",
+}
+
+FIELD_NAMES = {"users": "Zapisanych", "org_name": "Organizator", "theme": "Motyw", "dresscode": "Styl Ubioru"}
+FIELD_ORDER = ["start_time", "end_time", "start_date", "end_date", "place", "users", "org_name", "theme", "dresscode"]
+FIELDS_REQUIRED = {"start_time", "start_date", "end_date", "place"}
+FIELD_TYPES = {"start_time": "time", "end_time": "time", "start_date": "date", "end_date": "date"}
+
+
+def fmt_field_name(name: str, value: str):
+    f = FIELD_NAMES.get(name)
+    return f"**{f}**: {value}" if f else value
+
+
+def make_grid(fields):
+    return mui.Grid(
+        (
+            right_icon_text(x[0], x[1], "", x[2]) if n % 2 else icon_text(x[0], x[1], "", x[2])
+            for n, x in enumerate(x for x in fields if x)
+        ),
+        cols=2,
+        cls="gap-1 items-center justify-center",
+    )
+
+
+class MetaInfo(msgspec.Struct):
+    start_time: str
+    end_time: str
+    start_date: str
+    end_date: str
+    place: str
+    users: str
+    org_name: str
+    theme: str
+    dresscode: str
+
+    def render(self):
+        fields = []
+
+        for k in FIELD_ORDER:
+            if v := getattr(self, k):
+                fields.append((ICONS.get(k), fmt_field_name(k, v), False))
+        return make_grid(fields)
+
+    @classmethod
+    def edit(cls, t, *extra):
+        return make_grid(
+            [
+                *[
+                    (
+                        ICONS.get(k),
+                        mui.Input(
+                            type=FIELD_TYPES.get(k),
+                            placeholder=t(f"events.create.{k}.name"),
+                            id=k,
+                            required=k in FIELDS_REQUIRED,
+                            title=t(f"events.create.{k}.description"),
+                        ),
+                        "required" if k in FIELDS_REQUIRED else "",
+                    )
+                    for k in FIELD_ORDER
+                    if k not in {"users", "org_name", "dresscode"}
+                ],
+                *extra,
+            ]
+        )
 
 
 class Event(Base):
@@ -77,45 +154,19 @@ class Event(Base):
                 mui.DivCentered(
                     mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
                 ),
-                mui.Grid(
-                    (
-                        right_icon_text(x[0], x[1]) if n % 2 else icon_text(x[0], x[1])
-                        for n, x in enumerate(
-                            [
-                                x
-                                for x in (
-                                    (
-                                        ("clock", self.start_time.strftime("%H:%M")),
-                                        ("clock-10", self.end_time.strftime("%H:%M") if self.end_time else ""),
-                                        (
-                                            "calendar",
-                                            f"{self.start_time.date()}, {LOCALIZED_NAMES[self.start_time.strftime('%A')]}",
-                                        ),
-                                        (
-                                            "calendar",
-                                            f"{self.end_time.date()}, {LOCALIZED_NAMES[self.end_time.strftime('%A')]}",
-                                        )
-                                        if self.end_time.date() - self.start_time.date() > timedelta(1)
-                                        else None,
-                                        ("pin", f"{self.place}"),
-                                        (
-                                            "users",
-                                            f"**Liczba zapisanych**: {count}{(f' + {companions}') if companions else ''}",
-                                        )
-                                        if count
-                                        else None,
-                                        ("user", f"**Organizator**: {self.org_name}") if self.org_name else None,
-                                        ("palette", f"**Temat Przewodni**: {self.theme}") if self.theme else None,
-                                        ("shirt", f"**Styl Ubioru**: {self.dresscode}") if self.dresscode else None,
-                                    )
-                                )
-                                if x
-                            ]
-                        )
-                    ),
-                    cols=2,
-                    cls="gap-1 items-center justify-center",
-                ),
+                MetaInfo(
+                    self.start_time.strftime("%H:%M"),
+                    self.end_time.strftime("%H:%M") if self.end_time else None,
+                    f"{self.start_time.date()}, {LOCALIZED_NAMES[self.start_time.strftime('%A')]}",
+                    f"{self.end_time.date()}, {LOCALIZED_NAMES[self.end_time.strftime('%A')]}"
+                    if self.end_time.date() - self.start_time.date() > timedelta(1)
+                    else None,
+                    self.place,
+                    f"{count} + {companions}" if companions else count,
+                    self.org_name,
+                    self.theme,
+                    self.dresscode,
+                ).render(),
                 mui.DivCentered(
                     icon_text(
                         "messages-square",
@@ -241,72 +292,18 @@ def create(session, t):
                 ),
                 cls="required",
             ),
-            mui.Grid(
-                icon_text(
-                    "clock",
-                    mui.Input(
-                        type="time",
-                        id="start_time",
-                        required=True,
-                        title=t("events.create.start.description"),
-                    ),
-                    icon_style="required",
-                ),
-                right_icon_text(
-                    "clock-10",
-                    mui.Input(
-                        type="time",
-                        id="end_time",
-                        title=t("events.create.end.description"),
-                    ),
-                ),
-                icon_text(
-                    "calendar",
-                    mui.Input(
-                        type="date",
-                        id="start_date",
-                        required=True,
-                        title=t("events.create.date.description"),
-                    ),
-                    icon_style="required",
-                ),
-                icon_text(
-                    "calendar",
-                    mui.Input(
-                        type="date",
-                        id="end_date",
-                        required=True,
-                        title=t("events.create.date.description"),
-                    ),
-                    icon_style="required",
-                ),
-                right_icon_text(
-                    "pin",
-                    mui.Input(
-                        id="place",
-                        placeholder=t("events.create.place.name"),
-                        required=True,
-                        title=t("events.create.place.description"),
-                    ),
-                    icon_style="required",
-                ),
-                icon_text(
+            MetaInfo.edit(
+                t,
+                (
                     "user",
                     mui.Input(
                         id="org_name",
                         value=session["display_name"].title(),
                         title=t("events.create.org_name.description"),
                     ),
+                    False,
                 ),
-                icon_text(
-                    "palette",
-                    mui.Input(
-                        id="theme",
-                        placeholder=t("events.create.theme.name"),
-                        title=t("events.create.theme.description"),
-                    ),
-                ),
-                icon_text(
+                (
                     "shirt",
                     (
                         mui.Input(
@@ -323,9 +320,8 @@ def create(session, t):
                             cls=mui.TextPresets.muted_sm,
                         ),
                     ),
+                    False,
                 ),
-                cols=2,
-                cls="gap-1 items-center justify-center",
             ),
             mui.DivCentered(
                 mui.TextArea(
