@@ -191,6 +191,20 @@ def list_guests(session, event_id: str):
     return mui.DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=mui.ListT.decimal))
 
 
+def open_graph(title, description, thumbnail_url):
+    return (
+        fh.Meta(property="og:site_name", content="Mistyczne Wydarzenia Ognia i Popiołu"),
+        fh.Meta(property="og:title", content=title),
+        fh.Meta(property="og:description", content=description),
+        fh.Meta(property="og:image", content=thumbnail_url),
+        fh.Meta(property="og:type", content="article"),
+        fh.Meta(name="twitter:card", content="summary"),
+        fh.Meta(name="twitter:title", content=title),
+        fh.Meta(name="twitter:description", content=description),
+        fh.Meta(name="twitter:image", content=thumbnail_url),
+    )
+
+
 @rt("/")
 @with_layout(Layout, "Nadchodzące wydarzenia")
 def events(
@@ -211,8 +225,11 @@ def events(
     forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
+    events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
 
-    return [f.info_card(user_id=session.get("id")) for f in sorted(Event.get(forms_stmt), key=lambda x: x.start_time)]
+    return *[f.info_card(user_id=session.get("id")) for f in events], *open_graph(
+        events[0].title, events[0].description, events[0].image
+    )
 
 
 @rt("/create")
