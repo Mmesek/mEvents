@@ -13,7 +13,7 @@ from src.components import (
     with_layout,
 )
 from src.components.app_factory import make_app
-from src.components.models import Form
+from src.models.forms import Form
 from src.db import Base
 from src.modules.tickets import Attendance
 from src.components.info import MetaInfo
