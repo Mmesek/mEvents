@@ -9,6 +9,7 @@ HEADERS = [
         rel="icon",
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📅</text></svg>",
     ),
+    fh.Link(rel="icon", href="/static/icons/favicon.svg"),
     fh.Link(rel="manifest", href="/manifest.json"),
     # Vercel Web Analytics
     fh.Script("window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };"),

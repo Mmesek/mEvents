@@ -1,6 +1,6 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker');
+        navigator.serviceWorker.register('/static/service-worker.js');
 
         if (!('PushManager' in window)) {
             console.error("Push messaging not supported");
