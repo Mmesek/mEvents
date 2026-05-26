@@ -6,6 +6,7 @@ from src.db import s
 from src.models.forms import Form, Question, Question_Options
 from src.modules.forms import rt
 from src.utils import get_next
+from src.generators import QuestionType
 
 
 @rt

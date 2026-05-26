@@ -5,9 +5,9 @@ from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base, supa
 from src.modules.tickets import Attendance
+from src.modules.login import PROVIDERS
 
 rt = make_app("profile")
-from src.modules.login import PROVIDERS
 
 
 class Profile(Base):
