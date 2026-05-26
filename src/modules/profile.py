@@ -61,13 +61,7 @@ class Profile(Base):
         )
 
     def render(self, session):
-        last_event = Attendance.get_one(
-            Attendance.select(session["auth"], 'arrived, left, event:"Event" (title)')
-            .eq("user_id", self.user_id)
-            .filter("arrived", "is", "not_null")
-            .order("arrived", desc=True)
-            .limit(1)
-        )
+        last_event = Attendance(user_id=self.user_id).last_event(session)
         arrived = last_event.arrived.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if last_event.arrived else ""
         left = last_event.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if last_event.left else ""
         return mui.DivCentered(

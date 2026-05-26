@@ -6,9 +6,7 @@ from monsterui import all as mui
 
 from src.components import TIMEZONE, Layout, icon_text, open_graph, with_layout
 from src.components.app_factory import make_app
-from src.models.forms import Form
-from src.db import Base
-from src.modules.tickets import Attendance
+from src.models.events import Event as Events, Attendance
 from src.components.info import MetaInfo
 
 rt = make_app("events")
@@ -24,31 +22,7 @@ LOCALIZED_NAMES = {
 }
 
 
-class Event(Base):
-    id: int = None
-    title: str = None
-    description: str | None = None
-    form_id: int | None = None
-    feedback_form_id: int | None = None
-    user_id: UUID = None
-    place: str | None = None
-    start_time: datetime = None
-    end_time: datetime | None = None
-    theme: str | None = None
-    dresscode: str | None = None
-    dresscode_mandatory: bool | None = None
-    discord_event: str | None = None
-    wrap: str | None = None
-    image: str | None = None
-    tickets: list[Attendance] = None
-    org_name: str | None = None
-    private: bool | None = None
-    form: Form | None = None
-
-    def __post_init__(self):
-        self.start_time = self.start_time.astimezone(TIMEZONE)
-        self.end_time = self.end_time.astimezone(TIMEZONE)
-
+class Event(Events):
     def info_card(self, user_id: str = None):
         if user_id:
             user_id = UUID(user_id)
@@ -98,10 +72,6 @@ class Event(Base):
                 style="max-width: 1000px; min-width: 35%",
             )
         )
-
-    @property
-    def event_started(self):
-        return self.start_time < datetime.now(TIMEZONE)
 
     def render_button_guests(self):
         return mui.Button(
@@ -154,15 +124,7 @@ class Event(Base):
 
 @rt
 def guests(session, event_id: str):
-    names = (
-        Attendance.select(session["auth"], "*, ...users!Attendance_user_id_fkey (display_name)")
-        .eq("event_id", event_id)
-        .eq("users.event_id", event_id)
-        .filter("withdrew", "is", "null")
-        .order("created_at")
-        .execute()
-        .data
-    )
+    names = Attendance(event_id).event_guests(session)
     return mui.DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=mui.ListT.decimal))
 
 

@@ -10,27 +10,12 @@ from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
-from src.db import Base, supa
+from src.db import supa
+from src.models.events import Attendance
 
 from functools import partial
 
 rt = make_app("tickets")
-
-
-class Attendance(Base):
-    event_id: int | None = None
-    user_id: str | None = None
-    filled_form: str | None = None
-    downloaded_ticket: str | None = None
-    arrived: datetime | None = None
-    withdrew: str | None = None
-    authorized_by: str | None = None
-    created_at: datetime | None = None
-    companions: int | None = None
-    left: datetime | None = None
-    feedback_filled: datetime | None = None
-    display_name: str | None = None
-    event: dict | None = None
 
 
 def make_qr(data: str):
@@ -107,16 +92,7 @@ def _verify(session, event_id: int, user_id: int):
         hx_swap="replace",
         hx_target="innerHTML",
     )
-
-    if attendance := (
-        Attendance.table(session["auth"])
-        .select("*")
-        .eq("event_id", event_id)
-        .eq("user_id", user_id)
-        .not_.is_("arrived", None)
-        .maybe_single()
-        .execute()
-    ):
+    if attendance := Attendance(event_id, user_id).already_verified(session):
         return (
             mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive),
             mui.Form(

@@ -4,10 +4,13 @@ from enum import Enum
 import fasthtml.common as fh
 import monsterui.all as mui
 from src.components import FormSectionDiv, back_to_main
-from src.modules.tickets import Attendance
 from src.generators import QuestionType as type_registry
 import i18n
 import mistletoe
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.models.events import Attendance
 
 
 class Response(Base):
@@ -120,7 +123,7 @@ class Form(Base):
     description: str | None = None
     questions: list[Form_Questions] = None
 
-    def render(self, event_id, path="submit", registered: list[Attendance] = None):
+    def render(self, event_id, path="submit", registered: list["Attendance"] = None):
         content = [q.question.generate(event_id, q.required) for q in sorted(self.questions, key=lambda x: x.order)]
         # registered = all(q.question.answer for q in self.questions if q.required)
 
