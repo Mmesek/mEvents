@@ -6,6 +6,9 @@ from src.db import Base
 from src.root import rt
 from src.components.headers import HEADERS
 
+with open("static/service-worker.js", encoding="utf-8") as file:
+    SERVICE_WORKER = file.read()
+
 with open("static/app.js", encoding="utf-8") as file:
     HEADERS.append(
         fh.Script(
@@ -27,7 +30,15 @@ MANIFEST["icons"][1]["src"] = os.getenv("ICON_512", "/icon.png")
 class Notification(Base):
     user_id: str
     subscription: str
-    scope: str
+    scope: str = "events"
+
+
+@rt("/service-worker")
+def service_worker():
+    return fh.Response(
+        SERVICE_WORKER,
+        media_type="text/javascript",
+    )
 
 
 @rt("/manifest.json")
