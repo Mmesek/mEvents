@@ -6,6 +6,8 @@ import src.modules.responses
 import src.modules.contributions
 import src.modules.tickets
 import src.modules.forms
+import src.modules.new_form
+import src.modules.new_event
 import src.modules.profile
 import src.modules.clues
 
