@@ -8,6 +8,8 @@ from src.components.app_factory import make_app
 from src.models.forms import Response
 from src.modules.events import Event
 from src.modules.tickets import Attendance
+from src.generators import QuestionType
+from src.utils import build_query
 
 mui.franken_class_map["ul"] = "list-[square] list-inside space-y-2 mb-6 ml-6 text-lg"
 
@@ -47,6 +49,59 @@ def get_form(session, event_id: str, feedback: bool = False):
         .eq("form.questions.question.answer.user_id", session["id"])
         .eq("tickets.user_id", session["id"])
     )
+
+
+@rt("/add-answer")
+def add_answer(
+    responses: dict,
+    id: int,
+    type_: str,
+    required: bool = False,
+    min_: int = None,
+    max_: int = None,
+    value: str = None,
+    options: list[str] = None,
+    allow_multiple: bool = False,
+    event_id: int = None,
+    session=None,
+):
+    responses.pop("event_id", None)
+    responses.pop("id", None)
+    responses.pop("allow_multiple", None)
+    responses.pop("type_", None)
+    responses = handle_updating_responses(responses)
+    if responses:
+        r = [
+            {
+                "user_id": session["id"],
+                "event_id": event_id,
+                "question_id": k,
+                "value": [v] if type(v) is not list else [i for i in v if i],
+            }
+            for k, v in responses.items()
+            if v
+        ]
+        Response.table(session["auth"]).upsert(r).execute()
+    if not responses or allow_multiple:
+        if value:
+            value = value.strip() or None
+        if options:
+            options = [v.strip() or None for v in (options or [])]
+        return QuestionType.get(type_)(
+            id=id,
+            required=required,
+            max_length=max_,
+            min_length=min_,
+            min=min_,
+            max=max_,
+            default=value,
+            value=value,
+            checked=value == "on",
+            options=options,
+            hx_post=f"/forms/add-answer?{build_query(type_=type_, event_id=event_id, id=id, allow_multiple=allow_multiple)}",
+            hx_swap="beforeend",
+            hx_target=f"#question-{id}",
+        )
 
 
 @rt("/{event_id}")

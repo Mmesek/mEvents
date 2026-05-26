@@ -76,7 +76,7 @@ class Question(Base):
         )
 
     def edit_form(self, session, order: int = None, required: bool = None):
-        from src.modules.forms import question_type
+        from src.modules.new_form import question_type
 
         return fh.Div(
             fh.Input(id="order", type="hidden", value=order),
