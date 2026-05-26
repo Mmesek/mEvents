@@ -4,6 +4,7 @@ from functools import wraps
 import fasthtml.common as fh
 from monsterui import all as mui
 import mistletoe
+from fasthtml import svg
 
 
 def back_to_main():
@@ -32,6 +33,10 @@ def FormLayout(title, subtitle, *content, cls="space-y-3 mt-4", destination="/su
             mui.Form(*content, cls=cls, hx_post=destination),
         )
     )
+
+
+def make_icon(content: str):
+    return svg.Svg(role="img", viewBox="0 0 24 24", cls="h-6 w-6 mr-1")(svg.Path(d=content), fill="currentColor")
 
 
 def icon_text(icon, text, style="", icon_style=None):
