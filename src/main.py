@@ -10,12 +10,10 @@ import src.modules.new_form
 import src.modules.new_event
 import src.modules.profile
 import src.modules.clues
-
-from src.components.app_factory import ROUTES
-
+from src.root import app
+import src.modules.pwa
 import src.modules.discord
 import src.components.translations
-from src.components.headers import HEADERS
 
 import sentry_sdk
 import dotenv
@@ -31,60 +29,6 @@ if os.getenv("SENTRY_URL"):
         # Enable sending logs to Sentry
         enable_logs=True,
     )
-
-
-# Create your app with the theme
-app, rt = fh.fast_app(hdrs=HEADERS, routes=ROUTES)
-
-
-@rt("/")
-def index(code: str = None):
-    if code:
-        return fh.Redirect(f"/login/redirect?code={code}")
-    return fh.Redirect("/events")
-
-
-@rt("/privacy-policy")
-def privacy():
-    return fh.P("Twój adres e-mail jest przetwarzany w celach wysłania e-maila z zaproszeniem do kalendarza.")
-
-
-@rt("/terms-of-service")
-def tos():
-    return fh.P("Poważnie?")
-
-
-@rt("/privacy-delete")
-def deleteme():
-    return fh.P("Skontaktuj się z @Mmesek w celu usunięcia twoich danych.")
-
-
-from src.modules.pwa import MANIFEST, SERVICE_WORKER, SVG, Notification
-
-
-@rt("/manifest.json")
-def manifest():
-    return fh.Response(str(MANIFEST), media_type="application/json")
-
-
-@rt("/service-worker")
-def service_worker():
-    return fh.Response(
-        SERVICE_WORKER,
-        media_type="text/javascript",
-    )
-
-
-@rt("/icon")
-def icon():
-    return fh.Response(SVG, media_type="image/svg+xml")
-
-
-@rt("/notification/register")
-def save_token(session, subscription: str):
-    Notification(None, subscription=subscription).upsert(session["auth"])
-    return {"status": True}
-
 
 if __name__ == "__main__":
     fh.serve()
