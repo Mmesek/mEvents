@@ -4,7 +4,7 @@ from uuid import UUID
 from fasthtml import common as fh
 from monsterui import all as mui
 
-from src.components import TIMEZONE, Layout, icon_text, open_graph, with_layout
+from src.components import TIMEZONE, Layout, icon_text, open_graph, with_layout, back_to_main
 from src.components.app_factory import make_app
 from src.models.events import Event as Events, Attendance
 from src.components.info import MetaInfo
@@ -149,10 +149,12 @@ def events(
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
+    try:
+        meta = open_graph(events[0].title, events[0].description, events[0].image)
+    except IndexError:
+        meta = []
 
-    return *[f.info_card(user_id=session.get("id")) for f in events], *open_graph(
-        events[0].title, events[0].description, events[0].image
-    )
+    return *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
 
 
 @rt
