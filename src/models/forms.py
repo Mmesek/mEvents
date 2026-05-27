@@ -1,5 +1,5 @@
 from uuid import UUID
-from src.db import Base
+from src.db import Base, NotSerializable
 from enum import Enum
 import fasthtml.common as fh
 import monsterui.all as mui
@@ -48,8 +48,8 @@ class Question(Base):
     allow_multiple_answers: bool | None = None
     min_length: int | None = None
     max_length: int | None = None
-    options: list[Question_Options] = None
-    answer: list[Response] = None
+    options: NotSerializable[list[Question_Options]] = None
+    answer: NotSerializable[list[Response]] = None
 
     def generate(self, event_id: int = None, required: bool = False):
         from src.modules.forms import add_answer
@@ -115,13 +115,13 @@ class Question(Base):
 class Form_Questions(Base):
     order: int
     required: bool
-    question: Question
+    question: NotSerializable[Question]
 
 
 class Form(Base):
     title: str = None
     description: str | None = None
-    questions: list[Form_Questions] = None
+    questions: NotSerializable[list[Form_Questions]] = None
 
     def render(self, event_id, path="submit", registered: list["Attendance"] = None):
         content = [q.question.generate(event_id, q.required) for q in sorted(self.questions, key=lambda x: x.order)]

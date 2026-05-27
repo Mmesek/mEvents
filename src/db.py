@@ -1,5 +1,5 @@
 import os
-from typing import TypeVar
+from typing import Annotated, TypeVar, get_type_hints
 
 import dotenv
 import msgspec
@@ -15,6 +15,7 @@ s = supa.schema("forms")
 
 
 T = TypeVar("T")
+NotSerializable = Annotated[T, "not_serializable"]
 
 
 class Base(msgspec.Struct):
@@ -37,7 +38,14 @@ class Base(msgspec.Struct):
         return msgspec.convert(json, cls)
 
     def to_dict(self):
-        return {k: v for k, v in msgspec.structs.asdict(self).items() if not k.startswith("_")}
+        return {
+            k: v
+            for k, v in msgspec.structs.asdict(self).items()
+            if not k.startswith("_")
+            and getattr(get_type_hints(self.__class__, include_extras=True)[k], "__metadata__", [()])[0]
+            != "not_serializable"
+            and v
+        }
 
     @classmethod
     def get(cls: T, query: SyncSelectRequestBuilder) -> list[T]:

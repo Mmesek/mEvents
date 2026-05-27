@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from src.models.forms import Form
-from src.db import Base
+from src.db import Base, NotSerializable
 from src.components import TIMEZONE
 
 
@@ -17,8 +17,8 @@ class Attendance(Base):
     companions: int | None = None
     left: datetime | None = None
     feedback_filled: datetime | None = None
-    display_name: str | None = None
-    event: dict | None = None
+    display_name: NotSerializable[str | None] = None
+    event: NotSerializable[dict | None] = None
 
     def event_guests(self, session):
         return (
@@ -68,10 +68,10 @@ class Event(Base):
     discord_event: str | None = None
     wrap: str | None = None
     image: str | None = None
-    tickets: list[Attendance] = None
+    tickets: NotSerializable[list[Attendance]] = None
     org_name: str | None = None
     private: bool | None = None
-    form: Form | None = None
+    form: NotSerializable[Form | None] = None
 
     def __post_init__(self):
         self.start_time = self.start_time.astimezone(TIMEZONE)
