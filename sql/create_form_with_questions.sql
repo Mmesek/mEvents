@@ -17,32 +17,35 @@ FOR question IN
         *
     FROM
         jsonb_array_elements(questions)
-    LOOP    
-        INSERT INTO
-            "Question" (type, title, description, min_length, max_length)
-        VALUES
-            (
-                question ->> 'type',
-                question ->> 'title',
-                question ->> 'description',
-                COALESCE((question ->> 'min_length') :: int, NULL),
-                COALESCE((question ->> 'max_length') :: int, NULL)
-            ) RETURNING id INTO v_question_id;
+    LOOP
+        IF question ? 'title' THEN
+            INSERT INTO
+                "Question" (type, title, description, min_length, max_length)
+            VALUES
+                (
+                    question ->> 'type',
+                    question ->> 'title',
+                    question ->> 'description',
+                    COALESCE((question ->> 'min_length') :: int, NULL),
+                    COALESCE((question ->> 'max_length') :: int, NULL)
+                ) RETURNING id INTO v_question_id;
     
         -- 2c. Insert Options if they exist
-        IF question ? 'options' THEN 
-            FOR opt IN
-                SELECT
-                    *
-                FROM
-                    jsonb_array_elements(question -> 'options') LOOP
-                INSERT INTO
-                    "Question_Options" (question_id, value)
-                VALUES
-                    (v_question_id, opt);
-            END LOOP;
+            IF question ? 'options' THEN 
+                FOR opt IN
+                    SELECT
+                        *
+                    FROM
+                        jsonb_array_elements(question -> 'options') LOOP
+                    INSERT INTO
+                        "Question_Options" (question_id, value)
+                    VALUES
+                        (v_question_id, opt);
+                END LOOP;
+            END IF;
+        ELSE
+            v_question_id := (question ->> 'id')::int;
         END IF;
-    
     -- 2d. Link Question to Form
     INSERT INTO
         "Form_Questions" (form_id, question_id, required, "order")

@@ -3,13 +3,13 @@ from monsterui import all as mui
 
 from src.components import FormLayout
 from src.db import s
-from src.models.forms import Form, Question, Question_Options
+from src.models.forms import Form, Question, Question_Options, QuestionType as QT
 from src.modules.forms import rt
 from src.utils import get_next
 from src.generators import QuestionType
 
 
-@rt
+@rt("/new")
 def new(session, t, form_id: int = None):
     res = Form()
     if form_id:
@@ -161,24 +161,28 @@ def add(session, responses: dict, *, t=None):
         responses["order"] = [responses["order"]]
         responses["question"] = [responses["question"]]
         responses["description"] = [responses["description"]]
-    for idx, q, desc in zip(responses["order"], responses["question"], responses["description"], strict=True):
-        if f"select-type-{idx}" not in responses:
-            responses[f"select-type-{idx}"] = "INPUT"
-        question = {
-            "type": responses[f"select-type-{idx}"],
-            "title": q,
-            "description": desc,
-        }
-        if responses[f"select-type-{idx}"] == "SCALE":
-            question["min_length"] = int(get_next(responses, "min"))
-            question["max_length"] = int(get_next(responses, "max"))
-        if responses[f"select-type-{idx}"] == "CHOICE":
-            options = []
+        responses["allow_multiple"] = [responses.get("allow_multiple")]
+    responses["question"] = iter(responses["question"])
+    responses["description"] = iter(responses["description"])
+    responses["allow_multiple"] = iter(responses.get("allow_multiple", []))
+    for o, idx in zip(responses["order"], responses["original_id"], strict=True):
+        if f"select-type-{o}" not in responses:
+            responses[f"select-type-{o}"] = "INPUT"
+        q = Question(idx or None)
+        if not q.id:
+            q.type = getattr(QT, responses[f"select-type-{o}"]).value
+            q.title = next(responses["question"], None)
+            q.description = next(responses["description"], None)
+            q.allow_multiple_answers = next(responses["allow_multiple"], None)
+        if responses[f"select-type-{o}"] == "SCALE":
+            q.min_length = int(get_next(responses, "min"))
+            q.max_length = int(get_next(responses, "max"))
+        if responses[f"select-type-{o}"] == "CHOICE":
+            q.options = []
             for k, v in responses.items():
-                if k.startswith(f"option-{idx}") and v:
-                    options.append(v)
-            question["options"] = options
-        questions.append(question)
+                if k.startswith(f"option-{o}") and v:
+                    q.options.append(v)
+        questions.append(q.to_dict())
     res = (
         s.auth(session["auth"])
         .rpc(

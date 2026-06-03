@@ -106,7 +106,7 @@ class Question(Base):
                 id="description",
                 disabled=bool(self.id),
             ),
-            question_type(session, {}, order, self.type.value, disabled=bool(self.id), options=self.options or []),
+            question_type({}, order, self.type.value, disabled=bool(self.id), options=self.options or []),
             mui.DividerLine(),
             id=order,
         )
