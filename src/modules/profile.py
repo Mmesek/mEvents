@@ -6,6 +6,7 @@ from src.components.app_factory import make_app
 from src.db import Base, supa
 from src.modules.tickets import Attendance
 from src.modules.login import PROVIDERS
+from src.models.forms import Form
 
 rt = make_app("profile")
 
@@ -17,46 +18,24 @@ class Profile(Base):
     def edit(self, session):
         r = supa.auth.get_user(session["auth"])
         identities = {i.provider: i.identity_data for i in r.user.identities}
+        form = Form.get_one(
+            Form.select(
+                session["auth"],
+                '*, questions:"Form_Questions" (order, required, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value)))',
+            )
+            .eq("id", 21)
+            .eq("questions.question.answer.event_id", 0)
+            .eq("questions.question.answer.user_id", session["id"])
+        )
+
         return mui.DivCentered(
-            mui.Form(
-                mui.Card(
-                    mui.LabelInput(
-                        "Imię",
-                        placeholder="Imię N",
-                        value=self.display_name,
-                        title="Nazwa pod którą można cię rozpoznać",
-                    ),
-                    mui.LabelInput(
-                        "Podłączony e-mail",
-                        placeholder="email@example.com",
-                        value=session["email"],
-                        title="E-mail do kontaktu",
-                        disabled=True,
-                    ),
-                    mui.Switch(
-                        "Zgoda na przetwarzanie wizerunku",
-                        title="W celu publikacji na mediach społecznościowych",
-                        disabled=True,
-                    ),
-                    mui.LabelInput(
-                        "Alergie",
-                        title="Załączone do zapisów na wydarzenia które zawierają żywność",
-                        value="Brak",
-                        disabled=True,
-                    ),
-                    mui.LabelInput(
-                        "Data Urodzenia",
-                        title="Dla statystyk, oraz by określić średnią wieku na wydarzeniach",
-                        type="date",
-                        disabled=True,
-                    ),
-                    mui.Button("Zapisz", disabled=True),
-                    mui.DividerSplit("Połączone konta"),
-                    mui.Grid(
-                        mui.Button("", PROVIDERS.get(k.title(), k.title()), " - ", v.get("full_name"), disabled=True)
-                        for k, v in identities.items()
-                    ),
-                )
+            mui.Card(
+                form.render(0),
+                mui.DividerSplit("Połączone konta"),
+                mui.Grid(
+                    mui.Button("", PROVIDERS.get(k.title(), k.title()), " - ", v.get("full_name"), disabled=True)
+                    for k, v in identities.items()
+                ),
             )
         )
 
