@@ -18,7 +18,23 @@ rt = make_app("forms")
 
 
 def form(e: Event, path="submit"):
-    return e.form.render(e.id, path, registered=e.tickets)
+    return (
+        mui.DivCentered(
+            fh.NotStr(
+                mui.render_md(
+                    "**JESZCZE NIE JESTEŚ ZAPISANY/A NA WYDARZENIE!** Jedynie pytania oznaczone gwiazdką `(*)` są wymagane do zapisu."
+                )
+            ),
+        )
+        if not e.tickets
+        else None,
+        fh.Div(
+            fh.P("Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste, chyba że jest wymagane."),
+            fh.P("Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony."),
+        ),
+        mui.DividerLine(),
+        e.form.render(e.id, path),
+    )
 
 
 @rt("/save/{event_id}")
