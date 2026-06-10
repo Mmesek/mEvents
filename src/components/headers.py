@@ -6,6 +6,7 @@ HEADERS = [
     fh.Style('.required:before {content:" *";color: orange;}'),
     fh.Link(rel="icon", href="/static/icons/favicon.svg"),
     fh.Link(rel="manifest", href="/manifest.json"),
+    fh.Script(src="/static/pwa-prompt.js"),
     # Vercel Web Analytics
     fh.Script("window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };"),
     fh.Script(src="/_vercel/insights/script.js", defer=True),
