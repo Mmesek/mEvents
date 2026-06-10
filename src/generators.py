@@ -67,6 +67,7 @@ def generate_scale(min, max, **kwargs):
             min=min,
             max=max,
             value=kwargs.pop("value", None) or 0,
+            cls="w-full",
             **kwargs,
         )
     )

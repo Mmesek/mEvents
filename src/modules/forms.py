@@ -188,7 +188,7 @@ def submit(session, event: str, responses: dict):
             fh.A(
                 mui.Button(
                     "Strona z deklaracją przyniesienia przedmiotów na wydarzenie",
-                    cls=mui.ButtonT.ghost,
+                    cls=mui.ButtonT.secondary,
                     submit=False,
                 ),
                 href=f"/contributions/{event}",

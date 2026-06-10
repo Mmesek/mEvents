@@ -1,9 +1,10 @@
 from fasthtml import common as fh
+from monsterui import all as mui
 from src.components.app_factory import ROUTES
 from src.components.headers import HEADERS
 
 # Create your app with the theme
-app, rt = fh.fast_app(hdrs=HEADERS, routes=ROUTES)
+app, rt = mui.fast_app(hdrs=HEADERS, routes=ROUTES)
 
 
 @rt("/")

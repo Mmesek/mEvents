@@ -61,10 +61,11 @@ def tickets(session, event_id: int):
             ),
             footer=mui.DivFullySpaced(
                 fh.A(
-                    mui.Button("Przygotowania", cls=mui.ButtonT.ghost, submit=False), href=f"/contributions/{event_id}"
+                    mui.Button("Przygotowania", cls=mui.ButtonT.primary, submit=False),
+                    href=f"/contributions/{event_id}",
                 ),
                 fh.A(
-                    mui.Button("Zostaw Feedback", cls=mui.ButtonT.ghost, submit=False),
+                    mui.Button("Zostaw Feedback", cls=mui.ButtonT.secondary, submit=False),
                     href=f"/forms/feedback/{event_id}",
                 ),
             ),
@@ -102,7 +103,7 @@ def _verify(session, event_id: int, user_id: int):
                     hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
                     hx_target="#amount",
                     hx_swap="outerHTML",
-                    cls=mui.ButtonT.ghost,
+                    cls=mui.ButtonT.secondary,
                 ),
             ),
         )
@@ -118,7 +119,7 @@ def _verify(session, event_id: int, user_id: int):
                 hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
                 hx_target="#amount",
                 hx_swap="outerHTML",
-                cls=mui.ButtonT.ghost,
+                cls=mui.ButtonT.secondary,
             ),
         ),
     )

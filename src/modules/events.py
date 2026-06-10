@@ -76,7 +76,7 @@ class Event(Events):
     def render_button_guests(self):
         return mui.Button(
             "Lista gości",
-            cls=mui.ButtonT.ghost,
+            cls=mui.ButtonT.secondary,
             submit=False,
             hx_target=f"#guestlist_{self.id}",
             hx_get=f"/events/guests?event_id={self.id}",
@@ -85,12 +85,12 @@ class Event(Events):
     def render_button_form_responses(self):
         return (
             fh.A(
-                mui.Button("Sprawdź Feedback", cls=mui.ButtonT.ghost, submit=False),
+                mui.Button("Sprawdź Feedback", cls=mui.ButtonT.secondary, submit=False),
                 href=f"/responses/{self.id}?feedback=true",
             )
             if self.event_started
             else fh.A(
-                mui.Button("Sprawdź odpowiedzi", cls=mui.ButtonT.ghost, submit=False),
+                mui.Button("Sprawdź odpowiedzi", cls=mui.ButtonT.secondary, submit=False),
                 href=f"/responses/{self.id}",
             )
         )
@@ -101,21 +101,23 @@ class Event(Events):
             buttons.append(self.render_button_form_responses())
             if self.event_started:
                 buttons.append(
-                    fh.A(mui.Button("Obecność", cls=mui.ButtonT.ghost), href=f"/tickets/attendance/{self.id}")
+                    fh.A(mui.Button("Obecność", cls=mui.ButtonT.secondary), href=f"/tickets/attendance/{self.id}")
                 )
         if is_guest := any(user_id == x.user_id for x in self.tickets) if self.tickets else None:
-            buttons.append(fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.ghost), href=f"/contributions/{self.id}"))
+            buttons.append(
+                fh.A(mui.Button("Przygotowania", cls=mui.ButtonT.secondary), href=f"/contributions/{self.id}")
+            )
         if user_id:
             buttons.append(mui.DivLAligned(self.render_button_guests(), id=f"guestlist_{self.id}"))
         if self.id:
             if not self.event_started:
                 buttons.append(
-                    fh.A(mui.Button("Weź udział", cls=mui.ButtonT.ghost, submit=False), href=f"/forms/{self.id}")
+                    fh.A(mui.Button("Weź udział", cls=mui.ButtonT.primary, submit=False), href=f"/forms/{self.id}")
                 )
             elif is_guest:
                 buttons.append(
                     fh.A(
-                        mui.Button("Udziel feedbacku", cls=mui.ButtonT.ghost, submit=False),
+                        mui.Button("Udziel feedbacku", cls=mui.ButtonT.primary, submit=False),
                         href=f"/forms/feedback/{self.id}",
                     )
                 )

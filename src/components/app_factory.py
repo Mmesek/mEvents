@@ -41,7 +41,12 @@ def server_error(request: fh.Request, exc: fh.HTTPException):
 
 
 def make_app(route: str):
-    app, rt = fh.fast_app(hdrs=HEADERS, before=[refreshware, beforeware], exception_handlers={500: server_error})
+    app, rt = mui.fast_app(
+        hdrs=HEADERS,
+        before=[refreshware, beforeware],
+        exception_handlers={500: server_error},
+        bodykw={"data-theme": "mdark"},
+    )
     add_mount(route, app)
     return dependency_injection(rt)
 

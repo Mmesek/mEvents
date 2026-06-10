@@ -46,7 +46,7 @@ class Items(Base):
                     hx_post=f"/contributions/items/{event_id}",
                     hx_target="#items",
                     hx_swap="beforeend",
-                    cls=mui.ButtonT.ghost,
+                    cls=mui.ButtonT.secondary,
                 ),
             ),
             header="Dodaj własną sugestię. W celu deklaracji przyniesienia sugerowanego przedmiotu, odśwież stronę i zadeklaruj odpowiedni przedmiot.",
@@ -133,7 +133,7 @@ class Contributions(Base):
                     hx_target=f"#contributions-{item_id}"
                     + (f"-{contribution.user_id}" if contribution.user_id else ""),
                     hx_swap="afterend" if not contribution.user_id else "innerHTML",
-                    cls=mui.ButtonT.ghost,
+                    cls=mui.ButtonT.secondary,
                 ),
             )
         )

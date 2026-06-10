@@ -8,7 +8,7 @@ from fasthtml import svg
 
 
 def back_to_main():
-    return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.ghost, submit=False), href="/")
+    return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.secondary, submit=False), href="/")
 
 
 def FormSectionDiv(*c, cls="space-y-2", **kwargs):

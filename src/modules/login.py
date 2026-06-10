@@ -31,7 +31,7 @@ for p in PROVIDER_LIST:
     with open(f"static/icons/{p.lower()}.svg", encoding="utf-8") as file:
         PROVIDERS[p] = fh.NotStr(file.read())
 
-app, rt = fh.fast_app(hdrs=HEADERS)
+app, rt = mui.fast_app(hdrs=HEADERS)
 add_mount("login", app)
 
 
