@@ -135,15 +135,69 @@ def open_graph(title, description, thumbnail_url):
 def Button(*args, submit: bool = True, **kwargs):
     if "type" not in kwargs:
         kwargs["type"] = "submit" if submit else "button"
-    return fh.Button(*args, cls=("btn", stringify(kwargs.pop("cls", None))), **kwargs)
+    return fh.Button(*args, cls=("btn", stringify(kwargs.pop("cls", ButtonT.neutral))), **kwargs)
 
 
 class ButtonT(VEnum):
     def _generate_next_value_(name, start, count, last_values):
         return f"btn-{name.replace('_', '-')}".strip("-")
 
-    default, ghost, primary = auto(), auto(), auto()
-    secondary, destructive = auto(), auto()
-    text, link = auto(), auto()
-    xs, sm, lg, xl = auto(), auto(), auto(), auto()
-    icon = auto()
+    default = auto()
+    """No style"""
+
+    neutral = auto()
+    """Color - neutral color"""
+    primary = auto()
+    """Color - primary color"""
+    secondary = auto()
+    """Color - secondary color"""
+    accent = auto()
+    """Color - accent color"""
+    info = auto()
+    """Color - info color"""
+    success = auto()
+    """Color - success color"""
+    warning = auto()
+    """Color - warning color"""
+    error = auto()
+    """Color - error color"""
+
+    # Style
+    outline = auto()
+    """Style - outline style"""
+    dash = auto()
+    """Style - dash style"""
+    soft = auto()
+    """Style - soft style"""
+    ghost = auto()
+    """Style - ghost style"""
+    link = auto()
+    """Style - looks like a link"""
+
+    # Behavior
+    active = auto()
+    """Behavior - looks active"""
+    disabled = auto()
+    """Behavior - looks disabled"""
+
+    # Size
+    xs = auto()
+    """Size - Extra small size"""
+    sm = auto()
+    """Size - Small size"""
+    md = auto()
+    """Size - Medium size (default)"""
+    lg = auto()
+    """Size - Large size"""
+    xl = auto()
+    """Size - Extra large size"""
+
+    # Modifier
+    wide = auto()
+    """Modifier - more horizontal padding"""
+    block = auto()
+    """Modifier - Full width"""
+    square = auto()
+    """Modifier - 1:1 ratio"""
+    circle = auto()
+    """Modifier - 1:1 ratio with rounded corners"""

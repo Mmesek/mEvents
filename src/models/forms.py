@@ -51,7 +51,7 @@ class Question(Base):
     def generate(self, event_id: int = None, required: bool = False):
         from src.modules.forms import add_answer
 
-        return (
+        return mui.Card(
             mui.H3(self.title, cls=mui.TextPresets.muted_sm + ("required" if required else "")),
             fh.NotStr(mistletoe.markdown(self.description.strip())) if self.description else None,
             fh.Div(
@@ -127,7 +127,7 @@ class Form(Base):
         if not content:
             content.append(back_to_main())
         else:
-            content.append(mu.Button("Zapisz", cls=mu.ButtonT.primary))
+            content.append(mu.Button("Zapisz", cls=mu.ButtonT.primary + "w-full"))
 
         return (
             mui.DivCentered(

@@ -45,7 +45,7 @@ def magic_link():
 
 
 def provider_button(name: str, url: str):
-    return mu.Button(url, name, hx_get="/login?provider=" + name.lower(), cls=mu.ButtonT.default)
+    return mu.Button(url, name, hx_get="/login?provider=" + name.lower(), cls=mu.ButtonT.secondary)
 
 
 @with_layout(title="Login")

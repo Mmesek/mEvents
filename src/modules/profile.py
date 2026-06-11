@@ -63,12 +63,12 @@ class Profile(Base):
                         fh.Img(src=session.get("picture"), height="64", width="64"),
                     ),
                 ),
-                fh.A(mu.Button("Ustawienia"), href="/profile/settings"),
+                fh.A(mu.Button("Ustawienia", cls=mu.ButtonT.block + mu.ButtonT.accent), href="/profile/settings"),
                 mui.DivCentered(
                     mui.Card(
                         mui.DividerSplit("Przejdź do"),
                         mui.Grid(
-                            mu.Button(fh.A("Wydarzeń", href="/events")),
+                            mu.Button(fh.A("Wydarzeń", href="/events"), cls=mu.ButtonT.neutral),
                             mu.Button(fh.A("Feedbacku", href="/feedback"), disabled=True),
                             cols=2,
                         ),
@@ -82,7 +82,7 @@ class Profile(Base):
                         ),
                         mui.DividerSplit("Moje..."),
                         mui.Grid(
-                            mu.Button(fh.A("Wydarzenia", href="/events/mine")),
+                            mu.Button(fh.A("Wydarzenia", href="/events/mine"), cls=mu.ButtonT.neutral),
                             mu.Button(fh.A("Deklaracje", href="/contributions"), disabled=True),
                             mu.Button(fh.A("Bilety", href="/tickets"), disabled=True),
                             cols=3,
