@@ -132,7 +132,9 @@ def open_graph(title, description, thumbnail_url):
     )
 
 
-def Button(*args, **kwargs):
+def Button(*args, submit: bool = True, **kwargs):
+    if "type" not in kwargs:
+        kwargs["type"] = "submit" if submit else "button"
     return fh.Button(*args, cls=("btn", stringify(kwargs.pop("cls", None))), **kwargs)
 
 
