@@ -10,6 +10,7 @@ from src.modules.events import Event
 from src.modules.tickets import Attendance
 from src.generators import QuestionType
 from src.utils import build_query
+from src import components as mu
 
 mui.franken_class_map["ul"] = "list-[square] list-inside space-y-2 mb-6 ml-6 text-lg"
 
@@ -175,20 +176,20 @@ def submit(session, event: str, responses: dict):
     return (
         mui.DivCentered(
             "Dzięki za zapis!",
-            mui.Button(
+            mu.Button(
                 fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
                 submit=False,
-                cls=mui.ButtonT.primary,
+                cls=mu.ButtonT.primary,
             ),
             "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:",
-            mui.Button(session["email"], cls=mui.ButtonT.secondary, submit=False),
+            mu.Button(session["email"], cls=mu.ButtonT.secondary, submit=False),
             "i potwierdź obecność gdy otrzymasz zaproszenie!",
         ),
         mui.DivFullySpaced(
             fh.A(
-                mui.Button(
+                mu.Button(
                     "Strona z deklaracją przyniesienia przedmiotów na wydarzenie",
-                    cls=mui.ButtonT.secondary,
+                    cls=mu.ButtonT.secondary,
                     submit=False,
                 ),
                 href=f"/contributions/{event}",

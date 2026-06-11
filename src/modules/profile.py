@@ -7,6 +7,7 @@ from src.db import Base, supa
 from src.modules.tickets import Attendance
 from src.modules.login import PROVIDERS
 from src.models.forms import Form
+from src import components as mu
 
 rt = make_app("profile")
 
@@ -33,7 +34,7 @@ class Profile(Base):
                 form.render(0),
                 mui.DividerSplit("Połączone konta"),
                 mui.Grid(
-                    mui.Button("", PROVIDERS.get(k.title(), k.title()), " - ", v.get("full_name"), disabled=True)
+                    mu.Button("", PROVIDERS.get(k.title(), k.title()), " - ", v.get("full_name"), disabled=True)
                     for k, v in identities.items()
                 ),
             )
@@ -62,28 +63,28 @@ class Profile(Base):
                         fh.Img(src=session.get("picture"), height="64", width="64"),
                     ),
                 ),
-                fh.A(mui.Button("Ustawienia"), href="/profile/settings"),
+                fh.A(mu.Button("Ustawienia"), href="/profile/settings"),
                 mui.DivCentered(
                     mui.Card(
                         mui.DividerSplit("Przejdź do"),
                         mui.Grid(
-                            mui.Button(fh.A("Wydarzeń", href="/events")),
-                            mui.Button(fh.A("Feedbacku", href="/feedback"), disabled=True),
+                            mu.Button(fh.A("Wydarzeń", href="/events")),
+                            mu.Button(fh.A("Feedbacku", href="/feedback"), disabled=True),
                             cols=2,
                         ),
                         mui.DividerSplit("Zarządzaj"),
                         mui.Grid(
-                            mui.Button(fh.A("Zadania", href="/quests"), disabled=True),
-                            mui.Button(fh.A("Poziomy", href="/profile/levels"), disabled=True),
-                            mui.Button(fh.A("Postać", href="/characters"), disabled=True),
-                            mui.Button(fh.A("Ekwipunek", href="/items"), disabled=True),
+                            mu.Button(fh.A("Zadania", href="/quests"), disabled=True),
+                            mu.Button(fh.A("Poziomy", href="/profile/levels"), disabled=True),
+                            mu.Button(fh.A("Postać", href="/characters"), disabled=True),
+                            mu.Button(fh.A("Ekwipunek", href="/items"), disabled=True),
                             cols=4,
                         ),
                         mui.DividerSplit("Moje..."),
                         mui.Grid(
-                            mui.Button(fh.A("Wydarzenia", href="/events/mine")),
-                            mui.Button(fh.A("Deklaracje", href="/contributions"), disabled=True),
-                            mui.Button(fh.A("Bilety", href="/tickets"), disabled=True),
+                            mu.Button(fh.A("Wydarzenia", href="/events/mine")),
+                            mu.Button(fh.A("Deklaracje", href="/contributions"), disabled=True),
+                            mu.Button(fh.A("Bilety", href="/tickets"), disabled=True),
                             cols=3,
                         ),
                     ),

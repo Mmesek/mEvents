@@ -12,6 +12,7 @@ from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import supa
 from src.models.events import Attendance
+from src import components as mu
 
 from functools import partial
 
@@ -56,16 +57,16 @@ def tickets(session, event_id: int):
                         make_qr(f"https://mms-events.vercel.app/tickets/verify/{event_id}/{session['id']}")
                     ).decode()
                 ),
-                mui.Button("Pobierz bilet", cls=mui.ButtonT.link),
+                mu.Button("Pobierz bilet", cls=mu.ButtonT.link),
                 href=f"/tickets/qr?event_id={event_id}",
             ),
             footer=mui.DivFullySpaced(
                 fh.A(
-                    mui.Button("Przygotowania", cls=mui.ButtonT.primary, submit=False),
+                    mu.Button("Przygotowania", cls=mu.ButtonT.primary, submit=False),
                     href=f"/contributions/{event_id}",
                 ),
                 fh.A(
-                    mui.Button("Zostaw Feedback", cls=mui.ButtonT.secondary, submit=False),
+                    mu.Button("Zostaw Feedback", cls=mu.ButtonT.secondary, submit=False),
                     href=f"/forms/feedback/{event_id}",
                 ),
             ),
@@ -78,11 +79,9 @@ def _verify(session, event_id: int, user_id: int):
 
     org = Event.select(session["auth"], "user_id, start_time").eq("id", event_id).maybe_single().execute().data
     if session["id"] != org["user_id"]:
-        return mui.Button("Tylko organizator może zweryfikować dostęp", cls=mui.ButtonT.secondary)
+        return mu.Button("Tylko organizator może zweryfikować dostęp", cls=mu.ButtonT.secondary)
     if datetime.fromisoformat(org["start_time"]).date() > datetime.now(TIMEZONE).date():
-        return mui.Button(
-            "Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mui.ButtonT.destructive
-        )
+        return mu.Button("Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mu.ButtonT.destructive)
     companions = partial(
         mui.LabelInput,
         label="+1",
@@ -95,15 +94,15 @@ def _verify(session, event_id: int, user_id: int):
     )
     if attendance := Attendance(event_id, user_id).already_verified(session):
         return (
-            mui.Button("Dostęp został już zweryfikowany", cls=mui.ButtonT.destructive),
+            mu.Button("Dostęp został już zweryfikowany", cls=mu.ButtonT.destructive),
             mui.Form(
                 companions(value=attendance.data.get("companions")),
-                mui.Button(
+                mu.Button(
                     "Dodaj gości",
                     hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
                     hx_target="#amount",
                     hx_swap="outerHTML",
-                    cls=mui.ButtonT.secondary,
+                    cls=mu.ButtonT.secondary,
                 ),
             ),
         )
@@ -111,15 +110,15 @@ def _verify(session, event_id: int, user_id: int):
         session["auth"]
     )
     return (
-        mui.Button("Zweryfikowano dostęp!", cls=mui.ButtonT.primary),
+        mu.Button("Zweryfikowano dostęp!", cls=mu.ButtonT.primary),
         mui.Form(
             companions(),
-            mui.Button(
+            mu.Button(
                 "Dodaj gości",
                 hx_post=f"/tickets/verify/companions/{event_id}/{user_id}",
                 hx_target="#amount",
                 hx_swap="outerHTML",
-                cls=mui.ButtonT.secondary,
+                cls=mu.ButtonT.secondary,
             ),
         ),
     )
@@ -128,7 +127,7 @@ def _verify(session, event_id: int, user_id: int):
 @rt("/verify/companions/{event_id}/{user_id}")
 def companions(session, event_id: int, user_id: str, amount: int):
     Attendance(event_id, user_id, authorized_by=session["id"], companions=amount).upsert(session["auth"])
-    return mui.Button(f"Dodano +1 w liczbie {amount}")
+    return mu.Button(f"Dodano +1 w liczbie {amount}")
 
 
 @rt("/companions/{event_id}/{user_id}")
@@ -137,20 +136,20 @@ def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: 
     if not dry_run:
         Attendance(event_id, user_id, authorized_by=session["id"], companions=amount).upsert(session["auth"])
     return mui.DivHStacked(
-        mui.Button(
+        mu.Button(
             "-",
             hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount - 1}",
             hx_target=f"#amount-{user_id}",
             hx_swap="innerHTML",
-            cls=mui.ButtonT.icon + "max-w-[20px] space-x-1",
+            cls=mu.ButtonT.icon + "max-w-[20px] space-x-1",
         ),
         mui.DivCentered(amount),
-        mui.Button(
+        mu.Button(
             "+",
             hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount + 1}",
             hx_target=f"#amount-{user_id}",
             hx_swap="innerHTML",
-            cls=mui.ButtonT.icon + "max-w-[20px] space-x-1",
+            cls=mu.ButtonT.icon + "max-w-[20px] space-x-1",
         ),
         id=f"amount-{user_id}",
     )
@@ -201,9 +200,9 @@ def attendance_list(session, event_id: int):
                                 mui.DivCentered(g[0] if g[1] else "❌"),
                                 mui.DivCentered(g[1]),
                                 mui.Label(g[2].split(" ", 1)[0][:10]),
-                                mui.Button(
+                                mu.Button(
                                     "📤",
-                                    cls=mui.ButtonT.icon + " space-x-2",
+                                    cls=mu.ButtonT.icon + " space-x-2",
                                     hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
                                     hx_swap="outerHTML",
                                     submit=True,

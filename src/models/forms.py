@@ -7,6 +7,7 @@ from src.components import FormSectionDiv, back_to_main
 from src.generators import QuestionType as type_registry
 import i18n
 import mistletoe
+from src import components as mu
 
 
 class Response(Base):
@@ -126,7 +127,7 @@ class Form(Base):
         if not content:
             content.append(back_to_main())
         else:
-            content.append(mui.Button("Zapisz", cls=mui.ButtonT.primary))
+            content.append(mu.Button("Zapisz", cls=mu.ButtonT.primary))
 
         return (
             mui.DivCentered(

@@ -9,6 +9,7 @@ from msgspec import Meta, field
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base
+from src import components as mu
 
 rt = make_app("contributions")
 
@@ -41,12 +42,12 @@ class Items(Base):
                     id="description",
                     placeholder="Dlaczego ten przedmiot jest potrzebny bądź jak interpretować ilość?",
                 ),
-                mui.Button(
+                mu.Button(
                     "Dodaj",
                     hx_post=f"/contributions/items/{event_id}",
                     hx_target="#items",
                     hx_swap="beforeend",
-                    cls=mui.ButtonT.secondary,
+                    cls=mu.ButtonT.secondary,
                 ),
             ),
             header="Dodaj własną sugestię. W celu deklaracji przyniesienia sugerowanego przedmiotu, odśwież stronę i zadeklaruj odpowiedni przedmiot.",
@@ -127,13 +128,13 @@ class Contributions(Base):
                     ),
                     mui.LabelInput("Notatka", id="note", value=contribution.note),
                 ),
-                mui.Button(
+                mu.Button(
                     "Zadeklaruj",
                     hx_post=f"/contributions/contribute/{item_id}",
                     hx_target=f"#contributions-{item_id}"
                     + (f"-{contribution.user_id}" if contribution.user_id else ""),
                     hx_swap="afterend" if not contribution.user_id else "innerHTML",
-                    cls=mui.ButtonT.secondary,
+                    cls=mu.ButtonT.secondary,
                 ),
             )
         )

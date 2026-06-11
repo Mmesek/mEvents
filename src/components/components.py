@@ -5,6 +5,7 @@ import fasthtml.common as fh
 from monsterui import all as mui
 import mistletoe
 from fasthtml import svg
+from monsterui.foundations import VEnum, auto, stringify
 
 
 def back_to_main():
@@ -129,3 +130,18 @@ def open_graph(title, description, thumbnail_url):
         fh.Meta(name="twitter:description", content=description),
         fh.Meta(name="twitter:image", content=thumbnail_url),
     )
+
+
+def Button(*args, **kwargs):
+    return fh.Button(*args, cls=("btn", stringify(kwargs.pop("cls", None))), **kwargs)
+
+
+class ButtonT(VEnum):
+    def _generate_next_value_(name, start, count, last_values):
+        return f"btn-{name.replace('_', '-')}".strip("-")
+
+    default, ghost, primary = auto(), auto(), auto()
+    secondary, destructive = auto(), auto()
+    text, link = auto(), auto()
+    xs, sm, lg, xl = auto(), auto(), auto(), auto()
+    icon = auto()

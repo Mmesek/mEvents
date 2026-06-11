@@ -7,6 +7,7 @@ from src.models.forms import Form, Question, Question_Options, QuestionType as Q
 from src.modules.forms import rt
 from src.utils import get_next
 from src.generators import QuestionType
+from src import components as mu
 
 
 @rt("/new")
@@ -46,7 +47,7 @@ def new(session, t, form_id: int = None):
             id="questions-list",
         ),
         mui.Grid(
-            mui.Button(
+            mu.Button(
                 t("forms.create.add_question"),
                 hx_target="#questions-list",
                 hx_post="/forms/add-question",
@@ -68,7 +69,7 @@ def new(session, t, form_id: int = None):
                 ),
             ),
         ),
-        mui.Button(t("forms.create.submit"), cls=mui.ButtonT.primary),
+        mu.Button(t("forms.create.submit"), cls=mu.ButtonT.primary),
         cls="space-y-4",
         destination="/forms/add",
     )

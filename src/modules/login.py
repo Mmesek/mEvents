@@ -9,6 +9,7 @@ from src.components.app_factory import add_mount
 from src.components.components import with_layout
 from src.components.headers import HEADERS
 from src.db import supa
+from src import components as mu
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5001")
 
@@ -38,13 +39,13 @@ add_mount("login", app)
 def magic_link():
     return mui.Form(
         mui.Input(id="email", placeholder="email@hostname.tld", required=True),
-        mui.Button("Wyślij link do logowania", cls=(mui.ButtonT.primary, "w-full")),
+        mu.Button("Wyślij link do logowania", cls=(mu.ButtonT.primary, "w-full")),
         hx_post="/login/email",
     )
 
 
 def provider_button(name: str, url: str):
-    return mui.Button(url, name, hx_get="/login?provider=" + name.lower(), cls=mui.ButtonT.default)
+    return mu.Button(url, name, hx_get="/login?provider=" + name.lower(), cls=mu.ButtonT.default)
 
 
 @with_layout(title="Login")
@@ -103,7 +104,7 @@ def login_email(email: str, session):
     session["otp_email"] = email
     return fh.P("Sprawdź swojego maila oraz kliknij w link bądź wpisz tutaj kod z maila aby się zalogować:"), mui.Form(
         mui.Input(id="otp", placeholder="123456"),
-        mui.Button("Użyj kodu", cls=mui.ButtonT.primary),
+        mu.Button("Użyj kodu", cls=mu.ButtonT.primary),
         hx_post="/login/otp",
     )
 

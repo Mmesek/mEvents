@@ -6,6 +6,7 @@ from src.components import handle_updating_responses
 from src.models.forms import Form
 from src.components.info import MetaInfo
 from src.modules.events import rt, Event
+from src import components as mu
 
 
 @rt
@@ -87,7 +88,7 @@ def create(session, t):
                 placeholder=t("events.create.select_feedback_form"),
                 id="feedback_form_id",
             ),
-            mui.Button(t("events.create.add.add"), cls=mui.ButtonT.primary),
+            mu.Button(t("events.create.add.add"), cls=mu.ButtonT.primary),
         )
     )
     return mui.Container(
