@@ -43,12 +43,15 @@ class Attendance(Base):
         )
 
     def last_event(self, session):
-        return Attendance.get_one(
-            Attendance.select(session["auth"], 'arrived, left, event:"Event" (title)')
-            .eq("user_id", self.user_id)
-            .filter("arrived", "is", "not_null")
-            .order("arrived", desc=True)
-            .limit(1)
+        return (
+            Attendance.maybe_one(
+                Attendance.select(session["auth"], 'arrived, left, event:"Event" (title)')
+                .eq("user_id", self.user_id)
+                .filter("arrived", "is", "not_null")
+                .order("arrived", desc=True)
+                .limit(1)
+            )
+            or self
         )
 
 
