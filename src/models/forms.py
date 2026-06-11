@@ -51,7 +51,7 @@ class Question(Base):
     def generate(self, event_id: int = None, required: bool = False):
         from src.modules.forms import add_answer
 
-        return FormSectionDiv(
+        return (
             mui.H3(self.title, cls=mui.TextPresets.muted_sm + ("required" if required else "")),
             fh.NotStr(mistletoe.markdown(self.description.strip())) if self.description else None,
             fh.Div(
@@ -133,6 +133,6 @@ class Form(Base):
             mui.DivCentered(
                 mui.render_md(self.description) if self.description else None, style="max-width: 100em; min-width: 35%"
             ),
-            mui.DividerLine(),
+            mui.DividerLine() if self.description else None,
             mui.Form(*content, cls="space-y-3 mt-4", hx_post=f"/forms/{path}/{event_id}"),
         )

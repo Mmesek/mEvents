@@ -31,47 +31,51 @@ class Event(Events):
             self.dresscode += " *(Opcjonalnie)*"
         count = len(self.tickets) if self.tickets else None
         companions = sum([i.companions or 0 for i in self.tickets]) if self.tickets else None
-        return mui.DivCentered(
-            mui.Card(
-                fh.Img(
-                    src=self.image,
-                    loading="lazy",
-                    width=1000,
-                    height=400,
-                    style="max-height: 400px;",
-                )
-                if self.image
-                else None,
-                mui.DivCentered(
-                    mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
-                ),
-                MetaInfo(
-                    self.start_time.strftime("%H:%M"),
-                    self.end_time.strftime("%H:%M") if self.end_time else None,
-                    f"{self.start_time.date()}, {LOCALIZED_NAMES[self.start_time.strftime('%A')]}",
-                    f"{self.end_time.date()}, {LOCALIZED_NAMES[self.end_time.strftime('%A')]}"
-                    if self.end_time.date() - self.start_time.date() > timedelta(1)
-                    else None,
-                    self.place,
-                    f"{count} + {companions}" if companions else count,
-                    self.org_name,
-                    self.theme,
-                    self.dresscode,
-                ).render(),
-                mui.DivCentered(
-                    icon_text(
-                        "messages-square",
-                        text=f"**[Discord]({self.discord_event})**",
-                    )
-                )
-                if self.discord_event
-                else None,
-                # mui.DivCentered(icon_text("", text=f"**[Facebook]({self.facebook_event})**")) if self.facebook_event else None,
-                mui.DivCentered(mui.render_md(self.description)) if self.description else None,
-                mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
-                body_cls="space-y-0",
-                style="max-width: 1000px; min-width: 35%",
+        return mui.Card(
+            fh.Img(
+                src=self.image,
+                loading="lazy",
+                width=1000,
+                height=400,
+                style="max-height: 400px;",
             )
+            if self.image
+            else None,
+            mui.DivCentered(
+                mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
+            ),
+            MetaInfo(
+                self.start_time.strftime("%H:%M"),
+                self.end_time.strftime("%H:%M") if self.end_time else None,
+                f"{self.start_time.date()}, {LOCALIZED_NAMES[self.start_time.strftime('%A')]}",
+                f"{self.end_time.date()}, {LOCALIZED_NAMES[self.end_time.strftime('%A')]}"
+                if self.end_time.date() - self.start_time.date() > timedelta(1)
+                else None,
+                self.place,
+                f"{count} + {companions}" if companions else count,
+                self.org_name,
+                self.theme,
+                self.dresscode,
+            ).render(),
+            mui.DivCentered(
+                icon_text(
+                    "messages-square",
+                    text=f"**[Discord]({self.discord_event})**",
+                )
+            )
+            if self.discord_event
+            else None,
+            # mui.DivCentered(icon_text("", text=f"**[Facebook]({self.facebook_event})**")) if self.facebook_event else None,
+            (
+                fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
+                mui.DivCentered(mui.render_md(self.description)),
+            )
+            if self.description
+            else None,
+            fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
+            mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
+            body_cls="space-y-0",
+            style="max-width: 1000px; min-width: 35%",
         )
 
     def render_button_guests(self):
