@@ -80,26 +80,50 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
         fh.Title(title),
         fh.Main(
             fh.Header(
-                mui.DivRAligned(
-                    "Zalogowano jako:",
-                    fh.Img(src=session.get("picture"), height="24", width="24"),
-                    session.get("email"),
+                fh.Nav(
+                    mui.DivRAligned(
+                        fh.A(Button(icon_text("home", ""), cls=ButtonT.ghost), href="/events/", title="Główna"),
+                        (
+                            fh.A(
+                                mui.Button(
+                                    icon_text(
+                                        "user",
+                                        (
+                                            fh.Img(src=session.get("picture"), height="24", width="24"),
+                                            session.get("email"),
+                                        ),
+                                    ),
+                                    cls=ButtonT.ghost,
+                                ),
+                                href="/profile/",
+                                title="Profil",
+                            ),
+                            fh.A(Button(icon_text("log-out", ""), cls=ButtonT.ghost), href="/login/", title="Wyloguj"),
+                        )
+                        if session.get("email")
+                        else fh.A(Button(icon_text("log-in", ""), cls=ButtonT.ghost), href="/login/", title="Zaloguj"),
+                    ),
+                    cls="navbar-center bg-black",
                 )
-                if session.get("email")
-                else None,
             ),
             mui.DivCentered(mui.H1(title)),
             mui.DivCentered(*body),
             fh.Footer(
-                mui.Card(
-                    footer=mui.DivCentered(
-                        mui.DivLAligned(
-                            *[mui.UkIconLink(icon, href=url) for icon, url in socials],
-                            mui.DivRAligned(f"Page generated in {t:>.3}s"),
-                        ),
-                        mui.Button("Włącz powiadomienia", id="subscribe"),
+                mui.DivHStacked(
+                    fh.Aside(
+                        icon_text("timer", fh.P(f"{t:>.2}s")),
+                        fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
+                        fh.P("Copyright @ 2026"),
+                    ),
+                    fh.Nav(
+                        *[mui.UkIconLink(icon, href=url) for icon, url in socials],
+                        cls="navbar-center",
+                    ),
+                    mui.DivRAligned(
+                        Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)
                     ),
                 ),
+                cls="footer footer-horizontal footer-center bg-black",
             ),
         ),
     )
