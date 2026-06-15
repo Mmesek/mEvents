@@ -70,61 +70,70 @@ def handle_updating_responses(responses: dict) -> dict:
     return responses
 
 
-def Layout(body, title: str = None, *, session: dict = None, t: float):
+def Link(url: str, title: str = None, icon: str = None, icon_title: str = None):
+    return fh.A(
+        mui.UkIcon(icon) if icon else None,
+        title if icon_title is None else icon_title,
+        href=url,
+        cls=ButtonT.ghost + "btn inline-flex items-center",
+        title=title,
+    )
+
+def header_navbar(session):
+    return fh.Header(
+        fh.Nav(
+            mui.DivRAligned(
+                Link("/events/", "Główna", "home", ""),
+                (
+                    Link(
+                        "/profile/",
+                        "Profil",
+                        "user",
+                        (
+                            fh.Img(src=session.get("picture"), height="24", width="24"),
+                            session.get("email"),
+                        ),
+                    ),
+                    Link("/login/", "Wyloguj", "log-out", ""),
+                )
+                if session.get("email")
+                else Link("/login/", "Zaloguj", "log-in", ""),
+            ),
+            cls="navbar-center bg-black",
+        ),
+    )
+
+
+def footer_navbar(t):
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
         # ("messages-square", "https://discord.com"),
     )
+    return fh.Footer(
+        mui.DivHStacked(
+            fh.Aside(
+                icon_text("timer", fh.P(f"{t:>.2}s")),
+                fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
+                fh.P("Copyright @ 2026"),
+            ),
+            fh.Nav(
+                *[mui.UkIconLink(icon, href=url) for icon, url in socials],
+                cls="navbar-center",
+            ),
+            mui.DivRAligned(Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)),
+        ),
+        cls="footer footer-horizontal footer-center bg-black",
+    )
 
+
+def Layout(body, title: str = None, *, session: dict = None, t: float):
     return (
         fh.Title(title),
         fh.Main(
-            fh.Header(
-                fh.Nav(
-                    mui.DivRAligned(
-                        fh.A(Button(icon_text("home", ""), cls=ButtonT.ghost), href="/events/", title="Główna"),
-                        (
-                            fh.A(
-                                mui.Button(
-                                    icon_text(
-                                        "user",
-                                        (
-                                            fh.Img(src=session.get("picture"), height="24", width="24"),
-                                            session.get("email"),
-                                        ),
-                                    ),
-                                    cls=ButtonT.ghost,
-                                ),
-                                href="/profile/",
-                                title="Profil",
-                            ),
-                            fh.A(Button(icon_text("log-out", ""), cls=ButtonT.ghost), href="/login/", title="Wyloguj"),
-                        )
-                        if session.get("email")
-                        else fh.A(Button(icon_text("log-in", ""), cls=ButtonT.ghost), href="/login/", title="Zaloguj"),
-                    ),
-                    cls="navbar-center bg-black",
-                )
-            ),
+            header_navbar(session),
             mui.DivCentered(mui.H1(title)),
             mui.DivCentered(*body),
-            fh.Footer(
-                mui.DivHStacked(
-                    fh.Aside(
-                        icon_text("timer", fh.P(f"{t:>.2}s")),
-                        fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
-                        fh.P("Copyright @ 2026"),
-                    ),
-                    fh.Nav(
-                        *[mui.UkIconLink(icon, href=url) for icon, url in socials],
-                        cls="navbar-center",
-                    ),
-                    mui.DivRAligned(
-                        Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)
-                    ),
-                ),
-                cls="footer footer-horizontal footer-center bg-black",
-            ),
+            footer_navbar(t),
         ),
     )
 
