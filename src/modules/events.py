@@ -164,4 +164,4 @@ def events(
 
 @rt
 def mine(session):
-    return events(session, include_previous=True, user_id=session["id"])
+    return events(session=session, include_previous=True, user_id=session["id"])
