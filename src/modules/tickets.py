@@ -10,8 +10,7 @@ from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
 
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
-from src.db import supa
-from src.models.events import Attendance
+from src.models.events import Attendance, Event
 from src import components as mu
 
 from functools import partial
@@ -165,6 +164,12 @@ def leave(session, event_id: int, user_id: str):
     dt = datetime.now(TIMEZONE)
     Attendance(event_id, user_id, authorized_by=session["id"], left=dt.isoformat()).upsert(session["auth"]).execute()
     return mui.DivCentered(dt.strftime("%m/%d %H:%M"))
+
+
+@rt("/attendance/{event_id}/emails")
+def attendance_emails(session, event_id: int):
+    r = Event.get_one(Event.select(session["auth"]).eq("id", event_id)).guest_emails(session)
+    return fh.Ol(fh.Li(i["email"], cls=mui.ListT.decimal) for i in r)
 
 
 @rt("/attendance/{event_id}")

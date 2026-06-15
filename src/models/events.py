@@ -31,6 +31,17 @@ class Attendance(Base):
             .data
         )
 
+    def guest_emails(self, session):
+        return (
+            Attendance.select(session["auth"], "*, ...users!Attendance_user_id_fkey (display_name, email)")
+            .eq("event_id", self.event_id)
+            .eq("users.event_id", self.event_id)
+            .filter("withdrew", "is", "null")
+            .order("created_at")
+            .execute()
+            .data
+        )
+
     def already_verified(self, session):
         return (
             Attendance.table(session["auth"])
@@ -86,3 +97,8 @@ class Event(Base):
 
     def guests(self, session):
         return Attendance(self.id).event_guests(session)
+
+    def guest_emails(self, session):
+        if session["id"] == str(self.user_id):
+            return Attendance(self.id).guest_emails(session)
+        return []

@@ -6,6 +6,7 @@ SELECT
     u.raw_user_meta_data ->> 'full_name',
     split_part(u.raw_user_meta_data ->> 'email', '@', 1)
   ) AS display_name,
+  u.email,
   r.event_id,
   MAX(r."timestamp") AS "timestamp"
 FROM

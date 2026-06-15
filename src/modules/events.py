@@ -108,6 +108,17 @@ class Event(Events):
                 buttons.append(
                     fh.A(mu.Button("Obecność", cls=mu.ButtonT.secondary), href=f"/tickets/attendance/{self.id}")
                 )
+            buttons.append(
+                mui.DivLAligned(
+                    mu.Button(
+                        "E-Maile",
+                        hx_target=f"#guestemails_{self.id}",
+                        hx_get=f"/tickets/attendance/{self.id}/emails",
+                        cls=mu.ButtonT.secondary,
+                    ),
+                    id=f"guestemails_{self.id}",
+                )
+            )
         if is_guest := any(user_id == x.user_id for x in self.tickets) if self.tickets else None:
             buttons.append(fh.A(mu.Button("Przygotowania", cls=mu.ButtonT.secondary), href=f"/contributions/{self.id}"))
         if user_id:
