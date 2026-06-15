@@ -37,7 +37,7 @@ class Event(Events):
                 loading="lazy",
                 width=1000,
                 height=400,
-                style="max-height: 400px;",
+                style="max-height: 400px; border-radius: 1.5em",
             )
             if self.image
             else None,
@@ -75,7 +75,7 @@ class Event(Events):
             fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
             mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
             body_cls="space-y-0",
-            style="max-width: 1000px; min-width: 35%",
+            style="max-width: 1000px; min-width: 35%; border-radius: 1.5em",
         )
 
     def render_button_guests(self):
