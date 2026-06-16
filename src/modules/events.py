@@ -42,7 +42,11 @@ class Event(Events):
             if self.image
             else None,
             mui.DivCentered(
-                mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None))
+                fh.Div(
+                    mu.CopyToClipboard(f"https://mms-events.vercel.app/events?id={self.id}"),
+                    mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None)),
+                    cls="flex",
+                ),
             ),
             MetaInfo(
                 self.start_time.strftime("%H:%M"),
@@ -72,7 +76,7 @@ class Event(Events):
             )
             if self.description
             else None,
-            fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
+            # fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
             mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
             body_cls="space-y-0",
             style="max-width: 1000px; min-width: 35%; border-radius: 1.5em",

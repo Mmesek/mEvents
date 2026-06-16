@@ -245,6 +245,21 @@ def Button(*args, submit: bool = True, **kwargs):
     return fh.Button(*args, cls=("btn", stringify(kwargs.pop("cls", ButtonT.neutral))), **kwargs)
 
 
+def CopyToClipboard(url: str, message: str = "Skopiowano link do wydarzenia!"):
+    return Button(
+        icon_text("copy", ""),
+        cls=ButtonT.link,
+        onclick=f"""
+    navigator.clipboard.writeText('{url}'); const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<div class="alert alert-success" style="max-width: fit-content"><span>{message}</span></div>'
+    toast.style.left = (event.clientX + 10) + 'px';
+    toast.style.top = (event.clientY + 10) + 'px';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 1000);""",
+    )
+
+
 class ButtonT(VEnum):
     def _generate_next_value_(name, start, count, last_values):
         return f"btn-{name.replace('_', '-')}".strip("-")
