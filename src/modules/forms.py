@@ -29,11 +29,6 @@ def form(e: Event, path="submit"):
         )
         if not e.tickets
         else None,
-        fh.Div(
-            fh.P("Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste, chyba że jest wymagane."),
-            fh.P("Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony."),
-        ),
-        mui.DividerLine(),
         e.form.render(e.id, path),
     )
 
