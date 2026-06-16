@@ -11,7 +11,7 @@ class Attendance(Base):
     filled_form: str | None = None
     downloaded_ticket: str | None = None
     arrived: datetime | None = None
-    withdrew: str | None = None
+    withdrew: datetime | None = None
     authorized_by: str | None = None
     created_at: datetime | None = None
     companions: int | None = None

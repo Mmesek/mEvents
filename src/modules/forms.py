@@ -158,6 +158,7 @@ def save_to_db(session, event, responses, feedback: bool = False):
             "event_id": event,
             "user_id": session["id"],
             "filled_form" if not feedback else "feedback_filled": datetime.now(TIMEZONE).isoformat(),
+            "withdrew": None,
         }
     ).execute()
 

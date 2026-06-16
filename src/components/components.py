@@ -352,3 +352,4 @@ from functools import partial
 
 LinkSecondary = partial(LinkButton, cls=ButtonT.secondary)
 LinkPrimary = partial(LinkButton, cls=ButtonT.primary)
+LinkDanger = partial(LinkButton, cls=ButtonT.error)

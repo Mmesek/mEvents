@@ -77,7 +77,7 @@ class Event(Events):
             if self.description
             else None,
             # fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
-            mui.DivRAligned(mui.DivHStacked(*self.event_buttons(user_id))),
+            mui.DivRAligned(mui.Grid(*self.event_buttons(user_id), cols_min=2, cols_max=6)),
             body_cls="space-y-0",
             style="max-width: 1000px; min-width: 35%; border-radius: 1.5em",
         )
@@ -100,16 +100,35 @@ class Event(Events):
             buttons.append(
                 mu.ReplaceButton("E-Maile", f"/tickets/attendance/{self.id}/emails", f"guestemails_{self.id}")
             )
-        if is_guest := any(user_id == x.user_id for x in self.tickets) if self.tickets else None:
-            buttons.append(mu.LinkSecondary(f"/contributions/{self.id}", "Przygotowania"))
         if user_id:
-            buttons.append(fh.Div(self.render_button_guests(), id=f"guestlist_{self.id}"))
+            buttons.append(self.render_button_guests())
+        if is_guest := any(str(user_id) == x.user_id for x in self.tickets) if self.tickets else None:
+            buttons.append(mu.LinkSecondary(f"/contributions/{self.id}", "Przygotowania"))
         if self.id:
             if not self.event_started:
-                buttons.append(mu.LinkPrimary(f"/forms/{self.id}", "Weź udział"))
+                if is_guest:
+                    buttons.append(mu.LinkSecondary(f"/forms/{self.id}", "Edytuj odpowiedzi"))
+                    buttons.append(
+                        mu.ReplaceButton(
+                            "Zrezygnuj",
+                            f"/events/withdraw?event_id={self.id}",
+                            f"withdraw-{self.id}",
+                            cls=mu.ButtonT.error,
+                        )
+                    )
+                else:
+                    buttons.append(mu.LinkPrimary(f"/forms/{self.id}", "Weź udział"))
             elif is_guest:
                 buttons.append(mu.LinkPrimary(f"/forms/feedback/{self.id}", "Udziel feedbacku"))
         return buttons
+
+
+@rt
+def withdraw(session, event_id: str):
+    Attendance(event_id=event_id, user_id=session["id"], withdrew=datetime.now(TIMEZONE).isoformat()).upsert(
+        session["auth"]
+    )
+    return mu.LinkPrimary(f"/forms/{event_id}", "Weź udział")
 
 
 @rt
