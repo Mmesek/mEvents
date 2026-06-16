@@ -79,27 +79,77 @@ def Link(url: str, title: str = None, icon: str = None, icon_title: str = None):
         title=title,
     )
 
+
+LINK_HOVER = "link link-hover"
+ICON_LINK = "space-x-1 inline-flex items-center"
+
+
+def LinkIconHover(url: str, title: str = None, icon: str = None):
+    return fh.Div(
+        mui.UkIcon(icon) if icon else None,
+        fh.A(
+            title if title else None,
+            href=url,
+            cls=LINK_HOVER,
+            title=title,
+        ),
+        cls=ICON_LINK,
+    )
+
+
+def LinkSvgHover(url: str, title: str = None, icon: str = None):
+    return fh.Div(
+        fh.Img(src=f"/static/icons/{icon.lower()}.svg", style="filter: invert(1);", width=16, height=16),
+        fh.A(
+            title if title else None,
+            href=url,
+            cls=LINK_HOVER,
+            title=title,
+        ),
+        cls=ICON_LINK,
+    )
+
+
+def URLButton(url: str, *args, title: str = None, **kwargs):
+    return fh.A(mui.Button(*args, **kwargs), href=url, title=title)
+
+
 def header_navbar(session):
     return fh.Header(
         fh.Nav(
-            mui.DivRAligned(
-                Link("/events/", "Główna", "home", ""),
-                (
-                    Link(
-                        "/profile/",
-                        "Profil",
-                        "user",
-                        (
-                            fh.Img(src=session.get("picture"), height="24", width="24"),
-                            session.get("email"),
-                        ),
+            fh.Div(
+                fh.Div(
+                    Link("/", "Mistyczne Wydarzenia Ognia i Popiołu", ""),
+                    cls="hidden sm:flex items-center",
+                ),
+                fh.Div(
+                    fh.Div(
+                        Link("/events/", "Główna", "home", ""),
+                        # Link("/tickets/mine", "Bilety", "tickets", ""),
+                        # Link("/events/reviews", "Recenzje", "square-pen", ""),
+                        # Link("/events/mine", "Moje Wydarzenia", "calendar", ""),
+                        # Link("/events/create", "Utwórz", "calendar-plus", ""),
+                        cls="hidden sm:flex",
                     ),
-                    Link("/login/", "Wyloguj", "log-out", ""),
-                )
-                if session.get("email")
-                else Link("/login/", "Zaloguj", "log-in", ""),
+                    (
+                        Link(
+                            "/profile/",
+                            "Profil",
+                            "user",
+                            (
+                                fh.Img(src=session.get("picture"), height="24", width="24"),
+                                session.get("email"),
+                            ),
+                        ),
+                        Link("/login/", "Wyloguj", "log-out", ""),
+                    )
+                    if session.get("email")
+                    else Link("/login/", "Zaloguj", "log-in", ""),
+                    cls="flex items-center space-x-4",
+                ),
+                cls="flex justify-between items-center w-full space-x-4",
             ),
-            cls="navbar-center bg-black",
+            cls="navbar bg-black glass",
         ),
     )
 
@@ -110,19 +160,35 @@ def footer_navbar(t):
         # ("messages-square", "https://discord.com"),
     )
     return fh.Footer(
-        mui.DivHStacked(
-            fh.Aside(
-                icon_text("timer", fh.P(f"{t:>.2}s")),
-                fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
-                fh.P("Copyright @ 2026"),
-            ),
-            fh.Nav(
-                *[mui.UkIconLink(icon, href=url) for icon, url in socials],
-                cls="navbar-center",
-            ),
-            mui.DivRAligned(Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)),
+        fh.Aside(
+            fh.H6("Statystyki", cls="footer-title"),
+            icon_text("timer", fh.P(f"{t:>.2}s")),
+            fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
+            fh.P("Copyright @ 2026"),
         ),
-        cls="footer footer-horizontal footer-center bg-black",
+        fh.Nav(
+            fh.H6("Linki", cls="footer-title"),
+            # *[mui.UkIconLink(icon, href=url) for icon, url in socials],
+            *[LinkSvgHover(url, icon.title(), icon) for icon, url in socials],
+        ),
+        fh.Nav(
+            fh.H6("Strona", cls="footer-title"),
+            LinkIconHover("/", "Główna", "home"),
+            LinkIconHover("/profile", "Profil", "user"),
+            #    LinkIconHover("/events", "Wydarzenia", "calendar"),
+            #    LinkIconHover("/tickets", "Bilety", "tickets"),
+            #    LinkIconHover("/feedback", "Recenzje", "square-pen"),
+        ),
+        # fh.Nav(
+        #    fh.H6("Info", cls="footer-title"),
+        #    LinkIconHover("/about/", "O Nas", "info"),
+        #    LinkIconHover("/contact/", "Kontakt", "contact"),
+        #    fh.H6("Legal", cls="footer-title"),
+        #    LinkIconHover("/privacy-policy", "Polityka Prywatności", "cookie"),
+        #    LinkIconHover("/terms-of-service", "Regulamin", "book-text"),
+        # ),
+        fh.Div(Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)),
+        cls="footer sm:footer-horizontal xs:footer-center glass bg-black text-base-content p-4 text-center justify-center sm:w-full",
     )
 
 
