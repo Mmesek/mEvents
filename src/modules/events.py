@@ -37,7 +37,7 @@ class Event(Events):
                 loading="lazy",
                 width=1000,
                 height=400,
-                style="max-height: 400px; border-radius: 1.5em",
+                style="max-height: 400px; border-radius: 1.5em; object-fit: cover",
             )
             if self.image
             else None,

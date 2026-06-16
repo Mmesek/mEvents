@@ -165,6 +165,7 @@ def footer_navbar(t):
             icon_text("timer", fh.P(f"{t:>.2}s")),
             fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
             fh.P("Copyright @ 2026"),
+        *SOCIALS.items(),
         ),
         fh.Nav(
             fh.H6("Linki", cls="footer-title"),
