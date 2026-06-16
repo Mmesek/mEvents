@@ -83,25 +83,12 @@ class Event(Events):
         )
 
     def render_button_guests(self):
-        return mu.Button(
-            "Lista gości",
-            cls=mu.ButtonT.secondary,
-            submit=False,
-            hx_target=f"#guestlist_{self.id}",
-            hx_get=f"/events/guests?event_id={self.id}",
-        )
+        return mu.ReplaceButton("Lista Gości", f"/events/guests?event_id={self.id}", f"guestlist_{self.id}")
 
     def render_button_form_responses(self):
-        return (
-            fh.A(
-                mu.Button("Sprawdź Feedback", cls=mu.ButtonT.secondary, submit=False),
-                href=f"/responses/{self.id}?feedback=true",
-            )
-            if self.event_started
-            else fh.A(
-                mu.Button("Sprawdź odpowiedzi", cls=mu.ButtonT.secondary, submit=False),
-                href=f"/responses/{self.id}",
-            )
+        return mu.LinkSecondary(
+            f"/responses/{self.id}{'?feedback=true' if self.event_started else ''}",
+            f"Sprawdź {'Feedback' if self.event_started else 'odpowiedzi'}",
         )
 
     def event_buttons(self, user_id: UUID):
@@ -109,36 +96,19 @@ class Event(Events):
         if self.user_id and self.user_id == user_id:
             buttons.append(self.render_button_form_responses())
             if self.event_started:
-                buttons.append(
-                    fh.A(mu.Button("Obecność", cls=mu.ButtonT.secondary), href=f"/tickets/attendance/{self.id}")
-                )
+                buttons.append(mu.LinkSecondary(f"/tickets/attendance/{self.id}", "Obecność"))
             buttons.append(
-                mui.DivLAligned(
-                    mu.Button(
-                        "E-Maile",
-                        hx_target=f"#guestemails_{self.id}",
-                        hx_get=f"/tickets/attendance/{self.id}/emails",
-                        cls=mu.ButtonT.secondary,
-                    ),
-                    id=f"guestemails_{self.id}",
-                )
+                mu.ReplaceButton("E-Maile", f"/tickets/attendance/{self.id}/emails", f"guestemails_{self.id}")
             )
         if is_guest := any(user_id == x.user_id for x in self.tickets) if self.tickets else None:
-            buttons.append(fh.A(mu.Button("Przygotowania", cls=mu.ButtonT.secondary), href=f"/contributions/{self.id}"))
+            buttons.append(mu.LinkSecondary(f"/contributions/{self.id}", "Przygotowania"))
         if user_id:
-            buttons.append(mui.DivLAligned(self.render_button_guests(), id=f"guestlist_{self.id}"))
+            buttons.append(fh.Div(self.render_button_guests(), id=f"guestlist_{self.id}"))
         if self.id:
             if not self.event_started:
-                buttons.append(
-                    fh.A(mu.Button("Weź udział", cls=mu.ButtonT.primary, submit=False), href=f"/forms/{self.id}")
-                )
+                buttons.append(mu.LinkPrimary(f"/forms/{self.id}", "Weź udział"))
             elif is_guest:
-                buttons.append(
-                    fh.A(
-                        mu.Button("Udziel feedbacku", cls=mu.ButtonT.primary, submit=False),
-                        href=f"/forms/feedback/{self.id}",
-                    )
-                )
+                buttons.append(mu.LinkPrimary(f"/forms/feedback/{self.id}", "Udziel feedbacku"))
         return buttons
 
 

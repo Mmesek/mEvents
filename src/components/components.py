@@ -77,16 +77,6 @@ def handle_updating_responses(responses: dict) -> dict:
     return responses
 
 
-def Link(url: str, title: str = None, icon: str = None, icon_title: str = None):
-    return fh.A(
-        mui.UkIcon(icon) if icon else None,
-        title if icon_title is None else icon_title,
-        href=url,
-        cls=ButtonT.ghost + "btn inline-flex items-center",
-        title=title,
-    )
-
-
 LINK_HOVER = "link link-hover"
 ICON_LINK = "space-x-1 inline-flex items-center"
 
@@ -329,3 +319,35 @@ class ButtonT(VEnum):
     """Modifier - 1:1 ratio"""
     circle = auto()
     """Modifier - 1:1 ratio with rounded corners"""
+
+
+def Link(url: str, title: str = None, icon: str = None, icon_title: str = None, cls: ButtonT | str = ButtonT.ghost):
+    return fh.A(
+        mui.UkIcon(icon) if icon else None,
+        title if icon_title is None else icon_title,
+        href=url,
+        cls=cls + "btn inline-flex items-center",
+        title=title,
+    )
+
+
+def LinkButton(url: str, title: str = None, cls: ButtonT | str = ButtonT.ghost, **kwargs):
+    return fh.A(Button(title, cls=cls + "inline-flex items-center", submit=False, **kwargs), href=url)
+
+
+def ReplaceButton(title: str, url: str, target: str, cls: ButtonT | str = ButtonT.secondary):
+    return fh.Div(
+        Button(
+            title,
+            hx_target=f"#{target}",
+            hx_get=url,
+            cls=cls,
+        ),
+        id=f"{target}",
+    )
+
+
+from functools import partial
+
+LinkSecondary = partial(LinkButton, cls=ButtonT.secondary)
+LinkPrimary = partial(LinkButton, cls=ButtonT.primary)
