@@ -48,14 +48,18 @@ class Profile(Base):
             fh.Div(
                 mui.Card(
                     mui.DividerSplit("Ostatnie Wydarzenie"),
-                    mui.DivCentered(
-                        mui.DivFullySpaced(mui.Small("Od"), mui.Small(last_event.event["title"]), mui.Small("Do")),
-                        mui.DivFullySpaced(
-                            fh.P(arrived),
-                            "->",
-                            fh.P(left),
-                        ),
-                    ),
+                    (
+                        mui.DivCentered(
+                            mui.DivFullySpaced(mui.Small("Od"), mui.Small(last_event.event["title"]), mui.Small("Do")),
+                            mui.DivFullySpaced(
+                                fh.P(arrived),
+                                "->",
+                                fh.P(left),
+                            ),
+                        )
+                    )
+                    if last_event.event
+                    else None,
                     mui.DividerSplit("EXP"),
                     mui.DivCentered(mui.Legend("0/100"), mui.Progress(title="0/100", value=0)),
                     header=mui.DivFullySpaced(
