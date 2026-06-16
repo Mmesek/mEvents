@@ -7,6 +7,13 @@ import mistletoe
 from fasthtml import svg
 from monsterui.foundations import VEnum, auto, stringify
 
+import os
+import dotenv
+from msgspec import json
+
+dotenv.load_dotenv()
+SOCIALS = json.decode(os.getenv("SOCIALS", "{}"))
+
 
 def back_to_main():
     return fh.A(mui.Button("Wróć do listy wydarzeń", cls=mui.ButtonT.secondary, submit=False), href="/")
@@ -158,6 +165,7 @@ def footer_navbar(t):
     socials = (
         ("github", "https://github.com/Mmesek/mEvents"),
         # ("messages-square", "https://discord.com"),
+        *SOCIALS.items(),
     )
     return fh.Footer(
         fh.Aside(
@@ -165,7 +173,6 @@ def footer_navbar(t):
             icon_text("timer", fh.P(f"{t:>.2}s")),
             fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
             fh.P("Copyright @ 2026"),
-        *SOCIALS.items(),
         ),
         fh.Nav(
             fh.H6("Linki", cls="footer-title"),
