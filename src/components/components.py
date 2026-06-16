@@ -322,13 +322,16 @@ class ButtonT(VEnum):
     """Modifier - 1:1 ratio with rounded corners"""
 
 
-def Link(url: str, title: str = None, icon: str = None, icon_title: str = None, cls: ButtonT | str = ButtonT.ghost):
+def Link(
+    url: str, title: str = None, icon: str = None, icon_title: str = None, cls: ButtonT | str = ButtonT.ghost, **kwargs
+):
     return fh.A(
         mui.UkIcon(icon) if icon else None,
         title if icon_title is None else icon_title,
         href=url,
         cls=cls + "btn inline-flex items-center",
         title=title,
+        **kwargs,
     )
 
 
@@ -353,3 +356,4 @@ from functools import partial
 LinkSecondary = partial(LinkButton, cls=ButtonT.secondary)
 LinkPrimary = partial(LinkButton, cls=ButtonT.primary)
 LinkDanger = partial(LinkButton, cls=ButtonT.error)
+LinkNeutral = partial(Link, cls=ButtonT.neutral)
