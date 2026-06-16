@@ -43,7 +43,7 @@ def service_worker():
 
 @rt("/manifest.json")
 def manifest():
-    return fh.Response(str(MANIFEST), media_type="application/json")
+    return fh.Response(json.encode(MANIFEST), media_type="application/json")
 
 
 @rt("/notification/register")
