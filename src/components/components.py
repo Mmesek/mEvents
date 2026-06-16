@@ -111,7 +111,7 @@ def URLButton(url: str, *args, title: str = None, **kwargs):
     return fh.A(mui.Button(*args, **kwargs), href=url, title=title)
 
 
-def header_navbar(session):
+def header_navbar(session, title: str):
     return fh.Header(
         fh.Nav(
             fh.Div(
@@ -119,6 +119,7 @@ def header_navbar(session):
                     Link("/", "Mistyczne Wydarzenia Ognia i Popiołu", ""),
                     cls="hidden sm:flex items-center",
                 ),
+                fh.Div(mui.H1(title), cls="hidden md:flex items-center"),
                 fh.Div(
                     fh.Div(
                         Link("/events/", "Główna", "home", ""),
@@ -197,8 +198,8 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
     return (
         fh.Title(title),
         fh.Main(
-            header_navbar(session),
-            mui.DivCentered(mui.H1(title)),
+            header_navbar(session, title),
+            mui.DivCentered(mui.H1(title), cls="md:hidden"),
             mui.DivCentered(*body),
             footer_navbar(t),
         ),
