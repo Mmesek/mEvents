@@ -169,13 +169,13 @@ def footer_navbar(t):
     )
     return fh.Footer(
         fh.Aside(
-            fh.H6("Statystyki", cls="footer-title"),
+            fh.H6("Mistyczne Wydarzenia", cls="footer-title"),
             icon_text("timer", fh.P(f"{t:>.2}s")),
             fh.P("Made w/o ☕ by ", fh.A("Mmesek", href="https://github.com/Mmesek", cls=ButtonT.link)),
             fh.P("Copyright @ 2026"),
         ),
         fh.Nav(
-            fh.H6("Linki", cls="footer-title"),
+            fh.H6("Społeczność", cls="footer-title"),
             # *[mui.UkIconLink(icon, href=url) for icon, url in socials],
             *[LinkSvgHover(url, icon.title(), icon) for icon, url in socials],
         ),
@@ -195,7 +195,10 @@ def footer_navbar(t):
         #    LinkIconHover("/privacy-policy", "Polityka Prywatności", "cookie"),
         #    LinkIconHover("/terms-of-service", "Regulamin", "book-text"),
         # ),
-        fh.Div(Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent)),
+        fh.Div(
+            fh.H6("Push o nowych wydarzeniach", cls="footer-title"),
+            Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent),
+        ),
         cls="footer sm:footer-horizontal xs:footer-center glass bg-black text-base-content p-4 text-center justify-center sm:w-full",
     )
 
