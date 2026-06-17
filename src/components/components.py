@@ -402,3 +402,17 @@ def fab(links: list[tuple[str, str, str]]):
         ],
         cls="fab",
     )
+
+
+def Select(title: str, *options: list[fh.Option], id: str, placeholder: str = None, **kwargs):
+    return fh.Fieldset(
+        fh.Legend(title, cls="fieldset-legend"),
+        fh.Select(
+            fh.Option(placeholder, disabled=True, selected=True, value=None) if placeholder else None,
+            *options,
+            id=id,
+            **kwargs,
+            cls="select",
+        ),
+        cls="fieldset",
+    )

@@ -63,31 +63,37 @@ def create(session, t):
                 )
             ),
             mui.Switch(t("events.create.is_private"), id="private"),
-            fh.Div(
-                fh.Label(t("events.create.select_form")),
-                fh.Select(
+            mui.DivFullySpaced(
+                mu.Select(
+                    t("events.create.select_form"),
                     *[
                         form_option(f["title"], f["id"])
-                        for f in Form.select(session["auth"], "id, title").execute().data
+                        for f in Form.select(session["auth"], "id, title")
+                        .eq("is_feedback", False)
+                        .order("popularity", desc=True)
+                        .execute()
+                        .data
                     ],
                     form_option(t("events.create.new_form"), form_id=None),
                     id="form_id",
                     searchable=True,
                     hx_target="#form",
                     hx_swap="innerHTML",
+                    placeholder=t("events.create.select_form"),
                 ),
-                fh.Div(id="form"),
+                mu.Select(
+                    t("events.create.select_feedback_form"),
+                    *[
+                        form_option(f["title"], f["id"])
+                        for f in Form.select(session["auth"], "id, title").eq("is_feedback", True).execute().data
+                    ],
+                    form_option(t("events.create.no_form"), None),
+                    searchable=True,
+                    placeholder=t("events.create.select_feedback_form"),
+                    id="feedback_form_id",
+                ),
             ),
-            mui.Select(
-                *[
-                    form_option(f["title"], f["id"])
-                    for f in Form.select(session["auth"], "id, title").ilike("title", "Feedback").execute().data
-                ],
-                form_option(t("events.create.no_form"), None),
-                searchable=True,
-                placeholder=t("events.create.select_feedback_form"),
-                id="feedback_form_id",
-            ),
+            fh.Div(id="form"),
             mu.Button(t("events.create.add.add"), cls=mu.ButtonT.primary),
         )
     )
@@ -105,8 +111,8 @@ def create(session, t):
     )
 
 
-def form_option(name: str, form_id: int):
-    return fh.Option(name, hx_post=f"/forms/new?form_id={form_id}", value=form_id)
+def form_option(name: str, form_id: int, selected: bool = False):
+    return fh.Option(name, hx_post=f"/forms/new?form_id={form_id}", value=form_id, selected=selected)
 
 
 @rt
