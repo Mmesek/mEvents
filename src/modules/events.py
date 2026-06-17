@@ -162,8 +162,9 @@ def events(
         meta = open_graph(events[0].title, events[0].description, events[0].image)
     except IndexError:
         meta = []
+    title = fh.Title(events[0].title) if len(events) == 1 else None
 
-    return *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
+    return title, *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
 
 
 @rt

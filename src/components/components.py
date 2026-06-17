@@ -211,6 +211,9 @@ def footer_navbar(t):
 
 
 def Layout(body, title: str = None, *, session: dict = None, t: float):
+    if isinstance(body, (list, tuple)) and body[0] is not None and body[0].tag == "title" and body[0].children:
+        title = body[0].children
+        body = body[1:]
     return (
         fh.Title(title),
         fh.Main(
