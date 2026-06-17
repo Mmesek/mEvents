@@ -10,6 +10,7 @@ from src import components as mu
 
 
 @rt
+@mu.with_layout(mu.Layout, "Nowe Wydarzenie")
 def create(session, t):
     content = mui.DivCentered(
         mui.Card(
@@ -99,11 +100,6 @@ def create(session, t):
     )
     return mui.Container(
         fh.Form(
-            mui.DivCentered(
-                fh.H1(t("events.create.add.title")),
-                t("events.create.add.description"),
-                mui.DividerLine(),
-            ),
             content,
             cls="space-y-3 mt-4",
             hx_post="/events/add",
