@@ -108,7 +108,7 @@ def create(session, t):
 
 
 def form_option(name: str, form_id: int, selected: bool = False):
-    return fh.Option(name, hx_post=f"/forms/new?form_id={form_id}", value=form_id, selected=selected)
+    return fh.Option(name, hx_post=f"/forms-api/new?form_id={form_id}", value=form_id, selected=selected)
 
 
 @rt

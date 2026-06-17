@@ -2,12 +2,14 @@ from fasthtml import common as fh
 from monsterui import all as mui
 
 from src.components import FormLayout
+from src.components.app_factory import make_app
 from src.db import s
 from src.models.forms import Form, Question, Question_Options, QuestionType as QT
-from src.modules.forms import rt
 from src.utils import get_next
 from src.generators import QuestionType
 from src import components as mu
+
+rt = make_app("forms-api")
 
 
 @rt("/new")
@@ -50,7 +52,7 @@ def new(session, t, form_id: int = None):
             mu.Button(
                 t("forms.create.add_question"),
                 hx_target="#questions-list",
-                hx_post="/forms/add-question",
+                hx_post="/forms-api/add-question",
                 hx_swap="beforeend",
             ),
             fh.Div(
@@ -59,7 +61,7 @@ def new(session, t, form_id: int = None):
                     *[
                         fh.Option(
                             f["title"],
-                            hx_post=f"/forms/add-question?question_id={f['id']}",
+                            hx_post=f"/forms-api/add-question?question_id={f['id']}",
                         )
                         for f in Question.select(session["auth"], "id, title").execute().data
                     ],
@@ -71,7 +73,7 @@ def new(session, t, form_id: int = None):
         ),
         mu.Button(t("forms.create.submit"), cls=mu.ButtonT.primary),
         cls="space-y-4",
-        destination="/forms/add",
+        destination="/forms-api/add",
     )
 
 
@@ -112,7 +114,7 @@ def question_type(
         fh.Select(
             *[fh.Option(k, id=k, title=k, selected=selected == k) for k in QuestionType],
             hx_target=f"#type-{idx}",
-            hx_post=f"/forms/question-type?idx={idx}",
+            hx_post=f"/forms-api/question-type?idx={idx}",
             hx_swap="outerHTML",
             id=f"select-type-{idx}",
             title=t("forms.create.type"),
@@ -144,7 +146,7 @@ def add_option(idx: int, order: int, disabled: bool = None, options: list[str] =
     return fh.Div(
         mui.Input(
             id=f"option-{idx}-{order}",
-            hx_post=f"/forms/add-option?idx={idx}&order={order + 1}",
+            hx_post=f"/forms-api/add-option?idx={idx}&order={order + 1}",
             placeholder=t("forms.create.option", x=idx),
             hx_target=f"#option-{idx}-{order}",
             hx_swap="afterend",
