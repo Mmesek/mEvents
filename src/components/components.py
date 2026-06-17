@@ -12,7 +12,39 @@ import dotenv
 from msgspec import json
 
 dotenv.load_dotenv()
-SOCIALS = json.decode(os.getenv("SOCIALS", "{}"))
+SOCIALS = (
+    ("github", "https://github.com/Mmesek/mEvents"),
+    *json.decode(os.getenv("SOCIALS", "{}")).items(),
+)
+
+HEADER = [
+    ("/events", "Główna", "home", ""),
+    # ("/tickets/mine", "Bilety", "tickets", ""),
+    # ("/events/reviews", "Recenzje", "square-pen", ""),
+    # ("/events/mine", "Moje Wydarzenia", "calendar", ""),
+    # ("/events/create", "Utwórz", "calendar-plus", ""),
+]
+
+FOOTER = [
+    [
+        ("", "Strona", ""),
+        ("/", "Główna", "home"),
+        ("/profile", "Profil", "user"),
+        #    ("/events", "Wydarzenia", "calendar"),
+        #    ("/tickets", "Bilety", "tickets"),
+        #    ("/feedback", "Recenzje", "square-pen"),
+    ],
+    # [
+    #    ("", "Info", ""),
+    #    ("/about/", "O Nas", "info"),
+    #    ("/contact/", "Kontakt", "contact"),
+    #    ("https://mmesek.github.io/pl", "Blog", "rss")
+    #    ("", "Legal", ""),
+    #    ("/privacy-policy", "Polityka Prywatności", "cookie"),
+    #    ("/terms-of-service", "Regulamin", "book-text"),
+    # ],
+]
+MENU_LINKS = [("/events/create", "calendar-plus", "Utwórz wydarzenie")]
 
 
 def back_to_main():
@@ -122,11 +154,7 @@ def header_navbar(session, title: str):
                 fh.Div(mui.H1(title), cls="hidden md:flex items-center"),
                 fh.Div(
                     fh.Div(
-                        Link("/events/", "Główna", "home", ""),
-                        # Link("/tickets/mine", "Bilety", "tickets", ""),
-                        # Link("/events/reviews", "Recenzje", "square-pen", ""),
-                        # Link("/events/mine", "Moje Wydarzenia", "calendar", ""),
-                        # Link("/events/create", "Utwórz", "calendar-plus", ""),
+                        *[Link(url, tooltip, icon, title) for url, tooltip, icon, title in HEADER],
                         cls="hidden sm:flex",
                     ),
                     (
@@ -143,6 +171,9 @@ def header_navbar(session, title: str):
                     )
                     if session.get("email")
                     else Link("/login/", "Zaloguj", "log-in", ""),
+                    burger_menu(MENU_LINKS)
+                    if session.get("email") and session.get("id", "").startswith("469a8cdb")
+                    else None,
                     cls="flex items-center space-x-4",
                 ),
                 cls="flex justify-between items-center w-full space-x-4",
@@ -152,12 +183,11 @@ def header_navbar(session, title: str):
     )
 
 
+def generate_links(links: list[tuple[str, str, str]]):
+    return [LinkIconHover(url, title, icon) if url else fh.H6(title, cls="footer-title") for url, title, icon in links]
+
+
 def footer_navbar(t):
-    socials = (
-        ("github", "https://github.com/Mmesek/mEvents"),
-        # ("messages-square", "https://discord.com"),
-        *SOCIALS.items(),
-    )
     return fh.Footer(
         fh.Aside(
             fh.H6("Mistyczne Wydarzenia", cls="footer-title"),
@@ -167,25 +197,11 @@ def footer_navbar(t):
         ),
         fh.Nav(
             fh.H6("Społeczność", cls="footer-title"),
-            # *[mui.UkIconLink(icon, href=url) for icon, url in socials],
-            *[LinkSvgHover(url, icon.title(), icon) for icon, url in socials],
-        ),
-        fh.Nav(
-            fh.H6("Strona", cls="footer-title"),
-            LinkIconHover("/", "Główna", "home"),
-            LinkIconHover("/profile", "Profil", "user"),
-            #    LinkIconHover("/events", "Wydarzenia", "calendar"),
-            #    LinkIconHover("/tickets", "Bilety", "tickets"),
-            #    LinkIconHover("/feedback", "Recenzje", "square-pen"),
-        ),
-        # fh.Nav(
-        #    fh.H6("Info", cls="footer-title"),
-        #    LinkIconHover("/about/", "O Nas", "info"),
-        #    LinkIconHover("/contact/", "Kontakt", "contact"),
-        #    fh.H6("Legal", cls="footer-title"),
-        #    LinkIconHover("/privacy-policy", "Polityka Prywatności", "cookie"),
-        #    LinkIconHover("/terms-of-service", "Regulamin", "book-text"),
-        # ),
+            *[LinkSvgHover(url, icon.title(), icon) for icon, url in SOCIALS],
+        )
+        if SOCIALS
+        else None,
+        *[fh.Nav(*generate_links(column)) for column in FOOTER],
         fh.Div(
             fh.H6("Push o nowych wydarzeniach", cls="footer-title"),
             Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent),
@@ -201,6 +217,7 @@ def Layout(body, title: str = None, *, session: dict = None, t: float):
             header_navbar(session, title),
             mui.DivCentered(mui.H1(title), cls="md:hidden"),
             mui.DivCentered(*body),
+            # fab(),
             footer_navbar(t),
         ),
     )
@@ -335,8 +352,8 @@ def Link(
     )
 
 
-def LinkButton(url: str, title: str = None, cls: ButtonT | str = ButtonT.ghost, **kwargs):
-    return fh.A(Button(title, cls=cls + "inline-flex items-center", submit=False, **kwargs), href=url)
+def LinkButton(url: str, title: str = None, cls: ButtonT | str = ButtonT.ghost, tooltip: str = None, **kwargs):
+    return fh.A(Button(title, cls=(cls, "inline-flex items-center"), submit=False, title=tooltip, **kwargs), href=url)
 
 
 def ReplaceButton(title: str, url: str, target: str, cls: ButtonT | str = ButtonT.secondary):
@@ -357,3 +374,31 @@ LinkSecondary = partial(LinkButton, cls=ButtonT.secondary)
 LinkPrimary = partial(LinkButton, cls=ButtonT.primary)
 LinkDanger = partial(LinkButton, cls=ButtonT.error)
 LinkNeutral = partial(Link, cls=ButtonT.neutral)
+
+
+def burger_menu(links: list[tuple[str, str, str]]):
+    return fh.Nav(
+        fh.Div(
+            Button(mui.UkIcon("plus"), tabindex=0, role="button", cls=("btn", ButtonT.ghost)),
+            fh.Ul(
+                fh.Li(fh.A(mui.UkIcon(icon), title, href=url) for url, icon, title in links),
+                tabindex="0",
+                cls="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52",
+            ),
+            cls="dropdown dropdown-end",
+        ),
+        cls="navbar",
+    )
+
+
+def fab(links: list[tuple[str, str, str]]):
+    return fh.Div(
+        fh.Div(
+            mui.UkIcon("plus"), tabindex=0, role="button", cls=("btn", ButtonT.circle, ButtonT.secondary, ButtonT.lg)
+        ),
+        *[
+            LinkSecondary(url, mui.UkIcon(icon), cls=ButtonT.circle + ButtonT.lg + ButtonT.secondary, tooltip=tooltip)
+            for url, icon, tooltip in links
+        ],
+        cls="fab",
+    )
