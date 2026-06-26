@@ -24,6 +24,14 @@ def generate(q: dict, date: datetime.datetime):
         case "SCALE":
             avg = list(chain.from_iterable([[int(i) for i in a["value"]] for a in q["answer"]]))
             avg = sum(avg) / len(avg)
+        case "BOOL":
+            avg = len(
+                list(
+                    chain.from_iterable(
+                        [[i for i in a["value"] if i == "on" and a["display_name"]] for a in q["answer"]]
+                    )
+                )
+            )
 
     for a in q["answer"]:
         if len(a["value"]) == 1:
