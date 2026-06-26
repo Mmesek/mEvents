@@ -46,7 +46,7 @@ def generate(q: dict, date: datetime.datetime):
                         if type(x["value"]) is not list and x["value"].isdigit()
                         else ", ".join(x["value"]) or "",
                     )
-                    if a["value"]
+                    if a["value"] and a["display_name"]
                 ],
                 style=mui.ListT.bullet,
             ),
