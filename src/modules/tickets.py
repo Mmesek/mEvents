@@ -162,7 +162,7 @@ def verify(session, event_id: int, user_id: str):
 @rt("/attendance/leave/{event_id}/{user_id}")
 def leave(session, event_id: int, user_id: str):
     dt = datetime.now(TIMEZONE)
-    Attendance(event_id, user_id, authorized_by=session["id"], left=dt.isoformat()).upsert(session["auth"]).execute()
+    Attendance(event_id, user_id, authorized_by=session["id"], left=dt.isoformat()).upsert(session["auth"])
     return mui.DivCentered(dt.strftime("%m/%d %H:%M"))
 
 
@@ -197,60 +197,54 @@ def attendance_list(session, event_id: int):
     missing = sum(1 for i in sorted_guests if not i[1]) + 1
 
     return fh.Div(
-        mui.Steps(
-            (
-                mui.LiStep(
-                    mui.DivHStacked(
-                        mui.Card(
-                            mui.Grid(
-                                mui.DivCentered(g[0] if g[1] else "❌"),
-                                mui.DivCentered(g[1]),
-                                mui.Label(g[2]),
-                                mu.Button(
-                                    mu.icon_text("log-in", ""),
-                                    cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
-                                    hx_post=f"/tickets/verify/{event_id}/{g[3]}",
-                                    hx_swap="outerHTML",
-                                    submit=True,
-                                    title="Dołączono",
-                                )
-                                if not g[1]
-                                else None,
-                                mu.Button(
-                                    mui.UkIcon("log-out"),
-                                    cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
-                                    hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
-                                    hx_swap="outerHTML",
-                                    submit=True,
-                                    title="Opuszczono",
-                                )
-                                if g[4] is None
-                                else mui.DivCentered(g[4])
-                                if g[4]
-                                else None,
-                                cols=4,
-                                cls="gap-2",
-                            ),
+        mui.TableFromDicts(
+            ["Goście", "Od", "Nazwa", "Do"],
+            [
+                {
+                    "Do": mu.Button(
+                        mui.UkIcon("log-out"),
+                        cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
+                        hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
+                        hx_swap="outerHTML",
+                        submit=True,
+                        title="Opuszczono",
+                    )
+                    if g[4] is None
+                    else mui.DivCentered(g[4])
+                    if g[4]
+                    else None,
+                    "Od": g[0]
+                    if g[1]
+                    else mu.Button(
+                        mu.icon_text("log-in", ""),
+                        cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
+                        hx_post=f"/tickets/verify/{event_id}/{g[3]}",
+                        hx_swap="outerHTML",
+                        submit=True,
+                        title="Dołączono",
+                    )
+                    if not g[1]
+                    else "❌",
+                    "Nazwa": g[2],
+                    "Goście": mui.Steps(
+                        mui.LiStep(
+                            g[1],
+                            cls=mui.StepT.accent
+                            if g[1] == "Goście"
+                            else mui.StepT.neutral
+                            if g[4]
+                            else mui.StepT.success
+                            if g[1]
+                            else mui.StepT.error,
+                            data_content=num - 2
+                            if g[1] == "Goście"
+                            else (num := num - (g[1] or 1))
+                            if g[1]
+                            else (missing := missing - 1),
                         )
                     ),
-                    cls=mui.StepT.accent
-                    if g[1] == "Goście"
-                    else mui.StepT.neutral
-                    if g[4]
-                    else mui.StepT.success
-                    if g[1]
-                    else mui.StepT.error,
-                    data_content=num - 2
-                    if g[1] == "Goście"
-                    else (num := num - (g[1] or 1))
-                    if g[1]
-                    else (missing := missing - 1),
-                )
-                for g in [
-                    ("Data", "Goście", "Nazwa", "Koniec", False),
-                    *sorted_guests,
-                ]
-            ),
-            cls=mui.StepsT.vertical,
-        )
+                }
+                for g in sorted_guests
+            ],
+        ),
     )
