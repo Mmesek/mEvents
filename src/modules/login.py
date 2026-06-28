@@ -111,6 +111,16 @@ def login_email(email: str, session):
 
 def finish_login(res, session):
     store_session(res, session)
+    if (
+        not supa.schema("forms")
+        .table("Profile")
+        .select("*")
+        .eq("user_id", session["id"])
+        .filter("email", "is", "not_null")
+        .maybe_single()
+        .execute()
+    ):
+        return fh.Redirect("/profile/register")
 
     return fh.Redirect(session.pop("referrer", "/"))
 
