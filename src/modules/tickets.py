@@ -169,7 +169,7 @@ def leave(session, event_id: int, user_id: str):
 @rt("/attendance/{event_id}/emails")
 def attendance_emails(session, event_id: int):
     r = Event.get_one(Event.select(session["auth"]).eq("id", event_id)).guest_emails(session)
-    return fh.Ol(fh.Li(i["email"], cls=mui.ListT.decimal) for i in r)
+    return fh.Ol(fh.Li(i.email, cls=mui.ListT.decimal) for i in r)
 
 
 @rt("/attendance/{event_id}")

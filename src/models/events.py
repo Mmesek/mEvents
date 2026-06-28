@@ -18,39 +18,41 @@ class Attendance(Base):
     left: datetime | None = None
     feedback_filled: datetime | None = None
     display_name: NotSerializable[str | None] = None
+    email: NotSerializable[str | None] = None
     event: NotSerializable[dict | None] = None
 
+    def __post_init__(self):
+        if not self.display_name:
+            return
+        name = self.display_name.split(" ", 1)
+        if len(name) >= 2:
+            self.display_name = f"{name[0]} {name[1][:2]}"
+
     def event_guests(self, session):
-        return (
+        return Attendance.get(
             Attendance.select(session["auth"], "*, ...users!Attendance_user_id_fkey (display_name)")
             .eq("event_id", self.event_id)
             .eq("users.event_id", self.event_id)
             .filter("withdrew", "is", "null")
             .order("created_at")
-            .execute()
-            .data
         )
 
     def guest_emails(self, session):
-        return (
+        return Attendance.get(
             Attendance.select(session["auth"], "*, ...users!Attendance_user_id_fkey (display_name, email)")
             .eq("event_id", self.event_id)
             .eq("users.event_id", self.event_id)
             .filter("withdrew", "is", "null")
             .order("created_at")
-            .execute()
-            .data
         )
 
     def already_verified(self, session):
-        return (
+        return Attendance.maybe_one(
             Attendance.table(session["auth"])
             .select("*")
             .eq("event_id", self.event_id)
             .eq("user_id", self.user_id)
             .not_.is_("arrived", None)
-            .maybe_single()
-            .execute()
         )
 
     def last_event(self, session):

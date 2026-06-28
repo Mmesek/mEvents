@@ -134,7 +134,7 @@ def withdraw(session, event_id: str):
 @rt
 def guests(session, event_id: str):
     names = Attendance(event_id).event_guests(session)
-    return mui.DivCentered(fh.Ol(*[fh.Li(i["display_name"]) for i in names], cls=mui.ListT.decimal))
+    return mui.DivCentered(fh.Ol(*[fh.Li(i.display_name) for i in names], cls=mui.ListT.decimal))
 
 
 @rt("/")
