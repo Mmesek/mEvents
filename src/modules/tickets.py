@@ -178,6 +178,9 @@ def attendance_list(session, event_id: int):
     guests = Attendance.get(
         Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
     )
+    earliest = min([g.arrived for g in guests if g.arrived])
+    latest = max([g.left for g in guests if g.left])
+    end = (latest - earliest).total_seconds()
     sorted_guests = sorted(
         {
             (
@@ -186,6 +189,8 @@ def attendance_list(session, event_id: int):
                 g.display_name or g.user_id,
                 g.user_id,
                 g.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if g.left else (None if g.arrived else False),
+                ((g.arrived or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100 if g.arrived else None,
+                ((g.left or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100 if g.left else None,
             )
             for g in guests
             if not g.withdrew
@@ -225,7 +230,12 @@ def attendance_list(session, event_id: int):
                     )
                     if not g[1]
                     else "❌",
-                    "Nazwa": g[2],
+                    "Nazwa": (
+                        g[2],
+                        mui.Range(value=f"{g[5]},{g[6]}", disabled=True, label=None)
+                        if all(i is not None for i in (g[5], g[6]))
+                        else None,
+                    ),
                     "Goście": mui.Steps(
                         mui.LiStep(
                             g[1],
