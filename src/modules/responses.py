@@ -28,7 +28,10 @@ def generate(q: dict, date: datetime.datetime):
             avg = len(
                 list(
                     chain.from_iterable(
-                        [[i for i in a["value"] if i == "on" and a["display_name"]] for a in q["answer"]]
+                        [
+                            [i for i in a["value"] if i == "on" and a["display_name"] and not a["withdrew"]]
+                            for a in q["answer"]
+                        ]
                     )
                 )
             )
@@ -54,7 +57,7 @@ def generate(q: dict, date: datetime.datetime):
                         if type(x["value"]) is not list and x["value"].isdigit()
                         else ", ".join(x["value"]) or "",
                     )
-                    if a["value"] and a["display_name"]
+                    if a["value"] and a["display_name"] and not a["withdrew"]
                 ],
                 style=mui.ListT.bullet,
             ),
@@ -68,7 +71,7 @@ def responses(session, event_id: int, user_id: str = None, feedback: bool = Fals
     f = (
         Event.select(
             session["auth"],
-            f'title, start_time, form:{"feedback_" if feedback else ""}form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name)))))',
+            f'title, start_time, form:{"feedback_" if feedback else ""}form_id (questions:"Form_Questions" (order, question:"Question" (*, options:"Question_Options" (id, value), answer:"Response" (value, ..."users" (display_name, withdrew)))))',
         )
         .eq("id", event_id)
         .eq("form.questions.question.answer.event_id", event_id)
