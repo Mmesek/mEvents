@@ -188,6 +188,7 @@ def attendance_list(session, event_id: int):
                 g.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if g.left else (None if g.arrived else False),
             )
             for g in guests
+            if not g.withdrew
         },
         key=lambda k: k[0],
         reverse=True,
@@ -204,13 +205,24 @@ def attendance_list(session, event_id: int):
                             mui.Grid(
                                 mui.DivCentered(g[0] if g[1] else "❌"),
                                 mui.DivCentered(g[1]),
-                                mui.Label(g[2].split(" ", 1)[0][:10]),
+                                mui.Label(g[2]),
                                 mu.Button(
-                                    "📤",
-                                    cls=mu.ButtonT.icon + " space-x-2",
+                                    mu.icon_text("log-in", ""),
+                                    cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
+                                    hx_post=f"/tickets/verify/{event_id}/{g[3]}",
+                                    hx_swap="outerHTML",
+                                    submit=True,
+                                    title="Dołączono",
+                                )
+                                if not g[1]
+                                else None,
+                                mu.Button(
+                                    mui.UkIcon("log-out"),
+                                    cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
                                     hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
                                     hx_swap="outerHTML",
                                     submit=True,
+                                    title="Opuszczono",
                                 )
                                 if g[4] is None
                                 else mui.DivCentered(g[4])
