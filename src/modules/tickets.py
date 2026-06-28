@@ -80,7 +80,7 @@ def _verify(session, event_id: int, user_id: int):
     if session["id"] != org["user_id"]:
         return mu.Button("Tylko organizator może zweryfikować dostęp", cls=mu.ButtonT.secondary)
     if datetime.fromisoformat(org["start_time"]).date() > datetime.now(TIMEZONE).date():
-        return mu.Button("Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mu.ButtonT.destructive)
+        return mu.Button("Dostęp do wydarzenia można zweryfikować tylko w dniu wydarzenia!", cls=mu.ButtonT.warning)
     companions = partial(
         mui.LabelInput,
         label="+1",
@@ -93,7 +93,7 @@ def _verify(session, event_id: int, user_id: int):
     )
     if attendance := Attendance(event_id, user_id).already_verified(session):
         return (
-            mu.Button("Dostęp został już zweryfikowany", cls=mu.ButtonT.destructive),
+            mu.Button("Dostęp został już zweryfikowany", cls=mu.ButtonT.warning),
             mui.Form(
                 companions(value=attendance.data.get("companions")),
                 mu.Button(
@@ -140,7 +140,7 @@ def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: 
             hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount - 1}",
             hx_target=f"#amount-{user_id}",
             hx_swap="innerHTML",
-            cls=mu.ButtonT.icon + "max-w-[20px] space-x-1",
+            cls=mu.ButtonT.circle + "max-w-[20px] space-x-1",
         ),
         mui.DivCentered(amount),
         mu.Button(
@@ -148,7 +148,7 @@ def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: 
             hx_post=f"/tickets/companions/{event_id}/{user_id}?amount={amount + 1}",
             hx_target=f"#amount-{user_id}",
             hx_swap="innerHTML",
-            cls=mu.ButtonT.icon + "max-w-[20px] space-x-1",
+            cls=mu.ButtonT.circle + "max-w-[20px] space-x-1",
         ),
         id=f"amount-{user_id}",
     )
