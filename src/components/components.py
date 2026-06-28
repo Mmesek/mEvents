@@ -155,19 +155,15 @@ def header_navbar(session, title: str):
                 fh.Div(
                     fh.Div(
                         *[Link(url, tooltip, icon, title) for url, tooltip, icon, title in HEADER],
-                        cls="hidden sm:flex",
+                        cls="sm:flex",
                     ),
                     (
-                        Link(
-                            "/profile/",
-                            "Profil",
-                            "user",
-                            (
-                                fh.Img(src=session.get("picture"), height="24", width="24"),
-                                session.get("email"),
+                        burger_menu(
+                            [("/profile/", "user", "Profil"), ("/login/", "log-out", "Wyloguj")],
+                            mui.DivHStacked(
+                                fh.Img(src=session.get("picture"), height="24", width="24"), session.get("email")
                             ),
                         ),
-                        Link("/login/", "Wyloguj", "log-out", ""),
                     )
                     if session.get("email")
                     else Link("/login/", "Zaloguj", "log-in", ""),
@@ -378,17 +374,19 @@ LinkPrimary = partial(LinkButton, cls=ButtonT.primary)
 LinkDanger = partial(LinkButton, cls=ButtonT.error)
 LinkNeutral = partial(Link, cls=ButtonT.neutral)
 
+PLUS_ICON = mui.UkIcon("plus")
 
-def burger_menu(links: list[tuple[str, str, str]]):
+
+def burger_menu(links: list[tuple[str, str, str]], button=PLUS_ICON):
     return fh.Nav(
         fh.Div(
-            Button(mui.UkIcon("plus"), tabindex=0, role="button", cls=("btn", ButtonT.ghost)),
+            Button(button, tabindex=0, role="button", cls=("btn", ButtonT.ghost)),
             fh.Ul(
                 fh.Li(fh.A(mui.UkIcon(icon), title, href=url) for url, icon, title in links),
-                tabindex="0",
-                cls="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52",
+                tabindex="-1",
+                cls="dropdown-content z-1 menu p-2 shadow bg-base-100 rounded-box w-52",
             ),
-            cls="dropdown dropdown-end",
+            cls="dropdown dropdown-end z-1",
         ),
         cls="navbar",
     )
