@@ -29,7 +29,7 @@ def generate(q: dict, date: datetime.datetime):
                 list(
                     chain.from_iterable(
                         [
-                            [i for i in a["value"] if i == "on" and a["display_name"] and not a["withdrew"]]
+                            [i for i in a["value"] if i == "on" and a["display_name"]]  # and not a["withdrew"]]
                             for a in q["answer"]
                         ]
                     )
@@ -57,7 +57,7 @@ def generate(q: dict, date: datetime.datetime):
                         if type(x["value"]) is not list and x["value"].isdigit()
                         else ", ".join(x["value"]) or "",
                     )
-                    if a["value"] and a["display_name"] and not a["withdrew"]
+                    if a["value"] and a["display_name"]  # and not a["withdrew"]
                 ],
                 style=mui.ListT.bullet,
             ),
