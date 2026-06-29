@@ -255,6 +255,8 @@ def add_answer(id: str):
 def finish_register(answers: Profile, session):
     answers.user_id = session["id"]
     answers.allergies = [a for a in answers.allergies if a]
+    if answers.birthday:
+        answers.birthday = answers.birthday.isoformat()
     resp = answers.to_dict()
     resp["photo_consent"] = resp.get("photo_consent", False)
     Profile.table(session["auth"]).upsert(resp).execute()
