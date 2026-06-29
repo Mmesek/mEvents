@@ -171,7 +171,7 @@ def submit(session, event: str, responses: dict):
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
     return (
         mui.DivCentered(
-            "Dzięki za zapis!",
+            "Dzięki za zapis! Jeśli zmienisz zdanie, skorzystaj ze strony ponownie i kliknij przycisk rezygnacji na karcie wydarzenia!",
             mu.Button(
                 fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
                 submit=False,
