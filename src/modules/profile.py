@@ -118,11 +118,14 @@ def settings(session):
     # return Profile(session["id"], session["display_name"]).edit(session)
 
 
-def FormField(title: str, description: str, *args, outer_id: str = None, required: bool = False, **kwargs):
+def FormField(
+    title: str, description: str, *args, outer_id: str = None, required: bool = False, note: str = None, **kwargs
+):
     return mui.Card(
         mui.DivCentered(fh.Legend(title, cls="fieldset-legend" + " uk-form-label-required" if required else "")),
         fh.P(description, cls="label"),
         fh.Div(*args, id=outer_id),
+        fh.Small(note) if note else None,
         **kwargs,
     )
 
@@ -136,6 +139,7 @@ def FormInput(
     id: str = None,
     outer_id: str = None,
     required: bool = False,
+    note: str = None,
     **kwargs,
 ):
     return FormField(
@@ -151,6 +155,7 @@ def FormInput(
         ),
         required=required,
         outer_id=outer_id,
+        note=note,
     )
 
 
@@ -174,9 +179,10 @@ def FormInputs(
 
 def FormSwitch(title: str, description: str, checked: bool = None, id: str = None):
     return FormField(
-        title,
-        description,
-        mui.Switch(id=id, checked=checked),
+        None,
+        None,
+        mui.DivHStacked(mui.Switch(id=id, checked=checked), fh.P(title)),
+        note=description,
     )
 
 
@@ -202,6 +208,7 @@ def _settings(session):
                 placeholder="Imię Nazwisko / Kswyka",
                 id="display_name",
                 required=True,
+                note="Tylko pierwsze imię oraz dwie litery nazwiska są widoczne publiczne - reszta jest widoczna tylko dla organizatora.",
             ),
             FormInput(
                 "Podłączony adres e-mail",
