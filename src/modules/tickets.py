@@ -178,8 +178,8 @@ def attendance_list(session, event_id: int):
     guests = Attendance.get(
         Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
     )
-    earliest = min([g.arrived for g in guests if g.arrived] or [datetime.now()])
-    latest = max([g.left for g in guests if g.left] or [datetime.now()])
+    earliest = min([g.arrived for g in guests if g.arrived] or [datetime.now(tz=datetime.utc)])
+    latest = max([g.left for g in guests if g.left] or [datetime.now(tz=datetime.utc)])
     end = (latest - earliest).total_seconds()
     sorted_guests = sorted(
         {
