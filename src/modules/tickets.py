@@ -211,19 +211,24 @@ def attendance_list(session, event_id: int):
 
     return fh.Div(
         fh.Form(
-            mu.Select(
-                "Dodaj uczestnika",
-                [
-                    fh.Option(r.display_name, value=r.user_id)
-                    for r in Profile.get(
-                        Profile.select(session["auth"])
-                        .not_.in_("user_id", [g.user_id for g in guests])
-                        .order("display_name")
-                    )
-                ],
-                id="user_id",
+            mui.DivHStacked(
+                mu.Select(
+                    "",
+                    *[
+                        fh.Option(r.display_name, value=r.user_id)
+                        for r in Profile.get(
+                            Profile.select(session["auth"])
+                            .not_.in_("user_id", [g.user_id for g in guests])
+                            .order("display_name")
+                        )
+                    ],
+                    id="user_id",
+                    placeholder="Dodaj Uczestnika",
+                ),
+                fh.Button(
+                    "Dodaj", submit=False, hx_post=f"/tickets/attendance/{event_id}/add", cls="btn" + mu.ButtonT.accent
+                ),
             ),
-            fh.Button("Dodaj", submit=False, hx_post=f"/tickets/attendance/{event_id}/add"),
         ),
         mui.TableFromDicts(
             ["Goście", "Od", "Nazwa", "Do"],
