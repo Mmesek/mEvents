@@ -172,6 +172,13 @@ def attendance_emails(session, event_id: int):
     return fh.Ol(fh.Li(i.email, cls=mui.ListT.decimal) for i in r)
 
 
+@rt("/attendance/{event_id}/add")
+def attendance_add(session, event_id: int, user_id: str):
+    Attendance(event_id=event_id, user_id=user_id, arrived=datetime.now(tz=TIMEZONE).isoformat()).upsert(
+        session["auth"]
+    )
+
+
 @rt("/attendance/{event_id}")
 @with_layout(title="Lista uczestników")
 def attendance_list(session, event_id: int):
@@ -200,8 +207,24 @@ def attendance_list(session, event_id: int):
     )
     num = sum([i[1] for i in sorted_guests]) + 1
     missing = sum(1 for i in sorted_guests if not i[1]) + 1
+    from src.modules.profile import Profile
 
     return fh.Div(
+        fh.Form(
+            mu.Select(
+                "Dodaj uczestnika",
+                [
+                    fh.Option(r.display_name, value=r.user_id)
+                    for r in Profile.get(
+                        Profile.select(session["auth"])
+                        .not_.in_("user_id", [g.user_id for g in guests])
+                        .order("display_name")
+                    )
+                ],
+                id="user_id",
+            ),
+            fh.Button("Dodaj", submit=False, hx_post=f"/tickets/attendance/{event_id}/add"),
+        ),
         mui.TableFromDicts(
             ["Goście", "Od", "Nazwa", "Do"],
             [
