@@ -1,0 +1,16 @@
+[project]
+name = "mEvents"
+version = "0.1.0"
+description = "Website for events management"
+readme = "README.md"
+authors = [
+    { name = "Mmesek" }
+]
+requires-python = ">=3.14"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+[tool.ruff]
+line-length = 120
