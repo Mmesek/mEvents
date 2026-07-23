@@ -1,5 +1,6 @@
 import os
 from typing import Annotated, TypeVar, get_type_hints
+from enum import Enum
 
 import dotenv
 import msgspec
@@ -39,7 +40,7 @@ class Base(msgspec.Struct):
 
     def to_dict(self):
         return {
-            k: v
+            k: (v.value if isinstance(v, Enum) else v)
             for k, v in msgspec.structs.asdict(self).items()
             if not k.startswith("_")
             and getattr(get_type_hints(self.__class__, include_extras=True)[k], "__metadata__", [()])[0]
