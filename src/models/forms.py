@@ -64,11 +64,12 @@ class Question(Base):
                         self.min_length,
                         self.max_length,
                         i,
-                        [i],
+                        self.answer[0].value if self.answer else [i],
                         self.allow_multiple_answers,
+                        choices=self.options,
                         event_id=event_id,
                     )
-                    for i in ((self.answer or [Response()])[0].value or [""])
+                    for i in (((self.answer or [Response()])[0].value or [""]) if self.type.value != "CHOICE" else [""])
                 ],
                 id=f"question-{self.id}",
             ),

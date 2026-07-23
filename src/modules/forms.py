@@ -75,6 +75,7 @@ def add_answer(
     options: list[str] = None,
     allow_multiple: bool = False,
     event_id: int = None,
+    choices: list[str] = None,
     session=None,
 ):
     responses.pop("event_id", None)
@@ -110,6 +111,7 @@ def add_answer(
             value=value,
             checked=value == "on",
             options=options,
+            choices=choices,
             hx_post=f"/forms/add-answer?{build_query(type_=type_, event_id=event_id, id=id, allow_multiple=allow_multiple)}",
             hx_swap="beforeend",
             hx_target=f"#question-{id}",

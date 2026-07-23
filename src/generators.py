@@ -36,21 +36,32 @@ def generate_text(**kwargs):
     return fh.P(mui.render_md(**kwargs))
 
 
-def RadioLabel(label, name, default="Yes"):
-    return mui.DivLAligned(mui.Radio(name=name, checked=(label == default)), mui.FormLabel(label))
+def RadioLabel(label, id, default="Yes"):
+    return mui.DivLAligned(mui.Radio(name=label, id=id, checked=(label == default)), mui.FormLabel(label))
 
 
 @register("CHOICE", list)
-def generate_radio(question: str, options: list[str], **kwargs):
-    # radio = partial(RadioLabel, name=question_id, default=kwargs.get("default"))
-    return mui.LabelSelect(mui.Options(*options), label=question, **kwargs)
-    # return (
-    #    mui.FormLabel(question),
-    #    *map(
-    #        radio,
-    #        options,
-    #    ),
-    # )
+def generate_radio(choices: list[str], id: int, **kwargs):
+    radio = partial(RadioLabel, id=id, default=kwargs.get("default"))
+    # return mui.LabelSelect(mui.Options(*options), label=question, **kwargs)
+    return (
+        *map(
+            radio,
+            [v.value for v in choices],
+        ),
+    )
+
+
+@register("CHOICE", list)
+def generate_checkbox(choices: list[str], id: int, options: list[str], **kwargs):
+    return fh.Div(
+        fh.Div(
+            mui.LabelCheckboxX(
+                choice.value, id=f"{id}_{i}", name=id, value=choice.value, checked=choice.value in options
+            )
+        )
+        for i, choice in enumerate(choices)
+    )
 
 
 @register("BOOL", bool)
