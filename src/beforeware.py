@@ -67,6 +67,7 @@ beforeware = fh.Beforeware(
         *STATIC,
         "/",
         "/events/",
+        "/events/thumbnail",
         "/privacy-policy",
         "/terms-of-service",
         "/privacy-delete",

@@ -161,7 +161,9 @@ def events(
         forms_stmt = forms_stmt.eq("user_id", user_id)
     events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
     try:
-        meta = open_graph(events[0].title, events[0].description, events[0].image)
+        meta = open_graph(
+            events[0].title, events[0].description, f"https://mms-events.vercel.app/events/thumbnail?id={events[0].id}"
+        )
     except IndexError:
         meta = []
     title = fh.Title(events[0].title) if len(events) == 1 else None
@@ -204,4 +206,14 @@ def ics(session, id: int):
         buffer.read(),
         media_type="text/calendar",
         headers={"Content-Disposition": f"attachment; filename=event-{event.title}.png"},
+    )
+
+
+@rt("/thumbnail")
+def thumbnail(id: int):
+    event = Event.get_one(Event.select().eq("id", id))
+    return fh.Response(
+        event.generate_thumbnail().read(),
+        media_type="image/webp",
+        headers={"Content-Disposition": f"attachment; filename=thumbnail-{event.id}.webp"},
     )
