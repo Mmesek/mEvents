@@ -129,15 +129,16 @@ class Form(Base):
         else:
             content.append(mu.Button("Zapisz", cls=mu.ButtonT.primary + "w-full"))
 
-        return (
+        return mui.Form(
             mui.DivCentered(
                 mui.render_md(self.description) if self.description else None, style="max-width: 100em; min-width: 35%"
             ),
             mui.DividerLine() if self.description else None,
-            fh.Div(
+            mui.DivCentered(
                 fh.Small("Jeśli nie masz odpowiedzi na dane pytanie, pozostaw pole puste (Chyba że jest wymagane)"),
-                fh.Br(),
                 fh.Small("Formularz możesz edytować w dowolnym momencie korzystając z tej samej strony."),
             ),
-            mui.Form(*content, cls="space-y-3 mt-4", hx_post=f"/forms/{path}/{event_id}"),
+            *content,
+            cls="space-y-3 mt-4",
+            hx_post=f"/forms/{path}/{event_id}",
         )

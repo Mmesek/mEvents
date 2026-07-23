@@ -170,25 +170,40 @@ def submit(session, event: str, responses: dict):
     except Exception as ex:
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
     return (
-        mui.DivCentered(
-            "Dzięki za zapis! Jeśli zmienisz zdanie, skorzystaj ze strony ponownie i kliknij przycisk rezygnacji na karcie wydarzenia!",
-            mu.Button(
-                fh.A("Pobierz bilet na wydarzenie", href=f"/tickets/qr?event_id={event}"),
-                submit=False,
-                cls=mu.ButtonT.primary,
+        (
+            mui.DivCentered(
+                mui.render_md(
+                    "Dzięki za zapis! Jeśli zmienisz zdanie, skorzystaj ze strony ponownie i kliknij przycisk rezygnacji na karcie wydarzenia!"
+                ),
+                mui.DivHStacked(
+                    mu.LinkButton(
+                        f"/tickets/qr?event_id={event}",
+                        "Pobierz bilet na wydarzenie",
+                        cls=mu.ButtonT.primary,
+                    ),
+                    mu.LinkButton(
+                        f"/events/ics?id={event}",
+                        "Dodaj do kalendarza",
+                        cls=mu.ButtonT.secondary,
+                    ),
+                ),
+                mui.render_md(
+                    "Do części wydarzeń otrzymasz dodatkowo e-mail organizacyjny parę dni *przed* wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:"
+                ),
+                mu.LinkButton(
+                    "/profile/settings",
+                    session["email"],
+                    cls=mu.ButtonT.ghost,
+                    tooltip="Adres możesz zmienić w ustawnieniach",
+                ),
+                mui.render_md("i potwierdź obecność gdy otrzymasz zaproszenie!"),
             ),
-            "Do wydarzeń plenerowych oraz imprez otrzymasz dodatkowo e-mail organizacyjny parę dni przed wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:",
-            mu.Button(session["email"], cls=mu.ButtonT.secondary, submit=False),
-            "i potwierdź obecność gdy otrzymasz zaproszenie!",
-        ),
-        mui.DivFullySpaced(
-            fh.A(
-                mu.Button(
+            mui.DivFullySpaced(
+                mu.LinkButton(
+                    f"/contributions/{event}",
                     "Strona z deklaracją przyniesienia przedmiotów na wydarzenie",
                     cls=mu.ButtonT.secondary,
-                    submit=False,
                 ),
-                href=f"/contributions/{event}",
             ),
             mui.DivRAligned(back_to_main()),
         ),
@@ -201,4 +216,4 @@ def submit_feedback(session, event: str, responses: dict):
         save_to_db(session, event, responses, feedback=True)
     except:
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
-    return mui.DivCentered("Dzięki za feedback! Zapraszam na następne wydarzenia!"), mui.DivRAligned(back_to_main())
+    return mui.DivCentered("Dzięki za feedback! Zapraszamy na następne wydarzenia!"), mui.DivRAligned(back_to_main())
