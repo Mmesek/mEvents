@@ -246,6 +246,7 @@ def open_graph(title, description, thumbnail_url):
         fh.Meta(name="twitter:title", content=title),
         fh.Meta(name="twitter:description", content=description),
         fh.Meta(name="twitter:image", content=thumbnail_url),
+        fh.Meta(itemprop="image", content=thumbnail_url),
     )
 
 
