@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
+from io import BytesIO
 from uuid import UUID
 
 from fasthtml import common as fh
 from monsterui import all as mui
 
-from src.components import TIMEZONE, Layout, icon_text, open_graph, with_layout, back_to_main
-from src.components.app_factory import make_app
-from src.models.events import Event as Events, Attendance
-from src.components.info import MetaInfo
 from src import components as mu
+from src.components import TIMEZONE, Layout, back_to_main, icon_text, open_graph, with_layout
+from src.components.app_factory import make_app
+from src.components.info import MetaInfo
+from src.models.events import Attendance
+from src.models.events import Event as Events
 
 rt = make_app("events")
 
@@ -170,3 +172,36 @@ def events(
 @rt
 def mine(session):
     return events(session=session, include_previous=True, user_id=session["id"])
+
+
+@rt("/ics")
+def ics(session, id: int):
+    event = Event.get_one(Event.select(session["auth"]).eq("id", id))
+    import ics
+
+    c = ics.Calendar()
+    c.events.add(
+        ics.Event(
+            event.title,
+            event.start_time.astimezone(TIMEZONE).isoformat(),
+            event.end_time.astimezone(TIMEZONE).isoformat(),
+            description=event.description,
+            location=event.place,
+            alarms=[
+                ics.DisplayAlarm(timedelta(-1), display_text=f"{event.title} już jutro!"),
+                ics.DisplayAlarm(timedelta(hours=-1), display_text=f"{event.title} rozpocznie się za godzinę!"),
+                ics.DisplayAlarm(
+                    timedelta(1), display_text=f"Dzięki za wpadnięcie na {event.title}! Zostaw feedback na stronie!"
+                ),
+            ],
+        )
+    )
+
+    buffer = BytesIO()
+    buffer.writelines([i.encode() for i in c.serialize_iter()])
+    buffer.seek(0)
+    return fh.Response(
+        buffer.read(),
+        media_type="text/calendar",
+        headers={"Content-Disposition": f"attachment; filename=event-{event.title}.png"},
+    )

@@ -7,5 +7,6 @@ python-i18n[YAML]
 qrcode[pil]
 msgspec
 sentry-sdk
+ics
 git+https://github.com/Mmesek/mdiscord
 git+https://github.com/Mmesek/mlib
