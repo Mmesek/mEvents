@@ -57,23 +57,32 @@ def new(session, t, form_id: int = None):
             ),
             fh.Div(
                 fh.Label(t("events.create.select_form")),
-                fh.Select(
-                    *[
-                        fh.Option(
-                            f["title"],
-                            hx_post=f"/forms-api/add-question?question_id={f['id']}",
-                        )
-                        for f in Question.select(session["auth"], "id, title").execute().data
-                    ],
-                    searchable=True,
-                    hx_target="#questions-list",
-                    hx_swap="beforeend",
-                ),
+                get_questions(session),
             ),
         ),
         mu.Button(t("forms.create.submit"), cls=mu.ButtonT.primary),
         cls="space-y-4",
         destination="/forms-api/add",
+    )
+
+
+def get_questions(session, idx=None):
+    q = Question.select(session["auth"], "id, title").execute().data
+    cls = fh if not idx else mui
+    return cls.Select(
+        *[
+            fh.Option(
+                f["title"],
+                hx_post=f"/forms-api/add-question?question_id={f['id']}" if not idx else None,
+                selected=f["id"] == idx,
+                value=f["id"],
+            )
+            for f in q
+        ],
+        id="original_id" if idx else None,
+        searchable=True,
+        hx_target="#questions-list" if not idx else None,
+        hx_swap="beforeend" if not idx else None,
     )
 
 
@@ -93,7 +102,7 @@ def add_question(session, responses: dict, question_id: int = None):
             )
             or Question()
         )
-        return res.edit_form(session, order + 1)
+        return res.edit_form(session, order + 1, questions_select=get_questions(session, question_id))
     return Question().edit_form(session, order + 1)
 
 
@@ -162,13 +171,14 @@ def add(session, responses: dict, *, t=None):
     questions = []
     if type(responses["order"]) is not list:
         responses["order"] = [responses["order"]]
-        responses["question"] = [responses["question"]]
-        responses["description"] = [responses["description"]]
+        responses["question"] = [responses.get("question")]
+        responses["description"] = [responses.get("description")]
         responses["allow_multiple"] = [responses.get("allow_multiple")]
-    responses["question"] = iter(responses["question"])
-    responses["description"] = iter(responses["description"])
+        responses["original_id"] = [responses["original_id"]]
+    responses["question"] = iter(responses.get("question", []))
+    responses["description"] = iter(responses.get("description", []))
     responses["allow_multiple"] = iter(responses.get("allow_multiple", []))
-    for o, idx in zip(responses["order"], responses["original_id"], strict=True):
+    for o, idx in zip(responses["order"], responses["original_id"] or [None] * len(responses["order"]), strict=True):
         if f"select-type-{o}" not in responses:
             responses[f"select-type-{o}"] = "INPUT"
         q = Question(idx or None)

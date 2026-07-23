@@ -75,12 +75,12 @@ class Question(Base):
             fh.Input(id=f"previous_{self.id}", value=[i.value for i in self.answer], hidden=True),
         )
 
-    def edit_form(self, session, order: int = None, required: bool = None):
+    def edit_form(self, session, order: int = None, required: bool = None, questions_select=None):
         from src.modules.new_form import question_type
 
         return fh.Div(
             fh.Input(id="order", type="hidden", value=order),
-            fh.Input(id="original_id", type="hidden", value=self.id),
+            fh.Input(id="original_id", type="hidden", value=self.id) if not questions_select else None,
             mui.DivHStacked(
                 mui.Switch(
                     i18n.t("forms.create.is_required", locale=session.get("locale")),
@@ -88,7 +88,8 @@ class Question(Base):
                     checked=required,
                     disabled=bool(self.id),
                 ),
-                mui.Input(
+                questions_select
+                or mui.Input(
                     placeholder=i18n.t("forms.create.question", locale=session.get("locale")),
                     id="question",
                     required=True,
