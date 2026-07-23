@@ -90,6 +90,8 @@ def create(session, t):
                     ],
                     form_option(t("events.create.no_form"), None),
                     searchable=True,
+                    hx_target="#feedback_form",
+                    hx_swap="innerHTML",
                     placeholder=t("events.create.select_feedback_form"),
                     id="feedback_form_id",
                 ),
