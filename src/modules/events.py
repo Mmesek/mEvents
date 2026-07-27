@@ -205,7 +205,7 @@ def ics(session, id: int):
     return fh.Response(
         buffer.read(),
         media_type="text/calendar",
-        headers={"Content-Disposition": f"attachment; filename=event-{event.title}.png"},
+        headers={"Content-Disposition": f"attachment; filename=event-{event.id}.png"},
     )
 
 
