@@ -135,6 +135,8 @@ def feedback_form(session, event_id: str):
         return mui.DivCentered("Podany formularz nie istnieje", back_to_main())
     if f and f.end_time > datetime.now(TIMEZONE):
         return "Wróć po skończeniu wydarzenia!"
+    elif f and not f.tickets:
+        return "Nie było cię na tym wydarzeniu!"
 
     return form(f, path="submit-feedback")
 
