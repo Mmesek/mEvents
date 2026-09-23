@@ -234,7 +234,7 @@ def _settings(session):
             FormInput(
                 "Miasto Zamieszkania",
                 "Dla statystyk, skąd są uczestnicy (Oraz by dopasować wydarzenia)",
-                value=_profile.birthday or None,
+                value=_profile.place or None,
                 id="place",
             ),
             FormInputs(
