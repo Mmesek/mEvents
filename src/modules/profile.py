@@ -86,7 +86,7 @@ class Profile(Base):
                         mui.Grid(
                             mu.LinkNeutral("/quests", "Zadania", disabled=True),
                             mu.LinkNeutral("/profile/levels", "Poziomy", disabled=True),
-                            mu.LinkNeutral("/characters", "Postać", disabled=True),
+                            mu.LinkNeutral("/character", "Postać"),
                             mu.LinkNeutral("/items", "Ekwipunek", disabled=True),
                             cols=4,
                         ),

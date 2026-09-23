@@ -8,7 +8,7 @@ from src.components.headers import HEADERS
 from src.components.app_factory import make_app
 from src.db import Base
 from src.components import TIMEZONE, Layout, back_to_main, handle_updating_responses, with_layout
-
+from src.modules.profile import Profile, FormInput
 
 app, rt = fh.fast_app(hdrs=HEADERS)
 rt = make_app("character")
@@ -78,9 +78,33 @@ class Character(Base):
     cover: Character_Cover | None = None
 
 
+@rt
+def update_profile(answers: Profile, session):
+    Profile.table(session["auth"]).update({"birthday": answers.birthday.isoformat()}).eq(
+        "user_id", session["id"]
+    ).execute()
+
+
 @rt("/")
 @with_layout(Layout, "Postać")
 def index(session, event_id: int = None):
+    if not (_profile := Profile.maybe_one(Profile.select(session["auth"]).eq("user_id", session["id"]))):
+        _profile = Profile(session["id"])
+    if not _profile.birthday:
+        session["referrer"] = "/character"
+        return [
+            mui.Form(
+                FormInput(
+                    "Data Urodzenia",
+                    "Podaj swoją datę urodzenia aby wyświetlić postać",
+                    value=_profile.birthday or None,
+                    type="date",
+                    id="birthday",
+                ),
+                mu.Button("Zapisz", cls=mu.ButtonT.primary + "w-full"),
+                hx_post="/character/update_profile",
+            )
+        ]
     if not (
         character := Character.maybe_one(
             Character.select(
