@@ -208,7 +208,7 @@ def _settings(session):
                 placeholder="Imię Nazwisko / Kswyka",
                 id="display_name",
                 required=True,
-                note="Tylko pierwsze imię oraz dwie litery nazwiska są widoczne publiczne - reszta jest widoczna tylko dla organizatora.",
+                note="Tylko pierwsze imię oraz dwie litery nazwiska są widoczne publiczne - reszta jest widoczna tylko dla organizatora. Podaj pełne dane lub ksywkę!",
             ),
             FormInput(
                 "Podłączony adres e-mail",
