@@ -15,6 +15,9 @@ rt = make_app("character")
 
 
 class Part:
+    name: str
+    description: str
+
     def render(self):
         return mui.Card(mui.render_md(self.description), header=mui.DivCentered(self.name))
 
@@ -24,6 +27,7 @@ class Character_Secret(Part, Base):
     name: str
     description: str
     max_usage: int
+    requires: list[int] | None = None
 
 
 class Character_Quest(Part, Base):
@@ -31,6 +35,8 @@ class Character_Quest(Part, Base):
     name: str
     description: str
     max_usage: int
+    mutual_exclusive: list[int] | None = None
+    requires: list[int] | None = None
 
 
 class Character_Challenge(Part, Base):
@@ -38,6 +44,8 @@ class Character_Challenge(Part, Base):
     name: str
     description: str
     max_usage: int
+    mutual_exclusive: list[int] | None = None
+    requires: list[int] | None = None
 
 
 class Character_Background(Part, Base):
@@ -45,6 +53,7 @@ class Character_Background(Part, Base):
     name: str
     description: str
     max_usage: int
+    requires: list[int] | None = None
 
 
 class Character_Cover(Part, Base):
