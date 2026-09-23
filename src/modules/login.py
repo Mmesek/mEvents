@@ -144,11 +144,13 @@ def redirect(code: str, session):
 
 
 @rt("/verify")
-def verify_otp(access_token: str, type: str, session):
+def verify_otp(access_token: str, type: str, redirect: str, session):
     try:
         res = supa.auth.verify_otp({"token_hash": access_token, "type": type})
     except supabase.AuthApiError as ex:
         return fh.P("Błąd: ", ex)
+    if redirect:
+        session["referrer"] = redirect
     return finish_login(res, session)
 
 

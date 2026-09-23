@@ -73,6 +73,24 @@ def tickets(session, event_id: int):
     )
 
 
+@rt("/log_qr/{event_id}/{user_id}")
+def log_qr(session, event_id: int, user_id: str):
+    from src.models.meta import users
+    from src.modules.login import supa
+    from urllib.parse import quote
+
+    user = users.maybe_one(users.select(session["auth"]).eq("event_id", event_id).eq("id", user_id))
+    email = user.email
+    return fh.Img(
+        src="data:image/png;base64,"
+        + base64.b64encode(
+            make_qr(
+                f"https://mms-events.vercel.app/login/verify?access_token={supa.auth.admin.generate_link({'type': 'magiclink', 'email': email}).properties.hashed_token}&type=email&redirect={quote('/character')}"
+            )
+        ).decode()
+    )
+
+
 def _verify(session, event_id: int, user_id: int):
     from src.modules.events import Event
 
@@ -259,7 +277,7 @@ def attendance_list(session, event_id: int):
                     if not g[1]
                     else "❌",
                     "Nazwa": (
-                        g[2],
+                        fh.A(g[2], href=f"/tickets/log_qr/{event_id}/{g[3]}"),
                         mui.Range(value=f"{g[5]},{g[6]}", disabled=True, label=None)
                         if all(i is not None for i in (g[5], g[6]))
                         else None,
