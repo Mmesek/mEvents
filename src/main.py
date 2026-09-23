@@ -10,6 +10,8 @@ import src.modules.new_form
 import src.modules.new_event
 import src.modules.profile
 import src.modules.clues
+import src.modules.characters
+
 from src.root import app
 import src.modules.pwa
 import src.modules.discord
