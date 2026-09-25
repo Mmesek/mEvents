@@ -94,6 +94,90 @@ def update_profile(answers: Profile, session):
     ).execute()
 
 
+from datetime import datetime
+
+SIGNS = {
+    "Aries": ((3, 21), (4, 19)),
+    "Taurus": ((4, 20), (5, 20)),
+    "Gemini": ((5, 21), (6, 20)),
+    "Cancer": ((6, 21), (7, 22)),
+    "Leo": ((7, 23), (8, 22)),
+    "Virgo": ((8, 23), (9, 22)),
+    "Libra": ((9, 23), (10, 22)),
+    "Scorpio": ((10, 23), (11, 21)),
+    "Sagittarius": ((11, 22), (12, 21)),
+    "Capricorn": ((12, 22), (1, 19)),
+    "Aquarius": ((1, 20), (2, 18)),
+    "Pisces": ((2, 19), (3, 20)),
+}
+
+
+def sun_sign(dt: datetime) -> str:
+    for sign, ranges in SIGNS.items():
+        start, end = ranges
+        start_month, start_day = start
+        end_month, end_day = end
+        if (start_month == dt.month and start_day <= dt.day) or (dt.month == end_month and dt.day <= end_day):
+            return sign
+
+
+NAMES = {
+    "Aries": "Baran",
+    "Taurus": "Byk",
+    "Gemini": "Bliźnięta",
+    "Cancer": "Rak",
+    "Leo": "Lew",
+    "Virgo": "Panna",
+    "Libra": "Waga",
+    "Scorpio": "Skorpion",
+    "Sagittarius": "Strzelec",
+    "Capricorn": "Koziororzec",
+    "Aquarius": "Wodnik",
+    "Pisces": "Ryby",
+}
+
+ELEMENTS = {
+    "Aries": "Ogień",
+    "Taurus": "Ziemia",
+    "Gemini": "Powietrze",
+    "Cancer": "Woda",
+    "Leo": "Ogień",
+    "Virgo": "Ziemia",
+    "Libra": "Powietrze",
+    "Scorpio": "Woda",
+    "Sagittarius": "Ogień",
+    "Capricorn": "Ziemia",
+    "Aquarius": "Powietrze",
+    "Pisces": "Woda",
+}
+
+MODALITIES = {
+    "Aries": "Kardynalna",
+    "Taurus": "Stała",
+    "Gemini": "Zmienna",
+    "Cancer": "Kardynalna",
+    "Leo": "Stała",
+    "Virgo": "Zmienna",
+    "Libra": "Kardynalna",
+    "Scorpio": "Stała",
+    "Sagittarius": "Zmienna",
+    "Capricorn": "Kardynalna",
+    "Aquarius": "Stała",
+    "Pisces": "Zmienna",
+}
+
+
+def get_zodiac(date: datetime):
+    sign = sun_sign(date)
+    return mui.Card(
+        mui.DivCentered(
+            mui.DivCentered(NAMES[sign], header="Znak Słoneczny"),
+            mui.DivCentered(ELEMENTS[sign], header="Żywioł"),
+            mui.DivCentered(MODALITIES[sign], header="Jakość"),
+        )
+    )
+
+
 @rt("/")
 @with_layout(Layout, "Postać")
 def index(session, event_id: int = None):
@@ -118,31 +202,34 @@ def index(session, event_id: int = None):
         character := Character.maybe_one(
             Character.select(
                 session["auth"],
-                "*, secret:secret_id (*), quest:quest_id (*), challenge:challenge_id (*), background:background_id (*), cover:cover_id (*)",
+                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
             ).eq("id", session["id"])
         )
     ):
         character = (
             s.auth(session["auth"])
-                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
-                "create_character",
-                {"user_id": session["id"]},
+            .rpc(
+                "create_character_v2",
+                {"user_id": session["id"], "challenge_count": 3},
             )
             .execute()
         )
         character = Character.maybe_one(
-                "create_character_v2",
-                {"user_id": session["id"], "challenge_count": 3},
-                "*, secret:secret_id (*), quest:quest_id (*), challenge:challenge_id (*), background:background_id (*), cover:cover_id (*)",
+            Character.select(
+                session["auth"],
+                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
             ).eq("id", session["id"])
         )
     return [
         mui.Accordion(
             mui.AccordionItem("Przykrywa", character.cover.render()) if character.cover else None,
-                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
+            mui.AccordionItem("Sekret", character.secret.render()) if character.secret else None,
             mui.AccordionItem("Postać", character.background.render()) if character.background else None,
             mui.AccordionItem("Zadanie", character.quest.render()) if character.quest else None,
-            mui.AccordionItem("Wyzwanie", character.challenge.render()) if character.challenge else None,
+            mui.AccordionItem("Wyzwania", *[i.render() for i in character.challenges])
+            if character.challenges
+            else None,
+            mui.AccordionItem("Zodiak", get_zodiac(_profile.birthday), open=True),
             multiple=True,
         )
     ]
