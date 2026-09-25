@@ -19,7 +19,10 @@ class Part:
     description: str
 
     def render(self):
-        return mui.Card(mui.render_md(self.description), header=mui.DivCentered(self.name))
+        return mui.Card(
+            mui.render_md(self.description) if self.description else None,
+            header=mui.DivCentered(self.name) if self.name else None,
+        )
 
 
 class Character_Secret(Part, Base):
