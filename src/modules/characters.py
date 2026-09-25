@@ -27,43 +27,43 @@ class Part:
 
 class Character_Secret(Part, Base):
     id: int
-    name: str
-    description: str
-    max_usage: int
+    name: str | None = None
+    description: str | None = None
+    max_usage: int | None = None
     requires: list[int] | None = None
 
 
 class Character_Quest(Part, Base):
     id: int
-    name: str
-    description: str
-    max_usage: int
+    name: str | None = None
+    description: str | None = None
+    max_usage: int | None = None
     mutual_exclusive: list[int] | None = None
     requires: list[int] | None = None
 
 
 class Character_Challenge(Part, Base):
     id: int
-    name: str
-    description: str
-    max_usage: int
+    name: str | None = None
+    description: str | None = None
+    max_usage: int | None = None
     mutual_exclusive: list[int] | None = None
     requires: list[int] | None = None
 
 
 class Character_Background(Part, Base):
     id: int
-    name: str
-    description: str
-    max_usage: int
+    name: str | None = None
+    description: str | None = None
+    max_usage: int | None = None
     requires: list[int] | None = None
 
 
 class Character_Cover(Part, Base):
     id: int
-    name: str
-    description: str
-    max_usage: int
+    name: str | None = None
+    description: str | None = None
+    max_usage: int | None = None
 
 
 class Character(Base):
