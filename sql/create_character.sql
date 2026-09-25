@@ -1,9 +1,12 @@
 CREATE
-OR REPLACE FUNCTION create_character(user_id TEXT) RETURNS "Character" LANGUAGE plpgsql AS $ $ DECLARE v_secret_id INTEGER;
+OR REPLACE FUNCTION create_character(
+    user_id TEXT,
+    challenge_count INTEGER DEFAULT 3
+) RETURNS "Character" LANGUAGE plpgsql AS $ $ DECLARE v_secret_id INTEGER;
 
 v_quest_id INTEGER;
 
-v_challenge_id INTEGER;
+v_challenge_ids INTEGER [];
 
 v_background_id INTEGER;
 
@@ -15,7 +18,7 @@ BEGIN
 SELECT
     cs.id INTO v_secret_id
 FROM
-    Character_secret AS cs
+    "Character_Secret" AS cs
 WHERE
     (
         SELECT
@@ -33,7 +36,7 @@ LIMIT
 SELECT
     cq.id INTO v_quest_id
 FROM
-    Character_quest AS cq
+    "Character_Quest" AS cq
 WHERE
     (
         SELECT
@@ -49,27 +52,30 @@ LIMIT
     1;
 
 SELECT
-    cc.id INTO v_challenge_id
-FROM
-    Character_challenge AS cc
-WHERE
-    (
+    ARRAY(
         SELECT
-            COUNT(*)
+            cc.id
         FROM
-            "Character" AS c
+            "Character_Challenge" AS cc
         WHERE
-            c.challenge_id = cc.id
-    ) < cc.max_usage
-ORDER BY
-    random()
-LIMIT
-    1;
+            (
+                SELECT
+                    COUNT(*)
+                FROM
+                    "Character_Challenges" AS ccm
+                WHERE
+                    ccm.challenge_id = cc.id
+            ) < cc.max_usage
+        ORDER BY
+            random()
+        LIMIT
+            challenge_count
+    ) INTO v_challenge_ids;
 
 SELECT
     cb.id INTO v_background_id
 FROM
-    Character_background AS cb
+    "Character_Background" AS cb
 WHERE
     (
         SELECT
@@ -87,7 +93,7 @@ LIMIT
 SELECT
     cv.id INTO v_cover_id
 FROM
-    Character_cover AS cv
+    "Character_Cover" AS cv
 WHERE
     (
         SELECT
@@ -107,7 +113,6 @@ INSERT INTO
         id,
         secret_id,
         quest_id,
-        challenge_id,
         background_id,
         cover_id
     )
@@ -116,10 +121,19 @@ VALUES
         user_id,
         v_secret_id,
         v_quest_id,
-        v_challenge_id,
         v_background_id,
         v_cover_id
     ) RETURNING * INTO v_character;
+
+INSERT INTO
+    "Character_Challenges" (character_id, challenge_id)
+SELECT
+    v_character.id,
+    challenge_id
+FROM
+    unnest(
+        COALESCE(v_challenge_ids, ARRAY [] :: INTEGER [])
+    ) AS challenge_id;
 
 RETURN v_character;
 

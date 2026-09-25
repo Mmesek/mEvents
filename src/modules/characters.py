@@ -66,6 +66,12 @@ class Character_Cover(Part, Base):
     max_usage: int | None = None
 
 
+class Character_Challenges(Base):
+    character_id: str
+    challenge_id: int
+    challenge: Character_Challenge
+
+
 class Character(Base):
     id: str
     secret_id: int | None = None
@@ -76,7 +82,7 @@ class Character(Base):
 
     secret: Character_Secret | None = None
     quest: Character_Quest | None = None
-    challenge: Character_Challenge | None = None
+    challenges: list[Character_Challenge] | None = None
     background: Character_Background | None = None
     cover: Character_Cover | None = None
 
@@ -118,22 +124,22 @@ def index(session, event_id: int = None):
     ):
         character = (
             s.auth(session["auth"])
-            .rpc(
+                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
                 "create_character",
                 {"user_id": session["id"]},
             )
             .execute()
         )
         character = Character.maybe_one(
-            Character.select(
-                session["auth"],
+                "create_character_v2",
+                {"user_id": session["id"], "challenge_count": 3},
                 "*, secret:secret_id (*), quest:quest_id (*), challenge:challenge_id (*), background:background_id (*), cover:cover_id (*)",
             ).eq("id", session["id"])
         )
     return [
         mui.Accordion(
             mui.AccordionItem("Przykrywa", character.cover.render()) if character.cover else None,
-            mui.AccordionItem("Sekret", character.secret.render()) if character.secret else None,
+                '*, secret:secret_id (*), quest:quest_id (*), challenges:"Character_Challenge"!"Character_Challenges" (*), background:background_id (*), cover:cover_id (*)',
             mui.AccordionItem("Postać", character.background.render()) if character.background else None,
             mui.AccordionItem("Zadanie", character.quest.render()) if character.quest else None,
             mui.AccordionItem("Wyzwanie", character.challenge.render()) if character.challenge else None,
