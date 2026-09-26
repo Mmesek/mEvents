@@ -105,7 +105,9 @@ SIGNS = {
     "Virgo": ((8, 23), (9, 22)),
     "Libra": ((9, 23), (10, 22)),
     "Scorpio": ((10, 23), (11, 21)),
-    "Sagittarius": ((11, 22), (12, 21)),
+    "Sagittarius": ((11, 22), (11, 28)),
+    "Ophiuchus": ((11, 29), (12, 17)),
+    "Sagittarius_": ((12, 18), (12, 21)),
     "Capricorn": ((12, 22), (1, 19)),
     "Aquarius": ((1, 20), (2, 18)),
     "Pisces": ((2, 19), (3, 20)),
@@ -118,7 +120,7 @@ def sun_sign(dt: datetime) -> str:
         start_month, start_day = start
         end_month, end_day = end
         if (start_month == dt.month and start_day <= dt.day) or (dt.month == end_month and dt.day <= end_day):
-            return sign
+            return sign.replace("_", "")
 
 
 NAMES = {
@@ -131,6 +133,7 @@ NAMES = {
     "Libra": "Waga",
     "Scorpio": "Skorpion",
     "Sagittarius": "Strzelec",
+    "Ophiuchus": "Wężownik",
     "Capricorn": "Koziororzec",
     "Aquarius": "Wodnik",
     "Pisces": "Ryby",
@@ -146,6 +149,7 @@ ELEMENTS = {
     "Libra": "Powietrze",
     "Scorpio": "Woda",
     "Sagittarius": "Ogień",
+    "Ophiuchus": "Eter",
     "Capricorn": "Ziemia",
     "Aquarius": "Powietrze",
     "Pisces": "Woda",
@@ -161,6 +165,7 @@ MODALITIES = {
     "Libra": "Kardynalna",
     "Scorpio": "Stała",
     "Sagittarius": "Zmienna",
+    "Ophiuchus": "Nieznana",
     "Capricorn": "Kardynalna",
     "Aquarius": "Stała",
     "Pisces": "Zmienna",
