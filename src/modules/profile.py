@@ -73,13 +73,16 @@ class Profile(Base):
                         fh.Img(src=session.get("picture"), height="64", width="64"),
                     ),
                 ),
-                fh.A(mu.Button("Ustawienia", cls=mu.ButtonT.block + mu.ButtonT.accent), href="/profile/settings"),
+                fh.A(
+                    mu.Button("Ustawienia", cls=mu.ButtonT.block + mu.ButtonT.ghost + mu.ButtonT.outline),
+                    href="/profile/settings",
+                ),
                 mui.DivCentered(
                     mui.Card(
                         mui.DividerSplit("Przejdź do"),
                         mui.Grid(
                             mu.LinkNeutral("/events", "Wydarzeń"),
-                            mu.LinkNeutral("/feedback", "Feedbacku", disabled=True),
+                            mu.LinkNeutral("/events/feedback", "Feedbacku"),
                             cols=2,
                         ),
                         mui.DividerSplit("Zarządzaj"),

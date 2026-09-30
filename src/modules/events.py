@@ -29,6 +29,9 @@ class Event(Events):
     def info_card(self, user_id: str = None):
         if user_id:
             user_id = UUID(user_id)
+            user_ticket = next(filter(lambda x: x.user_id == str(user_id), self.tickets), None)
+        else:
+            user_ticket = None
         if self.dresscode and not self.dresscode_mandatory:
             self.dresscode += " *(Opcjonalnie)*"
         count = len(self.tickets) if self.tickets else None
@@ -46,10 +49,31 @@ class Event(Events):
             mui.DivCentered(
                 fh.Div(
                     mu.CopyToClipboard(f"https://mms-events.vercel.app/events?id={self.id}"),
-                    mui.H1(fh.A(self.title, cls=mui.AT.classic, href=f"/forms/{self.id}" if self.id else None)),
+                    mui.H1(
+                        fh.A(
+                            self.title,
+                            cls=mui.AT.classic,
+                            href=f"/forms/{'feedback/' if self.event_started and self.is_guest(user_id) else ''}{self.id}"
+                            if self.id
+                            else None,
+                        )
+                    ),
                     cls="flex",
                 ),
             ),
+            mui.DivCentered(
+                mui.DivFullySpaced(
+                    fh.P(
+                        user_ticket.arrived.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if user_ticket.arrived else ""
+                    ),
+                    "->",
+                    fh.P(user_ticket.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if user_ticket.left else ""),
+                )
+                if user_ticket.arrived or user_ticket.left
+                else None,
+            )
+            if user_ticket
+            else None,
             MetaInfo(
                 self.start_time.strftime("%H:%M"),
                 self.end_time.strftime("%H:%M") if self.end_time else None,
@@ -104,7 +128,7 @@ class Event(Events):
             )
         if user_id:
             buttons.append(self.render_button_guests())
-        if is_guest := any(str(user_id) == x.user_id for x in self.tickets) if self.tickets else None:
+        if is_guest := self.is_guest(user_id):
             buttons.append(mu.LinkSecondary(f"/contributions/{self.id}", "Przygotowania"))
         if self.id:
             if not self.event_started:
@@ -123,6 +147,9 @@ class Event(Events):
             elif is_guest:
                 buttons.append(mu.LinkPrimary(f"/forms/feedback/{self.id}", "Udziel feedbacku"))
         return buttons
+
+    def is_guest(self, user_id):
+        return any(str(user_id) == x.user_id for x in self.tickets) if self.tickets else None
 
 
 @rt
@@ -160,6 +187,34 @@ def events(
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
+    try:
+        meta = open_graph(
+            events[0].title, events[0].description, f"https://mms-events.vercel.app/events/thumbnail?id={events[0].id}"
+        )
+    except IndexError:
+        meta = []
+    title = fh.Title(events[0].title) if len(events) == 1 else None
+
+    return title, *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
+
+
+@rt
+@with_layout(Layout, "Feedback za wydarzenia")
+def feedback(session, completed: bool = False):
+    forms_stmt = (
+        Attendance.select(session["auth"], 'user_id, arrived, left, companions, feedback_filled, event:"Event" (*)')
+        .filter("withdrew", "is", "null")
+        .eq("user_id", session["id"])
+    )
+    if not completed:
+        forms_stmt = forms_stmt.filter("feedback_filled", "is", "null")
+    tickets = Attendance.get(forms_stmt)
+    events = []
+    for t in tickets:
+        e = Event.from_dict(t.event)
+        e.tickets = [t]
+        events.append(e)
+    events = sorted(events, key=lambda x: x.start_time)
     try:
         meta = open_graph(
             events[0].title, events[0].description, f"https://mms-events.vercel.app/events/thumbnail?id={events[0].id}"
