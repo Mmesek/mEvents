@@ -103,7 +103,7 @@ class Event(Events):
             if self.description
             else None,
             # fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
-            mui.DivRAligned(mui.Grid(*self.event_buttons(user_id), cols_min=2, cols_max=6)),
+            mui.DivRAligned(mui.Grid(*self.event_buttons(user_id), cols_min=2, cols_max=7)),
             body_cls="space-y-0",
             style="max-width: 1000px; min-width: 35%; border-radius: 1.5em",
         )
@@ -130,6 +130,7 @@ class Event(Events):
             buttons.append(self.render_button_guests())
         if is_guest := self.is_guest(user_id):
             buttons.append(mu.LinkSecondary(f"/contributions/{self.id}", "Przygotowania"))
+            buttons.append(mu.LinkPrimary(f"/tickets/{self.id}", "Bilet"))
         if self.id:
             if not self.event_started:
                 if is_guest:
@@ -224,6 +225,25 @@ def feedback(session, completed: bool = False):
     title = fh.Title(events[0].title) if len(events) == 1 else None
 
     return title, *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
+
+
+@rt
+@with_layout(Layout, "Bilety")
+def tickets(session):
+    forms_stmt = (
+        Attendance.select(session["auth"], 'user_id, arrived, left, companions, feedback_filled, event:"Event" (*)')
+        .filter("withdrew", "is", "null")
+        .eq("user_id", session["id"])
+    )
+    tickets = Attendance.get(forms_stmt)
+    events = []
+    for t in tickets:
+        e = Event.from_dict(t.event)
+        e.tickets = [t]
+        events.append(e)
+    events = sorted(events, key=lambda x: x.start_time, reverse=True)
+
+    return [f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]
 
 
 @rt

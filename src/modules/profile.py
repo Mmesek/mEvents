@@ -97,7 +97,7 @@ class Profile(Base):
                         mui.Grid(
                             mu.LinkNeutral("/events/mine", "Wydarzenia", cls=mu.ButtonT.neutral),
                             mu.LinkNeutral("/contributions", "Deklaracje", disabled=True),
-                            mu.LinkNeutral("/tickets", "Bilety", disabled=True),
+                            mu.LinkNeutral("/events/tickets", "Bilety"),
                             cols=3,
                         ),
                     ),
