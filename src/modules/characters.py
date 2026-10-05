@@ -64,7 +64,6 @@ class Character(Base):
     event_id: int | None = None
     secret_id: int | None = None
     quest_id: int | None = None
-    challenge_id: int | None = None
     background_id: int | None = None
     cover_id: int | None = None
 
@@ -73,13 +72,6 @@ class Character(Base):
     challenges: list[Character_Challenge] | None = None
     background: Character_Background | None = None
     cover: Character_Cover | None = None
-
-
-@rt
-def update_profile(answers: Profile, session):
-    Profile.table(session["auth"]).update({"birthday": answers.birthday.isoformat()}).eq(
-        "user_id", session["id"]
-    ).execute()
 
 
 def get_character(session, event_id: int):
@@ -104,18 +96,25 @@ def ensure_birthday_set(session, _profile: Profile, referrer: str):
                 id="birthday",
             ),
             mu.Button("Zapisz", cls=mu.ButtonT.primary + "w-full"),
-            hx_post="/character/update_profile",
+            hx_post="/profile/finish-register",
         )
     ]
+
+
+def get_birthday(session):
+    if not (_profile := Profile.maybe_one(Profile.select(session["auth"]).eq("user_id", session["id"]))):
+        _profile = Profile(session["id"])
+    if not _profile.birthday:
+        return ensure_birthday_set(session, _profile, "/character")
+    return _profile
 
 
 @rt("/")
 @with_layout(Layout, "Postać")
 def index(session, event_id: int = None):
-    if not (_profile := Profile.maybe_one(Profile.select(session["auth"]).eq("user_id", session["id"]))):
-        _profile = Profile(session["id"])
-    if not _profile.birthday:
-        ensure_birthday_set("/character")
+    _profile = get_birthday(session)
+    if type(_profile) is not Profile:
+        return _profile
     if not (character := get_character(session, event_id)):
         character = (
             s.auth(session["auth"])
@@ -139,11 +138,3 @@ def index(session, event_id: int = None):
             multiple=True,
         )
     ]
-
-
-@rt("/card")
-def card(session, guest_id: str = None):
-    if guest_id:
-        session["guest_id"] = guest_id
-    r = s.table("Cards").select("*").eq("user_id", session["guest_id"]).execute().data
-    return DivCentered("Zadania", r[0]["tasks"]), DivCentered("Motywacja", r[0]["motivation"])

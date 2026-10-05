@@ -1,7 +1,6 @@
 from datetime import date
 from fasthtml import common as fh
 from monsterui import all as mui
-
 from src.components import TIMEZONE, with_layout
 from src.components.app_factory import make_app
 from src.db import Base, supa
@@ -264,10 +263,19 @@ def add_answer(id: str):
 @rt("/finish-register")
 def finish_register(answers: Profile, session):
     answers.user_id = session["id"]
-    answers.allergies = [a for a in answers.allergies if a]
+    if answers.allergies:
+        answers.allergies = [a for a in answers.allergies if a]
     if answers.birthday:
         answers.birthday = answers.birthday.isoformat()
     resp = answers.to_dict()
     resp["photo_consent"] = resp.get("photo_consent", False)
-    Profile.table(session["auth"]).upsert(resp).execute()
+
+    try:
+        p = Profile.table(session["auth"]).update(resp).eq("user_id", session["id"]).execute().data
+    except Exception as ex:
+        p = None
+
+    if not p:
+        p = Profile.table(session["auth"]).insert(resp).execute().data
+
     return fh.Redirect(session.pop("referrer", "/"))
