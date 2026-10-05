@@ -15,9 +15,10 @@ app, rt = fh.fast_app(hdrs=HEADERS)
 rt = make_app("character")
 
 
-class Part:
-    name: str
-    description: str
+class Part(Base):
+    id: int
+    name: str | None = None
+    description: str | None = None
 
     def render(self):
         return mui.Card(
@@ -27,43 +28,28 @@ class Part:
 
 
 class Character_Secret(Part, Base):
-    id: int
-    name: str | None = None
-    description: str | None = None
     max_usage: int | None = None
     requires: list[int] | None = None
 
 
 class Character_Quest(Part, Base):
-    id: int
-    name: str | None = None
-    description: str | None = None
     max_usage: int | None = None
     mutual_exclusive: list[int] | None = None
     requires: list[int] | None = None
 
 
 class Character_Challenge(Part, Base):
-    id: int
-    name: str | None = None
-    description: str | None = None
     max_usage: int | None = None
     mutual_exclusive: list[int] | None = None
     requires: list[int] | None = None
 
 
 class Character_Background(Part, Base):
-    id: int
-    name: str | None = None
-    description: str | None = None
     max_usage: int | None = None
     requires: list[int] | None = None
 
 
 class Character_Cover(Part, Base):
-    id: int
-    name: str | None = None
-    description: str | None = None
     max_usage: int | None = None
 
 
@@ -75,6 +61,7 @@ class Character_Challenges(Base):
 
 class Character(Base):
     id: str
+    event_id: int | None = None
     secret_id: int | None = None
     quest_id: int | None = None
     challenge_id: int | None = None
@@ -95,7 +82,6 @@ def update_profile(answers: Profile, session):
     ).execute()
 
 
-from datetime import datetime
 def get_character(session, event_id: int):
     return Character.maybe_one(
         Character.select(
