@@ -69,7 +69,7 @@ def search(session, query: Songs):
 
 @rt
 @mu.with_layout(mu.Layout)
-def songs(session):
+def index():
     return (
         fh.Form(
             mui.Grid(mui.LabelInput("Artysta", id="artist"), mui.LabelInput("Tytuł", id="title")),

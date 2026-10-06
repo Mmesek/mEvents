@@ -11,6 +11,7 @@ import src.modules.new_event
 import src.modules.profile
 import src.modules.clues
 import src.modules.characters
+import src.modules.karaoke
 
 from src.root import app
 import src.modules.pwa
