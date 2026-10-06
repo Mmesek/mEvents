@@ -105,7 +105,7 @@ class Event(Events):
             # fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
             mui.DivRAligned(mui.Grid(*self.event_buttons(user_id), cols_min=2, cols_max=7)),
             body_cls="space-y-0",
-            style="max-width: 1000px; min-width: 35%; border-radius: 1.5em",
+            style="max-width: 1000px; min-width: 35%; border-radius: 1.5em; position: unset",
         )
 
     def render_button_guests(self):
