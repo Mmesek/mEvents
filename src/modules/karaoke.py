@@ -41,13 +41,13 @@ def search(session, query: Songs):
     res = Songs.get(q)
     if not res:
         return (
-            mui.Alert(
-                "Nic nie znaleziono :( Aby dodać nowy utwór, znajdź go na jednej z tych stron i wstaw w pole URL:"
-            ),
-            fh.Ul(
-                fh.Li(mu.Link("https://ultrastar-es.org/en/canciones", "UltraStar-Es")),
-                fh.Li(mu.Link("https://usdb.eu/", "USDB.eu")),
-                fh.Li(mu.Link("https://usdb.animux.de/", "USDB.de")),
+            mui.DivCentered(
+                "Nic nie znaleziono :( Aby dodać nowy utwór, znajdź go na jednej z tych stron i wstaw link w pole URL:",
+                mui.DivHStacked(
+                    mu.LinkSecondary("https://ultrastar-es.org/en/canciones", "UltraStar-Es"),
+                    mu.LinkSecondary("https://usdb.eu/", "USDB.eu"),
+                    mu.LinkSecondary("https://usdb.animux.de/", "USDB.de"),
+                ),
             ),
             fh.Form(
                 mui.Grid(
@@ -69,11 +69,11 @@ def search(session, query: Songs):
 
 @rt
 @mu.with_layout(mu.Layout)
-def index():
+def index(session):
     return (
         fh.Form(
             mui.Grid(mui.LabelInput("Artysta", id="artist"), mui.LabelInput("Tytuł", id="title")),
-            mui.Button("Szukaj", cls=mu.ButtonT.secondary + "w-full"),
+            mui.Button("Szukaj", cls=mu.ButtonT.active + "w-full"),
             hx_post="/karaoke/search",
             hx_target="#songs",
             hx_swap="innerHTML",
