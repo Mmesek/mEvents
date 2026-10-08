@@ -98,7 +98,7 @@ class Event(Events):
             # mui.DivCentered(icon_text("", text=f"**[Facebook]({self.facebook_event})**")) if self.facebook_event else None,
             (
                 fh.Hr(cls="orange-hr", style="--secondary: #F59E0B; height: 1px;"),
-                mui.DivCentered(mui.render_md(self.description)),
+                mui.DivCentered(mui.render_md(self.description), cls="text-center"),
             )
             if self.description
             else None,
