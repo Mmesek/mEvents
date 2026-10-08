@@ -172,7 +172,7 @@ def guests(session, event_id: str):
 def events(
     session,
     name: str | None = None,
-    id: int | None = None,
+    id: list[int] | None = None,
     include_previous: bool = False,
     user_id: str = None,
 ):
@@ -184,7 +184,7 @@ def events(
         forms_stmt = forms_stmt.gt("end_time", datetime.now(TIMEZONE))
     if name:
         forms_stmt = forms_stmt.like("title", name)
-    forms_stmt = forms_stmt.eq("id", id) if id else forms_stmt.eq("private", False)
+    forms_stmt = forms_stmt.in_("id", id) if id else forms_stmt.eq("private", False)
     if user_id:
         forms_stmt = forms_stmt.eq("user_id", user_id)
     events = sorted(Event.get(forms_stmt), key=lambda x: x.start_time)
