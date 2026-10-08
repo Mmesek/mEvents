@@ -30,9 +30,10 @@ FOOTER = [
         ("", "Strona", ""),
         ("/", "Główna", "home"),
         ("/profile", "Profil", "user"),
+        ("/karaoke", "Karaoke", "mic"),
         #    ("/events", "Wydarzenia", "calendar"),
         #    ("/tickets", "Bilety", "tickets"),
-        #    ("/feedback", "Recenzje", "square-pen"),
+        ("/events/feedback", "Recenzje", "square-pen"),
     ],
     # [
     #    ("", "Info", ""),
@@ -45,6 +46,7 @@ FOOTER = [
     # ],
 ]
 MENU_LINKS = [("/events/create", "calendar-plus", "Utwórz wydarzenie")]
+BURGER_MENU = [("/profile/", "user", "Profil"), ("/login/", "log-out", "Wyloguj")]
 
 
 def back_to_main():
@@ -126,13 +128,13 @@ def LinkIconHover(url: str, title: str = None, icon: str = None):
     )
 
 
-def LinkSvgHover(url: str, title: str = None, icon: str = None):
+def LinkSvgHover(url: str, title: str = None, icon: str = None, cls: str = None):
     return fh.Div(
-        fh.Img(src=f"/static/icons/{icon.lower()}.svg", style="filter: invert(1);", width=16, height=16),
         fh.A(
+            fh.Img(src=f"/static/icons/{icon.lower()}.svg", style="filter: invert(1);", width=16, height=16),
             title if title else None,
             href=url,
-            cls=LINK_HOVER,
+            cls=LINK_HOVER + (" " + cls) if cls else "",
             title=title,
         ),
         cls=ICON_LINK,
@@ -159,7 +161,7 @@ def header_navbar(session, title: str):
                     ),
                     (
                         burger_menu(
-                            [("/profile/", "user", "Profil"), ("/login/", "log-out", "Wyloguj")],
+                            BURGER_MENU,
                             mui.DivHStacked(
                                 fh.Img(src=session.get("picture"), height="24", width="24"), session.get("email")
                             ),
@@ -193,15 +195,15 @@ def footer_navbar(t):
         ),
         fh.Nav(
             fh.H6("Społeczność", cls="footer-title"),
-            *[LinkSvgHover(url, icon.title(), icon) for icon, url in SOCIALS],
+            fh.Div(*[LinkSvgHover(url, icon=icon) for icon, url in SOCIALS]),
         )
         if SOCIALS
         else None,
         *[fh.Nav(*generate_links(column)) for column in FOOTER],
-        fh.Div(
-            fh.H6("Push o nowych wydarzeniach", cls="footer-title"),
-            Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent),
-        ),
+        # fh.Div(
+        #     fh.H6("Push o nowych wydarzeniach", cls="footer-title"),
+        #     Button(icon_text("bell", "Włącz powiadomienia"), id="subscribe", cls=ButtonT.accent),
+        # ),
         cls="footer sm:footer-horizontal xs:footer-center glass bg-black text-base-content p-4 text-center justify-center sm:w-full",
     )
 
