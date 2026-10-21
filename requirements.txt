@@ -8,5 +8,6 @@ qrcode[pil]
 msgspec
 sentry-sdk
 ics
+pyephem
 git+https://github.com/Mmesek/mdiscord
 git+https://github.com/Mmesek/mlib

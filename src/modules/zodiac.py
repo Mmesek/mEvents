@@ -1,5 +1,6 @@
 from datetime import datetime
 from monsterui import all as mui
+import ephem
 
 SIGNS = {
     "Aries": ((3, 21), (4, 19)),
@@ -61,20 +62,22 @@ ELEMENTS = {
 }
 
 MODALITIES = {
-    "Aries": "Kardynalna",
+    "Aries": "Wiodąca",
     "Taurus": "Stała",
     "Gemini": "Zmienna",
-    "Cancer": "Kardynalna",
+    "Cancer": "Wiodąca",
     "Leo": "Stała",
     "Virgo": "Zmienna",
-    "Libra": "Kardynalna",
+    "Libra": "Wiodąca",
     "Scorpio": "Stała",
     "Sagittarius": "Zmienna",
     "Ophiuchus": "Nieznana",
-    "Capricorn": "Kardynalna",
+    "Capricorn": "Wiodąca",
     "Aquarius": "Stała",
     "Pisces": "Zmienna",
 }
+
+MOON_PHASES = ["Nów", "Pierwsza Kwadra", "Pełnia", "Ostatnia Kwadra"]
 
 
 def get_zodiac(date: datetime):
@@ -85,4 +88,27 @@ def get_zodiac(date: datetime):
             mui.DivCentered(ELEMENTS[sign], header="Żywioł"),
             mui.DivCentered(MODALITIES[sign], header="Jakość"),
         )
+    )
+
+
+def moon_phase(date: datetime):
+    events = [
+        (ephem.previous_new_moon(date), MOON_PHASES[0]),
+        (ephem.previous_first_quarter_moon(date), MOON_PHASES[1]),
+        (ephem.previous_full_moon(date), MOON_PHASES[2]),
+        (ephem.previous_last_quarter_moon(date), MOON_PHASES[3]),
+    ]
+
+    most_recent_event, event_name = max(events, key=lambda event: event[0])
+    return most_recent_event, event_name
+
+
+def get_moon_phase(date: datetime):
+    event, phase = moon_phase(date)
+    last_event = datetime(*[int(i) for i in event.tuple()]).date()
+    days = (date - last_event).days
+    return mui.Card(
+        mui.DivCentered("Księżyc " + ("Wzrastający" if phase in MOON_PHASES[:2] else "Malejący")),
+        mui.DivCentered(phase),
+        mui.DivCentered(f"Od ~{days} dni{'a' if days == 1 else ''}"),
     )
