@@ -1,7 +1,8 @@
 CREATE
 OR REPLACE FUNCTION create_character(
     user_id TEXT,
-    challenge_count INTEGER DEFAULT 3
+    challenge_count INTEGER DEFAULT 3,
+    event_id INTEGER DEFAULT null
 ) RETURNS "Character" LANGUAGE plpgsql AS $ $ DECLARE v_secret_id INTEGER;
 
 v_quest_id INTEGER;
@@ -111,6 +112,7 @@ LIMIT
 INSERT INTO
     "Character" (
         id,
+        event_id,
         secret_id,
         quest_id,
         background_id,
@@ -119,6 +121,7 @@ INSERT INTO
 VALUES
     (
         user_id,
+        event_id,
         v_secret_id,
         v_quest_id,
         v_background_id,

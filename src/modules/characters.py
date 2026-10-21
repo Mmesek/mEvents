@@ -119,13 +119,17 @@ def index(session, event_id: int = None):
         character = (
             s.auth(session["auth"])
             .rpc(
-                "create_character_v2",
+                "create_character_v3",
                 {"user_id": session["id"], "challenge_count": 3, "event_id": event_id},
             )
             .execute()
         )
         character = get_character(session, event_id)
     return [
+        mui.DivCentered(
+            mui.H3("Twoja Postać to Twoja historia - to Ty ją opowiadasz."),
+            mui.H4("Tego wieczoru, uwzględnij poniższe fakty."),
+        ),
         mui.Accordion(
             mui.AccordionItem("Przykrywa", character.cover.render()) if character.cover else None,
             mui.AccordionItem("Sekret", character.secret.render()) if character.secret else None,
@@ -134,7 +138,8 @@ def index(session, event_id: int = None):
             mui.AccordionItem("Wyzwania", *[i.render() for i in character.challenges])
             if character.challenges
             else None,
-            mui.AccordionItem("Zodiak", get_zodiac(_profile.birthday), open=True),
+            # mui.AccordionItem("Zodiak", get_zodiac(_profile.birthday)),
+            mui.AccordionItem("Faza Księżyca", get_moon_phase(_profile.birthday), open=True),
             multiple=True,
-        )
+        ),
     ]
