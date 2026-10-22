@@ -80,12 +80,13 @@ def log_qr(session, event_id: int, user_id: str):
     from urllib.parse import quote
 
     user = users.maybe_one(users.select(session["auth"]).eq("event_id", event_id).eq("id", user_id))
-    email = user.email
+    supa.auth.sign_out()
+    access_token = supa.auth.admin.generate_link({"type": "magiclink", "email": user.email}).properties.hashed_token
     return fh.Img(
         src="data:image/png;base64,"
         + base64.b64encode(
             make_qr(
-                f"https://mms-events.vercel.app/login/verify?access_token={supa.auth.admin.generate_link({'type': 'magiclink', 'email': email}).properties.hashed_token}&type=email&redirect={quote('/character')}"
+                f"https://mms-events.vercel.app/login/verify?access_token={access_token}&type=email&redirect={quote('/character')}"
             )
         ).decode()
     )
