@@ -9,7 +9,7 @@ from src.components.app_factory import make_app
 from src.db import Base
 from src.components import TIMEZONE, Layout, back_to_main, handle_updating_responses, with_layout
 from src.modules.profile import Profile, FormInput
-from src.modules.zodiac import get_zodiac
+from src.modules.zodiac import get_zodiac, get_moon_phase
 
 app, rt = fh.fast_app(hdrs=HEADERS)
 rt = make_app("character")
@@ -135,7 +135,7 @@ def index(session, event_id: int = None):
             mui.AccordionItem("Sekret", character.secret.render()) if character.secret else None,
             mui.AccordionItem("Postać", character.background.render()) if character.background else None,
             mui.AccordionItem("Zadanie", character.quest.render()) if character.quest else None,
-            mui.AccordionItem("Wyzwania", *[i.render() for i in character.challenges])
+            mui.AccordionItem("Dodatkowe Wyzwania", *[i.render() for i in character.challenges])
             if character.challenges
             else None,
             # mui.AccordionItem("Zodiak", get_zodiac(_profile.birthday)),
