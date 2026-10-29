@@ -169,6 +169,7 @@ def FormInputs(
     type: str = None,
     id: str = None,
     outer_id: str = None,
+    note: str = None,
     **kwargs,
 ):
     return FormField(
@@ -176,6 +177,7 @@ def FormInputs(
         description,
         *[mui.Input(value=value, placeholder=placeholder, type=type, id=id, **kwargs) for value in values],
         outer_id=outer_id,
+        note=note,
     )
 
 
@@ -205,7 +207,9 @@ def _settings(session):
             ),
             FormInput(
                 "Twoja Nazwa",
-                "Imię Nazwisko bądź ksywka - czyli jak inni mogą Ciebie rozpoznać.",
+                mui.render_md(
+                    "Jak inni mogą Ciebie rozpoznać? Imię **ORAZ** Nazwisko i/lub ksywka <u>pod którymi organizator cię zna</u>. W przeciwnym przypadku, nie otrzymasz zaproszenia."
+                ),
                 value=_profile.display_name or session["display_name"],
                 placeholder="Imię Nazwisko / Kswyka",
                 id="display_name",
@@ -240,14 +244,15 @@ def _settings(session):
                 id="place",
             ),
             FormInputs(
+                "Alergie/Uczulenia",
                 "Jeśli posiadasz alergie/uczulenia o których powinniśmy wiedzieć, podaj je tutaj",
-                "Na przykład orzechy albo cukier",
                 id="allergies",
                 values=_profile.allergies or [""],
                 hx_post="/profile/add-answer?id=allergies",
                 hx_swap="beforeend",
                 hx_target="#allergies-container",
                 outer_id="allergies-container",
+                note="Na przykład orzechy albo cukier",
             ),
             mu.Button("Zapisz", cls=mu.ButtonT.primary + "w-full"),
             hx_post="/profile/finish-register",
