@@ -125,6 +125,7 @@ def index(session, event_id: int = None):
             .execute()
         )
         character = get_character(session, event_id)
+    phase, side = get_moon_phase(_profile.birthday)
     return [
         mui.DivCentered(
             mui.H3("Twoja Postać to Twoja historia - to Ty ją opowiadasz."),
@@ -139,7 +140,8 @@ def index(session, event_id: int = None):
             if character.challenges
             else None,
             # mui.AccordionItem("Zodiak", get_zodiac(_profile.birthday)),
-            mui.AccordionItem("Faza Księżyca", get_moon_phase(_profile.birthday), open=True),
+            mui.AccordionItem("Faza Księżyca", phase, open=True),
             multiple=True,
         ),
+        side,
     ]

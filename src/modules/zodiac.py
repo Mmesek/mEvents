@@ -103,12 +103,27 @@ def moon_phase(date: datetime):
     return most_recent_event, event_name
 
 
+LIVE = (
+    "Jesteś po stronie Życia.\n",
+    "**Godzinę przed północą**, staw się w **głównej komnacie** by pomóc duchom zaznac spokoju. **Przygotuj Wiersz** który zostanie przez Ciebie wtedy **wyrecytowany** by przypomnieć Duchom o emocjach życia.",
+)
+
+GHOST = (
+    "Jesteś po stronie Duchów.\n",
+    "Gdy wybije **północ**, staw się w **głównej komnacie** by pokazać żywym wolność od udręk. **Zaproś i porwij do tańca** osobę po stronie życia.",
+)
+
+
 def get_moon_phase(date: datetime):
     event, phase = moon_phase(date)
     last_event = datetime(*[int(i) for i in event.tuple()]).date()
     days = (date - last_event).days
-    return mui.Card(
-        mui.DivCentered("Księżyc " + ("Wzrastający" if phase in MOON_PHASES[:2] else "Malejący")),
-        mui.DivCentered(phase),
-        mui.DivCentered(f"Od ~{days} dni{'a' if days == 1 else ''}"),
+    side = LIVE if phase in MOON_PHASES[:2] else GHOST
+    return (
+        mui.Card(
+            mui.DivCentered("Księżyc " + ("Wzrastający" if phase in MOON_PHASES[:2] else "Malejący")),
+            mui.DivCentered(phase),
+            mui.DivCentered(f"Od ~{days} dni{'a' if days == 1 else ''}"),
+        ),
+        mui.DivCentered(mui.render_md(side[0]), mui.render_md(side[1])),
     )
