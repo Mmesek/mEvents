@@ -79,6 +79,22 @@ MODALITIES = {
 
 MOON_PHASES = ["Nów", "Pierwsza Kwadra", "Pełnia", "Ostatnia Kwadra"]
 
+PHASE = {
+    "Aries": "Dzień",
+    "Taurus": "Noc",
+    "Gemini": "Dzień",
+    "Cancer": "Noc",
+    "Leo": "Dzień",
+    "Virgo": "Noc",
+    "Libra": "Dzień",
+    "Scorpio": "Noc",
+    "Sagittarius": "Dzień",
+    "Ophiuchus": "Noc",
+    "Capricorn": "Dzień",
+    "Aquarius": "Noc",
+    "Pisces": "Dzień",
+}
+
 
 def get_zodiac(date: datetime):
     sign = sun_sign(date)
@@ -89,6 +105,11 @@ def get_zodiac(date: datetime):
             mui.DivCentered(MODALITIES[sign], header="Jakość"),
         )
     )
+
+
+def get_phase(date: datetime):
+    sign = sun_sign(date)
+    return mui.Card(mui.DivCentered(PHASE[sign]))
 
 
 def moon_phase(date: datetime):
