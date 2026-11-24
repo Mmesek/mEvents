@@ -6,7 +6,7 @@ pytz
 python-i18n[YAML]
 qrcode[pil]
 msgspec
-sentry-sdk
+sentry-sdk==2.60.0
 ics
 pyephem
 git+https://github.com/Mmesek/mdiscord
