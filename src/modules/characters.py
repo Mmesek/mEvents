@@ -9,7 +9,7 @@ from src.components.app_factory import make_app
 from src.db import Base
 from src.components import TIMEZONE, Layout, back_to_main, handle_updating_responses, with_layout
 from src.modules.profile import Profile, FormInput
-from src.modules.zodiac import get_zodiac, get_moon_phase
+from src.modules.zodiac import get_zodiac, get_moon_phase, get_phase
 
 app, rt = fh.fast_app(hdrs=HEADERS)
 rt = make_app("character")
