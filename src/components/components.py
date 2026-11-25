@@ -16,6 +16,7 @@ SOCIALS = (
     ("github", "https://github.com/Mmesek/mEvents"),
     *json.decode(os.getenv("SOCIALS", "{}")).items(),
 )
+SOCIALS_DICT = dict(SOCIALS)
 
 HEADER = [
     ("/events", "Główna", "home", ""),
