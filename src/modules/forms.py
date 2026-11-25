@@ -173,6 +173,8 @@ def submit(session, event: str, responses: dict):
         save_to_db(session, event, responses)
     except Exception as ex:
         return mui.DivCentered("Coś poszło nie tak... odśwież stronę i wprowadź odpowiedzi ponownie.")
+    discord = mu.SOCIALS_DICT.get("Discord")
+    messenger = mu.SOCIALS_DICT.get("Messenger")
     return (
         (
             mui.DivCentered(
@@ -192,7 +194,7 @@ def submit(session, event: str, responses: dict):
                     ),
                 ),
                 mui.render_md(
-                    "Do części wydarzeń otrzymasz dodatkowo e-mail organizacyjny parę dni *przed* wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:"
+                    "Do części wydarzeń otrzymasz dodatkowo e-mail organizacyjny *parę dni przed* wydarzeniem z dokładniejszą lokalizacją - Sprawdź wtedy swoją skrzynkę odbiorczą:"
                 ),
                 mu.LinkButton(
                     "/profile/settings",
@@ -207,6 +209,12 @@ def submit(session, event: str, responses: dict):
                     f"/contributions/{event}",
                     "Strona z deklaracją przyniesienia przedmiotów na wydarzenie",
                     cls=mu.ButtonT.secondary,
+                ),
+                mui.DivRAligned(
+                    mu.LinkButton(discord, "Dołącz do Discorda", cls=mu.ButtonT.secondary) if discord else None,
+                    mu.LinkButton(messenger, "Społeczność na Messengerze", cls=mu.ButtonT.secondary)
+                    if messenger
+                    else None,
                 ),
             ),
             mui.DivRAligned(back_to_main()),
