@@ -26,7 +26,7 @@ LOCALIZED_NAMES = {
 
 
 class Event(Events):
-    def info_card(self, user_id: str = None):
+    def info_card(self, user_id: str = None, x: int = None):
         if user_id:
             user_id = UUID(user_id)
             user_ticket = next(filter(lambda x: x.user_id == str(user_id), self.tickets), None)
@@ -196,7 +196,21 @@ def events(
         meta = []
     title = fh.Title(events[0].title) if len(events) == 1 else None
 
-    return title, *([f.info_card(user_id=session.get("id")) for f in events] or [back_to_main()]), *meta
+    return (
+        title,
+        *(
+            [f.info_card(user_id=session.get("id"), x=x + 1) for x, f in enumerate(events)]
+            or [
+                mui.Article(
+                    fh.Br(),
+                    "Wygląda na to że nie ma obecnie żadnych zaplanowanych wydarzeń :(",
+                    mui.DivCentered(fh.Br(fh.B("Zajrzyj kiedy indziej, lub dołącz do społeczności!"))),
+                    fh.Br(),
+                ),
+            ]
+        ),
+        *meta,
+    )
 
 
 @rt
