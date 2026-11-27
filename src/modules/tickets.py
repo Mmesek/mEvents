@@ -148,6 +148,14 @@ def companions(session, event_id: int, user_id: str, amount: int):
     return mu.Button(f"Dodano +1 w liczbie {amount}")
 
 
+@rt("/attendance/verify/payment/{event_id}/{user_id}")
+def payment(session, event_id: int, user_id: str, amount: int = None):
+    Attendance(event_id, user_id, authorized_by=session["id"], paid=datetime.now(TIMEZONE).isoformat()).upsert(
+        session["auth"]
+    )
+    return mu.Button("Opłacono")
+
+
 @rt("/companions/{event_id}/{user_id}")
 def companion_count(session, event_id: int, user_id: str, amount: int, dry_run: bool = False):
     amount = max(int(amount), 0)
@@ -202,31 +210,56 @@ def attendance_add(session, event_id: int, user_id: str):
 @with_layout(title="Lista uczestników")
 def attendance_list(session, event_id: int):
     guests = Attendance.get(
-        Attendance.select(session["auth"], "*, ...users!user_id (display_name)").eq("event_id", event_id)
+        Attendance.select(session["auth"], "*, user_data:users!user_id (display_name, event_id)")
+        .eq("event_id", event_id)
+        .eq("user_data.event_id", event_id)
     )
     earliest = min([g.arrived for g in guests if g.arrived] or [datetime.now(TIMEZONE)])
     latest = max([g.left for g in guests if g.left] or [datetime.now(TIMEZONE)])
     end = (latest - earliest).total_seconds()
     sorted_guests = sorted(
-        {
-            (
-                (g.arrived or datetime.fromtimestamp(0, timezone.utc)).astimezone(TIMEZONE).strftime("%m/%d %H:%M"),
-                (g.companions or 0) + (1 if g.arrived else 0),
-                g.display_name or g.user_id,
-                g.user_id,
-                g.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M") if g.left else (None if g.arrived else False),
-                ((g.arrived or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100 if g.arrived else None,
-                ((g.left or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100 if g.left else None,
-            )
+        [
+            {
+                "arrived": (g.arrived or datetime.fromtimestamp(0, timezone.utc))
+                .astimezone(TIMEZONE)
+                .strftime("%m/%d %H:%M"),
+                "companions": (g.companions or 0) + (1 if g.arrived else 0),
+                "name": g.user_data.get("display_name") or g.user_id,
+                "user_id": g.user_id,
+                "left": g.left.astimezone(TIMEZONE).strftime("%m/%d %H:%M")
+                if g.left
+                else (None if g.arrived else False),
+                "start_at": ((g.arrived or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100
+                if g.arrived
+                else None,
+                "end_at": ((g.left or datetime.now(TIMEZONE)) - earliest).total_seconds() / end * 100
+                if g.left
+                else None,
+                "feedback": g.feedback_filled.astimezone(TIMEZONE).strftime("%m/%d %H:%M")
+                if g.feedback_filled
+                else None,
+                "paid": g.paid,
+            }
             for g in guests
             if not g.withdrew
-        },
-        key=lambda k: k[0],
+        ],
+        key=lambda k: k["arrived"],
         reverse=True,
     )
-    num = sum([i[1] for i in sorted_guests]) + 1
-    missing = sum(1 for i in sorted_guests if not i[1]) + 1
+    num = sum([i["companions"] for i in sorted_guests]) + 1
+    missing = sum(1 for i in sorted_guests if not i["companions"]) + 1
     from src.modules.profile import Profile
+
+    header = [
+        "Goście",
+    ]
+    if any(i["paid"] for i in sorted_guests):
+        header.append("Opłacone")
+    header.extend(["Od", "Nazwa"])
+    if any(i["left"] for i in sorted_guests):
+        header.append("Do")
+    if all(i["left"] for i in sorted_guests):
+        header.append("Feedback")
 
     return fh.Div(
         fh.Form(
@@ -250,56 +283,69 @@ def attendance_list(session, event_id: int):
             ),
         ),
         mui.TableFromDicts(
-            ["Goście", "Od", "Nazwa", "Do"],
+            header,
             [
                 {
                     "Do": mu.Button(
                         mui.UkIcon("log-out"),
                         cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
-                        hx_post=f"/tickets/attendance/leave/{event_id}/{g[3]}",
+                        hx_post=f"/tickets/attendance/leave/{event_id}/{g['user_id']}",
                         hx_swap="outerHTML",
                         submit=True,
                         title="Opuszczono",
                     )
-                    if g[4] is None
-                    else mui.DivCentered(g[4])
-                    if g[4]
+                    if g["left"] is None
+                    else mui.DivCentered(g["left"])
+                    if g["left"]
                     else None,
-                    "Od": g[0]
-                    if g[1]
+                    "Od": g["arrived"]
+                    if g["companions"]
                     else mu.Button(
                         mu.icon_text("log-in", ""),
                         cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
-                        hx_post=f"/tickets/verify/{event_id}/{g[3]}",
+                        hx_post=f"/tickets/verify/{event_id}/{g['user_id']}",
                         hx_swap="outerHTML",
                         submit=True,
                         title="Dołączono",
                     )
-                    if not g[1]
+                    if not g["companions"]
                     else "❌",
                     "Nazwa": (
-                        fh.A(g[2], href=f"/tickets/log_qr/{event_id}/{g[3]}"),
-                        mui.Range(value=f"{g[5]},{g[6]}", disabled=True, label=None)
-                        if all(i is not None for i in (g[5], g[6]))
+                        fh.A(g["name"], href=f"/tickets/log_qr/{event_id}/{g['user_id']}"),
+                        mui.Range(value=f"{g['start_at']},{g['end_at']}", disabled=True, label=None)
+                        if all(i is not None for i in (g["start_at"], g["end_at"]))
                         else None,
                     ),
                     "Goście": mui.Steps(
                         mui.LiStep(
-                            g[1],
+                            g["companions"],
                             cls=mui.StepT.accent
-                            if g[1] == "Goście"
+                            if g["companions"] == "Goście"
                             else mui.StepT.neutral
-                            if g[4]
+                            if g["left"]
                             else mui.StepT.success
-                            if g[1]
+                            if g["companions"]
                             else mui.StepT.error,
                             data_content=num - 2
-                            if g[1] == "Goście"
-                            else (num := num - (g[1] or 1))
-                            if g[1]
+                            if g["companions"] == "Goście"
+                            else (num := num - (g["companions"] or 1))
+                            if g["companions"]
                             else (missing := missing - 1),
                         )
                     ),
+                    "Opłacone": (
+                        mui.UkIcon("check")
+                        if g["paid"]
+                        else mu.Button(
+                            mui.UkIcon("credit-card"),
+                            cls=mu.ButtonT.circle + mu.ButtonT.ghost + " space-x-2",
+                            hx_post=f"/tickets/attendance/verify/payment/{event_id}/{g['user_id']}",
+                            hx_swap="outerHTML",
+                            submit=True,
+                            title="Opłacono",
+                        )
+                    ),
+                    "Feedback": g["feedback"],
                 }
                 for g in sorted_guests
             ],

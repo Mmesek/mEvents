@@ -22,9 +22,11 @@ class Attendance(Base):
     companions: int | None = None
     left: datetime | None = None
     feedback_filled: datetime | None = None
+    paid: datetime | None = None
     display_name: NotSerializable[str | None] = None
     email: NotSerializable[str | None] = None
     event: NotSerializable[dict | None] = None
+    user_data: NotSerializable[dict | None] = None
 
     def __post_init__(self):
         if not self.display_name:
